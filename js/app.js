@@ -18,7 +18,7 @@ import {
   initFilterListeners,
   registerRenderCallback
 } from './filters.js';
-import { initExportListeners } from './export.js';
+import { initExportListeners, updatePrintHeader } from './export.js';
 import {
   initSettings,
   initSettingsListeners,
@@ -109,6 +109,9 @@ export function render() {
 
   // Table
   renderTable(rows);
+
+  // Synchronize Printable Statement Metadata
+  updatePrintHeader(range, rows);
 }
 
 function initEventListeners() {

@@ -343,8 +343,8 @@ setChartView('donut');
 console.log('✓ setChartView("donut") state.chartView:', state.chartView);
 if (state.chartView !== 'donut') throw new Error('Expected chartView to be "donut"');
 
-// ── 12. Test PDF Statement Export ──
-const { exportPdf } = await import('../js/export.js');
+// ── 12. Test PDF Statement Export & Reactive Print Header ──
+const { exportPdf, updatePrintHeader } = await import('../js/export.js');
 window.printCalled = false;
 exportPdf();
 console.log('✓ exportPdf executed cleanly');
@@ -352,6 +352,28 @@ console.log('✓ Print statement period label:', document.getElementById('print-
 console.log('✓ Print statement filter summary:', document.getElementById('print-filter-summary').textContent);
 if (!document.getElementById('print-filter-summary').textContent.includes('transaction')) {
   throw new Error('Expected transaction count in print statement summary');
+}
+
+// Test reactive print header update on filter changes via render()
+state.selectedCategories.clear();
+state.category = 'all';
+state.type = 'all';
+state.search = '';
+render();
+console.log('✓ Neutral render print summary:', document.getElementById('print-filter-summary').textContent);
+if (!document.getElementById('print-filter-summary').textContent.includes('All Categories · All Accounts · 5 transactions')) {
+  throw new Error('Expected "All Categories · All Accounts · 5 transactions" in neutral print summary');
+}
+
+// Apply type and search filter
+state.type = 'expense';
+state.search = 'team';
+render();
+console.log('✓ Filtered render print summary:', document.getElementById('print-filter-summary').textContent);
+if (!document.getElementById('print-filter-summary').textContent.includes('Type: Expense') ||
+    !document.getElementById('print-filter-summary').textContent.includes('Search: "team"') ||
+    !document.getElementById('print-filter-summary').textContent.includes('1 transaction')) {
+  throw new Error('Expected dynamic filter criteria in print summary');
 }
 
 console.log('\nAll refactored module tests PASSED successfully!');

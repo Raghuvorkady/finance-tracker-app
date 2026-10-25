@@ -35,15 +35,9 @@ export function downloadCsv(all = false) {
   toast(`Exported ${rows.length.toLocaleString('en-IN')} transactions (${all ? 'All data' : 'Filtered data'})`);
 }
 
-export function exportPdf() {
-  closeAllPopovers();
-
-  const rows = filtered();
-  const range = bounds();
-
-  // Populate print statement header
+export function updatePrintHeader(range = bounds(), rows = filtered()) {
   const printPeriod = $('print-period-label');
-  if (printPeriod) printPeriod.textContent = range.label;
+  if (printPeriod) printPeriod.textContent = range?.label || 'All activity';
 
   const printDate = $('print-date-generated');
   if (printDate) {
@@ -60,25 +54,55 @@ export function exportPdf() {
   const printFilters = $('print-filter-summary');
   if (printFilters) {
     const filterParts = [];
-    if (state.type !== 'all') {
+    if (state.type && state.type !== 'all') {
       filterParts.push(`Type: ${state.type.charAt(0).toUpperCase() + state.type.slice(1)}`);
     }
-    if (state.selectedCategories.size > 0) {
-      filterParts.push(`Categories: ${Array.from(state.selectedCategories).join(', ')}`);
+
+    const catList = state.selectedCategories && state.selectedCategories.size > 0
+      ? Array.from(state.selectedCategories)
+      : (state.category && state.category !== 'all' ? [state.category] : []);
+
+    if (catList.length > 0) {
+      if (catList.length <= 3) {
+        filterParts.push(`Categories: ${catList.join(', ')}`);
+      } else {
+        filterParts.push(`Categories: ${catList.slice(0, 2).join(', ')} +${catList.length - 2} more`);
+      }
     } else {
       filterParts.push('All Categories');
     }
-    if (state.selectedAccounts.size > 0) {
-      filterParts.push(`Accounts: ${Array.from(state.selectedAccounts).join(', ')}`);
+
+    const acctList = state.selectedAccounts && state.selectedAccounts.size > 0
+      ? Array.from(state.selectedAccounts)
+      : (state.account && state.account !== 'all' ? [state.account] : []);
+
+    if (acctList.length > 0) {
+      if (acctList.length <= 3) {
+        filterParts.push(`Accounts: ${acctList.join(', ')}`);
+      } else {
+        filterParts.push(`Accounts: ${acctList.slice(0, 2).join(', ')} +${acctList.length - 2} more`);
+      }
     } else {
       filterParts.push('All Accounts');
     }
-    if (state.search) {
-      filterParts.push(`Search: "${state.search}"`);
+
+    if (state.search && state.search.trim()) {
+      filterParts.push(`Search: "${state.search.trim()}"`);
     }
+
     filterParts.push(`${rows.length.toLocaleString('en-IN')} transaction${rows.length === 1 ? '' : 's'}`);
     printFilters.textContent = filterParts.join(' · ');
   }
+}
+
+export function exportPdf() {
+  closeAllPopovers();
+
+  const rows = filtered();
+  const range = bounds();
+
+  // Populate print statement header
+  updatePrintHeader(range, rows);
 
   // Temporarily show all transactions for a complete printed statement
   const prevLimit = getTableDisplayLimit();
@@ -164,5 +188,10 @@ export function initExportListeners() {
       if (backdrop) backdrop.classList.add('hidden');
       exportPdf();
     };
+  }
+  if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+    window.addEventListener('beforeprint', () => {
+      updatePrintHeader(bounds(), filtered());
+    });
   }
 }
