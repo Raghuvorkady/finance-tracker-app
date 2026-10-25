@@ -97,22 +97,22 @@ export const INCOME_PALETTE = [
 ];
 
 export const TRANSFER_PALETTE = [
-  '#6366f1', // Electric Indigo (Tailwind indigo-500)
-  '#8b5cf6', // Rich Violet / Purple (Tailwind violet-500)
-  '#0ea5e9', // Vibrant Sky Blue (Tailwind sky-500)
-  '#a855f7', // Bright Purple (Tailwind purple-500)
-  '#06b6d4', // Crisp Cyan / Teal (Tailwind cyan-500)
-  '#3b82f6', // Vivid Blue (Tailwind blue-500)
-  '#ec4899', // Vibrant Pink / Magenta (Tailwind pink-500)
-  '#14b8a6', // Clean Teal (Tailwind teal-500)
-  '#f59e0b', // Warm Amber / Gold (Tailwind amber-500)
-  '#d946ef'  // Bright Fuchsia (Tailwind fuchsia-500)
+  '#64748b', // Slate 500 (Neutral Slate)
+  '#787774', // Notion Neutral Grey
+  '#94a3b8', // Slate 400 (Light Slate)
+  '#475569', // Slate 600 (Deep Slate)
+  '#a1a1aa', // Zinc 400 (Soft Zinc)
+  '#71717a', // Zinc 500 (Medium Zinc)
+  '#52525b', // Zinc 600 (Dark Zinc)
+  '#9ca3af', // Cool Gray 400
+  '#6b7280', // Cool Gray 500
+  '#334155'  // Slate 700 (Rich Slate)
 ];
 
 export const MACRO_COLORS = {
   income: '#10b981',   // Vibrant Emerald Green
   expense: '#f43f5e',  // Vibrant Rose / Coral Red
-  transfer: '#6366f1'  // Vibrant Indigo / Blue
+  transfer: '#787774'  // Neutral / Grey
 };
 
 export const PALETTE = EXPENSE_PALETTE;

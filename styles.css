@@ -4,7 +4,7 @@
 }
 :root,[data-theme="ledgerly"] {
   --ink:#17221c; --muted:#778078; --line:#e8ebe7; --paper:#f8f9f6; --card:#ffffff;
-  --sage:#d8e8c7; --lime:#84cc16; --red:#f43f5e; --green:#10b981; --transfer:#6366f1; --violet:#8b5cf6; --amber:#f59e0b;
+  --sage:#d8e8c7; --lime:#84cc16; --red:#f43f5e; --green:#10b981; --transfer:#787774; --violet:#8b5cf6; --amber:#f59e0b;
   --accent:#497433; --accent-light:#d9edc4; --body-font:Manrope,Arial,sans-serif;
 }
 /* ── Mobile theme (Money Manager inspired) ── */
@@ -16,7 +16,7 @@
 /* ── Notion theme (Directly matched to Notion template) ── */
 [data-theme="notion"] {
   --ink:#37352f; --muted:#787774; --line:#edece9; --paper:#ffffff; --card:#ffffff;
-  --sage:#f1f1ef; --lime:#dbeddb; --red:#f43f5e; --green:#10b981; --transfer:#6366f1; --violet:#8b5cf6; --amber:#f59e0b;
+  --sage:#f1f1ef; --lime:#dbeddb; --red:#f43f5e; --green:#10b981; --transfer:#787774; --violet:#8b5cf6; --amber:#f59e0b;
   --accent:#37352f; --accent-light:#f7f7f5; --body-font:'Inter',ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
 }
 
@@ -1153,11 +1153,11 @@ select{
 }
 .donut-center strong.amount-expense{ color:var(--red, #f43f5e); }
 .donut-center strong.amount-income{ color:var(--green, #10b981); }
-.donut-center strong.amount-transfer{ color:var(--transfer, #6366f1); }
+.donut-center strong.amount-transfer{ color:var(--transfer, #787774); }
 .donut-center strong.amount-neutral{ color:var(--ink, #37352f); }
 [data-theme="notion"] .donut-center strong.amount-expense{ color:#f43f5e; }
 [data-theme="notion"] .donut-center strong.amount-income{ color:#10b981; }
-[data-theme="notion"] .donut-center strong.amount-transfer{ color:#6366f1; }
+[data-theme="notion"] .donut-center strong.amount-transfer{ color:#787774; }
 [data-theme="notion"] .donut-center strong.amount-neutral{ color:#37352f; }
 .donut-center span{
   color:var(--muted);
@@ -1382,7 +1382,7 @@ select{
   background:var(--green, #10b981);
 }
 .dot-transfer{
-  background:var(--transfer, #6366f1);
+  background:var(--transfer, #787774);
 }
 .count-badge{
   background:var(--line);
@@ -2689,7 +2689,7 @@ select{
 }
 .tx-amount.amount-expense{color:var(--red, #f43f5e)}
 .tx-amount.amount-income{color:var(--green, #10b981)}
-.tx-amount.amount-transfer{color:var(--transfer, #6366f1)}
+.tx-amount.amount-transfer{color:var(--transfer, #787774)}
 .tx-type{
   display:flex;
   justify-content:flex-end;
@@ -2820,7 +2820,7 @@ td.account-cell{color:var(--muted);font-size:calc(12px * var(--font-scale, 1))}
 }
 .amount-expense{color:var(--red, #f43f5e)}
 .amount-income{color:var(--green, #10b981)}
-.amount-transfer{color:var(--transfer, #6366f1)}
+.amount-transfer{color:var(--transfer, #787774)}
 .type-tag{
   display:inline-flex;
   align-items:center;
@@ -3239,13 +3239,13 @@ td.account-cell{color:var(--muted);font-size:calc(12px * var(--font-scale, 1))}
 }
 [data-theme="notion"] .amount-expense{color:#f43f5e;}
 [data-theme="notion"] .amount-income{color:#10b981;}
-[data-theme="notion"] .amount-transfer{color:#6366f1;}
+[data-theme="notion"] .amount-transfer{color:#787774;}
 [data-theme="notion"] .tx-amount.amount-expense{color:#f43f5e;}
 [data-theme="notion"] .tx-amount.amount-income{color:#10b981;}
-[data-theme="notion"] .tx-amount.amount-transfer{color:#6366f1;}
+[data-theme="notion"] .tx-amount.amount-transfer{color:#787774;}
 [data-theme="notion"] .dot-expense{background:#f43f5e;}
 [data-theme="notion"] .dot-income{background:#10b981;}
-[data-theme="notion"] .dot-transfer{background:#6366f1;}
+[data-theme="notion"] .dot-transfer{background:#787774;}
 /* Notion Select Tags: 100% matched to Notion color tags with high contrast */
 [data-theme="notion"] .type-tag{
   font-family:'Inter',ui-sans-serif,sans-serif;
