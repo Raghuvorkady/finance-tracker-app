@@ -64,30 +64,7 @@ body{
   border-radius:8px;
   font:600 14px 'DM Mono',monospace;
 }
-.desktop-nav{
-  display:flex;
-  align-items:center;
-  gap:4px;
-}
-.desktop-nav .nav-item{
-  font:600 13px var(--body-font,Manrope);
-  border:0;
-  background:transparent;
-  padding:7px 13px;
-  border-radius:7px;
-  color:var(--muted);
-  cursor:pointer;
-  transition:all 0.15s ease;
-}
-.desktop-nav .nav-item:hover{
-  background:var(--accent-light);
-  color:var(--ink);
-}
-.desktop-nav .nav-item.active{
-  background:var(--accent-light);
-  color:var(--accent);
-  font-weight:500;
-}
+
 /* ── Topbar Actions (Refined Notion Style) ── */
 .topbar-actions{
   display:flex;
@@ -2902,17 +2879,7 @@ td.account-cell{color:var(--muted);font-size:calc(12px * var(--font-scale, 1))}
   letter-spacing:-0.5px;
   color:#37352f;
 }
-[data-theme="notion"] .desktop-nav .nav-item{
-  font-family:'Inter',ui-sans-serif,sans-serif;
-  font-size:13px;
-  color:#787774;
-  border-radius:4px;
-}
-[data-theme="notion"] .desktop-nav .nav-item.active{
-  background:rgba(55,53,47,0.08);
-  color:#37352f;
-  font-weight:500;
-}
+
 [data-theme="notion"] .period-control span{
   text-transform:none;
   letter-spacing:0;
@@ -3442,7 +3409,7 @@ td.account-cell{color:var(--muted);font-size:calc(12px * var(--font-scale, 1))}
     zoom:1 !important;
     font-size:calc(15px * var(--font-scale, 1));
   }
-  .desktop-nav{display:none}
+
   .clear-workspace-btn{display:none}
   .bottom-nav{display:flex}
 
