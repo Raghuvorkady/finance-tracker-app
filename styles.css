@@ -1751,6 +1751,43 @@ select{
   background:rgba(55, 53, 47, 0.08);
   color:#37352f;
 }
+.notion-popover-header-actions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.notion-popover-close-btn{
+  background:transparent;
+  border:none;
+  color:#2383e2;
+  font-size:13px;
+  font-weight:600;
+  cursor:pointer;
+  padding:2px 8px;
+  border-radius:4px;
+  transition:all 0.12s ease;
+}
+.notion-popover-close-btn:hover{
+  background:rgba(35, 131, 226, 0.1);
+}
+.mobile-popover-backdrop{
+  display:none;
+}
+@media(max-width:768px){
+  .mobile-popover-backdrop{
+    display:block;
+    position:fixed;
+    inset:0;
+    background:rgba(0, 0, 0, 0.45);
+    backdrop-filter:blur(3px);
+    -webkit-backdrop-filter:blur(3px);
+    z-index:9997;
+    transition:opacity 0.2s ease;
+  }
+  .mobile-popover-backdrop.hidden{
+    display:none !important;
+  }
+}
 .notion-chip-box{
   display:flex;
   align-items:center;
@@ -3686,32 +3723,140 @@ td.account-cell{color:var(--muted);font-size:calc(12px * var(--font-scale, 1))}
   }
   .notion-controls-bottom{
     display:flex;
-    flex-direction:row;
-    align-items:center;
+    flex-direction:column;
+    align-items:stretch;
     width:100%;
-    gap:4px;
+    gap:8px;
+  }
+  .notion-search-wrap{
+    width:100%;
+    flex:1 1 100%;
+  }
+  .notion-search-wrap input#search{
+    width:100% !important;
+    height:38px;
+    font-size:15px;
+    border-radius:8px;
+    background:#f7f7f5;
+    border:1px solid #edece9;
+    padding-left:34px;
+    padding-right:12px;
+  }
+  .notion-search-wrap input#search:focus{
+    width:100% !important;
+    background:#ffffff;
+    border-color:#2383e2;
+  }
+  .notion-search-icon{
+    left:11px;
+    font-size:13px;
   }
   .notion-pills-left{
     display:flex;
     align-items:center;
-    gap:4px;
+    gap:8px;
     overflow-x:auto;
-    padding-bottom:2px;
+    overflow-y:visible;
+    padding:2px 0 6px;
     -webkit-overflow-scrolling:touch;
-    flex-wrap:nowrap;
+    scrollbar-width:none;
     width:100%;
   }
-  .notion-search-wrap{
-    flex:0 0 auto;
+  .notion-pills-left::-webkit-scrollbar{
+    display:none;
   }
-  .notion-search-wrap input#search{
-    width:130px;
+  .notion-pill{
+    height:34px;
+    padding:0 12px;
+    font-size:13px;
+    font-weight:500;
+    border-radius:8px;
+    background:#f7f7f5;
+    border:1px solid #edece9;
+    white-space:nowrap;
+    flex-shrink:0;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
   }
-  .notion-search-wrap input#search:focus{
-    width:160px;
+  .notion-pill:active{
+    background:rgba(55, 53, 47, 0.12);
   }
+  .notion-pill.active-sort,
+  .notion-pill.has-filter{
+    background:rgba(35, 131, 226, 0.08);
+    border-color:rgba(35, 131, 226, 0.3);
+    color:#2383e2;
+  }
+  #cols-pill-wrap{
+    display:none !important;
+  }
+
+  /* Popovers as Touch-Friendly Mobile Bottom Sheets */
   .notion-popover{
-    max-width:calc(100vw - 32px);
+    position:fixed !important;
+    left:0 !important;
+    right:0 !important;
+    bottom:0 !important;
+    top:auto !important;
+    width:100% !important;
+    max-width:100% !important;
+    min-width:100% !important;
+    max-height:82vh !important;
+    border-radius:20px 20px 0 0 !important;
+    border:none !important;
+    border-top:1px solid var(--line, #edece9) !important;
+    box-shadow:0 -12px 40px rgba(0, 0, 0, 0.25) !important;
+    z-index:9998 !important;
+    padding:14px 18px max(24px, env(safe-area-inset-bottom)) !important;
+    box-sizing:border-box !important;
+    overflow-y:auto !important;
+    animation:sheetSlideUp 0.24s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+  .notion-popover::before{
+    content:'';
+    display:block;
+    width:38px;
+    height:4px;
+    border-radius:2px;
+    background:#d3d2ce;
+    margin:0 auto 12px;
+  }
+  .notion-popover-header{
+    padding:4px 0 10px;
+    font-size:14px;
+    font-weight:600;
+    color:var(--ink, #37352f);
+    border-bottom:1px solid var(--line, #edece9);
+    margin-bottom:10px;
+  }
+  .notion-menu-item{
+    padding:12px 14px;
+    font-size:14px;
+    border-radius:8px;
+  }
+  .notion-chip-box{
+    min-height:42px;
+    padding:6px 10px;
+    border-radius:8px;
+    margin-bottom:10px;
+  }
+  .notion-chip-input{
+    font-size:14px;
+    height:30px;
+  }
+  .notion-popover-options{
+    max-height:45vh;
+  }
+  .notion-filter-option{
+    padding:10px 10px;
+    font-size:14px;
+    border-radius:8px;
+  }
+  .notion-custom-check{
+    width:20px;
+    height:20px;
+    font-size:13px;
   }
   .bottom-nav-item{
     font-size:calc(11px * var(--font-scale, 1));

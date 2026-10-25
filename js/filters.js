@@ -41,6 +41,8 @@ export function closeAllPopovers() {
     p.classList.remove('open');
   });
   document.querySelectorAll('[aria-expanded]').forEach(btn => btn.setAttribute('aria-expanded', 'false'));
+  const backdrop = $('mobile-popover-backdrop');
+  if (backdrop) backdrop.classList.add('hidden');
 }
 
 export function syncSortPill() {
@@ -526,6 +528,7 @@ export function initFilterListeners() {
       if (opening) {
         pop.classList.remove('hidden');
         $('sort-pill').setAttribute('aria-expanded', 'true');
+        $('mobile-popover-backdrop')?.classList.remove('hidden');
       }
     };
   }
@@ -547,6 +550,7 @@ export function initFilterListeners() {
       if (opening) {
         pop.classList.remove('hidden');
         $('cat-pill').setAttribute('aria-expanded', 'true');
+        $('mobile-popover-backdrop')?.classList.remove('hidden');
         renderCategoryChips();
         if ($('cat-search-input')) {
           $('cat-search-input').value = '';
@@ -614,6 +618,7 @@ export function initFilterListeners() {
       if (opening) {
         pop.classList.remove('hidden');
         $('acct-pill').setAttribute('aria-expanded', 'true');
+        $('mobile-popover-backdrop')?.classList.remove('hidden');
         renderAccountChips();
         if ($('acct-search-input')) {
           $('acct-search-input').value = '';
@@ -681,6 +686,7 @@ export function initFilterListeners() {
       if (opening) {
         pop.classList.remove('hidden');
         $('cols-pill').setAttribute('aria-expanded', 'true');
+        $('mobile-popover-backdrop')?.classList.remove('hidden');
         if ($('cols-search-input')) $('cols-search-input').value = '';
         populateColsList();
         // Focus search after render
@@ -688,6 +694,20 @@ export function initFilterListeners() {
       }
     };
   }
+
+  // Mobile Popover Backdrop Click
+  const popoverBackdrop = $('mobile-popover-backdrop');
+  if (popoverBackdrop) {
+    popoverBackdrop.onclick = () => closeAllPopovers();
+  }
+
+  // Done / Close Buttons inside popovers
+  document.querySelectorAll('[data-close-popover]').forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      closeAllPopovers();
+    };
+  });
 
   // Columns Panel Close Button
   if ($('cols-panel-close')) {
