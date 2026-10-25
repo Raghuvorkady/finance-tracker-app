@@ -2506,11 +2506,11 @@ th.th-drag-over-right{
   box-shadow:inset -3px 0 0 0 #2383e2 !important;
 }
 td{
-  padding:13px 14px;
+  padding:9px 14px;
   border-bottom:1px solid var(--line);
   font-size:calc(13.5px * var(--font-scale, 1));
   color:var(--ink);
-  line-height:1.6;
+  line-height:1.45;
 }
 td:first-child{
   color:var(--muted);
@@ -2836,9 +2836,9 @@ td.account-cell{color:var(--muted);font-size:calc(12px * var(--font-scale, 1))}
   letter-spacing:0;
   border-bottom:1px solid #edece9;
   border-right:1px solid #edece9;
-  padding:9px 14px;
-  height:calc(36px * var(--font-scale, 1));
-  line-height:1.5;
+  padding:8px 14px;
+  height:calc(34px * var(--font-scale, 1));
+  line-height:1.45;
   white-space:nowrap;
 }
 [data-theme="notion"] th:first-child{padding-left:18px}
@@ -2858,10 +2858,10 @@ td.account-cell{color:var(--muted);font-size:calc(12px * var(--font-scale, 1))}
   border-right:1px solid #edece9;
   font-family:'Inter',ui-sans-serif,sans-serif;
   font-size:calc(14px * var(--font-scale, 1));
-  padding:11px 14px;
+  padding:8px 14px;
   color:#37352f;
-  line-height:1.6;
-  height:calc(44px * var(--font-scale, 1));
+  line-height:1.45;
+  height:calc(38px * var(--font-scale, 1));
 }
 [data-theme="notion"] td:first-child{padding-left:18px}
 [data-theme="notion"] td:last-child{border-right:none;padding-right:18px}
@@ -2873,14 +2873,14 @@ td.account-cell{color:var(--muted);font-size:calc(12px * var(--font-scale, 1))}
   font-size:calc(14px * var(--font-scale, 1));
   font-weight:400;
   color:#37352f;
-  line-height:1.55;
+  line-height:1.42;
 }
 [data-theme="notion"] .notion-item-title{
   display:inline-flex;
   align-items:center;
   gap:9px;
   color:#37352f;
-  line-height:1.55;
+  line-height:1.42;
 }
 [data-theme="notion"] .notion-item-icon{
   font-size:calc(15px * var(--font-scale, 1));
@@ -2890,7 +2890,7 @@ td.account-cell{color:var(--muted);font-size:calc(12px * var(--font-scale, 1))}
 [data-theme="notion"] .notion-item-text{
   font-weight:400;
   color:#37352f;
-  line-height:1.55;
+  line-height:1.42;
 }
 [data-theme="notion"] .date-cell,
 [data-theme="notion"] .account-cell{
@@ -2898,7 +2898,7 @@ td.account-cell{color:var(--muted);font-size:calc(12px * var(--font-scale, 1))}
   font-size:calc(13px * var(--font-scale, 1));
   color:#787774;
   font-weight:400;
-  line-height:1.6;
+  line-height:1.45;
 }
 [data-theme="notion"] .amount{
   font-family:'Inter',ui-sans-serif,sans-serif;
@@ -2906,7 +2906,7 @@ td.account-cell{color:var(--muted);font-size:calc(12px * var(--font-scale, 1))}
   font-weight:400;
   color:#37352f;
   font-variant-numeric:tabular-nums;
-  line-height:1.6;
+  line-height:1.45;
 }
 [data-theme="notion"] .amount-expense{color:#eb5757;}
 [data-theme="notion"] .amount-income{color:#0f7b6c;}
@@ -2972,9 +2972,9 @@ td.account-cell{color:var(--muted);font-size:calc(12px * var(--font-scale, 1))}
   border-top:1px solid #edece9;
   border-bottom:none;
   border-right:1px solid #edece9;
-  padding:10px 14px;
-  height:calc(38px * var(--font-scale, 1));
-  line-height:1.5;
+  padding:8px 14px;
+  height:calc(34px * var(--font-scale, 1));
+  line-height:1.45;
 }
 [data-theme="notion"] tfoot td:first-child{
   padding-left:18px;
