@@ -22,15 +22,39 @@
           </nav>
         </div>
         <div class="topbar-actions">
-          <div class="view-mode-tabs" id="view-mode-tabs" role="group" aria-label="Layout view selector">
-            <button class="view-mode-btn active" data-view-mode="a" title="Stacked layout"><span class="view-mode-icon">☰</span> <span class="view-mode-label">Stacked</span></button>
-            <button class="view-mode-btn" data-view-mode="b" title="Split layout"><span class="view-mode-icon">◫</span> <span class="view-mode-label">Split</span></button>
-            <button class="view-mode-btn" data-view-mode="c" title="Tabbed layout"><span class="view-mode-icon">⊞</span> <span class="view-mode-label">Tabbed</span></button>
+          <div class="display-dropdown-wrap" id="display-dropdown-wrap">
+            <button class="topbar-btn topbar-btn-secondary" id="display-toggle" aria-expanded="false" aria-controls="display-settings" title="Display settings">
+              <span class="topbar-icon">Aa</span>
+              <span class="topbar-btn-text">Display</span>
+              <span class="display-chevron">▾</span>
+            </button>
+            <div class="display-menu" id="display-settings" role="menu" aria-label="Display settings">
+              <div class="display-menu-row font-row">
+                <div class="font-stepper" role="group" aria-label="Adjust font size">
+                  <button id="font-dec" class="stepper-btn" title="Decrease font size" aria-label="Decrease font size">A−</button>
+                  <span id="font-scale-readout" class="scale-readout">100%</span>
+                  <button id="font-inc" class="stepper-btn" title="Increase font size" aria-label="Increase font size">A+</button>
+                </div>
+                <button id="font-reset" class="font-reset-btn" title="Reset font size to 100%">Reset</button>
+              </div>
+              <div class="display-menu-divider"></div>
+              <div class="display-menu-row">
+                <div class="size-options display-segmented" role="group" aria-label="Theme" id="theme-options">
+                  <button data-theme="ledgerly">Ledgerly</button>
+                  <button data-theme="mobile">Mobile</button>
+                  <button data-theme="notion">Notion</button>
+                </div>
+              </div>
+              <div class="display-menu-divider"></div>
+              <div class="display-menu-row">
+                <div class="size-options display-segmented" role="group" aria-label="Layout view" id="display-layout-options">
+                  <button data-view-mode="a" class="selected">Stacked</button>
+                  <button data-view-mode="b">Split</button>
+                  <button data-view-mode="c">Tabbed</button>
+                </div>
+              </div>
+            </div>
           </div>
-          <button class="topbar-btn topbar-btn-secondary" id="display-toggle" aria-expanded="false" aria-controls="display-settings" title="Text size & appearance">
-            <span class="topbar-icon">Aa</span>
-            <span class="topbar-btn-text">Display</span>
-          </button>
           <label class="topbar-btn topbar-btn-primary" for="file-input" title="Import Money Manager Excel file">
             <svg class="topbar-svg-icon" width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 2v12M2 8h12"/></svg>
             <span class="topbar-btn-text">Import</span>
@@ -64,50 +88,6 @@
           <button class="topbar-btn topbar-btn-ghost" id="clear-data" title="Clear workspace">Clear</button>
         </div>
       </header>
-
-      <section class="display-settings hidden" id="display-settings" aria-label="Display and font settings">
-        <div class="display-settings-row">
-          <div class="display-settings-label">
-            <strong>Text size</strong>
-            <p>Increase or decrease readability across the app</p>
-          </div>
-          <div class="font-controls-group">
-            <div class="font-stepper" role="group" aria-label="Adjust font size">
-              <button id="font-dec" class="stepper-btn" title="Decrease font size" aria-label="Decrease font size">A−</button>
-              <span id="font-scale-readout" class="scale-readout">100%</span>
-              <button id="font-inc" class="stepper-btn" title="Increase font size" aria-label="Increase font size">A+</button>
-            </div>
-            <div class="size-options font-presets" role="group" aria-label="Font size presets">
-              <button data-scale="0.88">Small</button>
-              <button data-scale="1" class="selected">Default</button>
-              <button data-scale="1.15">Large</button>
-              <button data-scale="1.3">Extra large</button>
-            </div>
-          </div>
-        </div>
-        <div class="display-settings-row theme-setting-row">
-          <div class="display-settings-label">
-            <strong>Theme</strong>
-            <p>Choose your visual style</p>
-          </div>
-          <div class="size-options" role="group" aria-label="Theme" id="theme-options">
-            <button data-theme="ledgerly">Ledgerly</button>
-            <button data-theme="mobile">Mobile</button>
-            <button data-theme="notion">Notion</button>
-          </div>
-        </div>
-        <div class="display-settings-row layout-setting-row">
-          <div class="display-settings-label">
-            <strong>Layout view</strong>
-            <p>Switch between dashboard layouts</p>
-          </div>
-          <div class="size-options" role="group" aria-label="Layout view" id="display-layout-options">
-            <button data-view-mode="a" class="selected">Stacked</button>
-            <button data-view-mode="b">Split</button>
-            <button data-view-mode="c">Tabbed</button>
-          </div>
-        </div>
-      </section>
 
       <section class="content">
         <div class="greeting-banner hidden" id="greeting-banner">
@@ -218,18 +198,20 @@
                     <!-- Category Filter Pill -->
                     <div class="notion-pill-wrap" id="cat-pill-wrap">
                       <button class="notion-pill" id="cat-pill" aria-label="Filter by category" aria-haspopup="true" aria-expanded="false">
-                        <span class="pill-icon">📁</span>
+                        <span class="pill-icon">▤</span>
                         <span class="pill-label" id="pill-cat-label">Category</span>
                         <span class="pill-dot hidden" id="cat-active-dot"></span>
                         <span class="pill-chevron">∨</span>
                       </button>
                       <div class="notion-popover notion-filter-popover hidden" id="cat-popover" role="dialog" aria-label="Filter by category">
                         <div class="notion-popover-header">
-                          <span>Category is</span>
-                          <button class="popover-action-btn" id="cat-clear-btn" title="Clear category filter">Clear</button>
+                          <span class="notion-filter-condition">Category is <span class="condition-chevron">▾</span></span>
+                          <button type="button" class="notion-popover-dots" id="cat-clear-btn" title="Clear category filter">•••</button>
                         </div>
-                        <div class="notion-popover-search">
-                          <input type="text" id="cat-search-input" placeholder="Select one or more options..." autocomplete="off" />
+                        <div class="notion-chip-box" id="cat-chip-box">
+                          <div class="notion-chips-container" id="cat-chips"></div>
+                          <input type="text" class="notion-chip-input" id="cat-search-input" placeholder="Select one or more options..." autocomplete="off" spellcheck="false" />
+                          <button type="button" class="notion-chip-clear-all hidden" id="cat-clear-all-btn" title="Clear all">✕</button>
                         </div>
                         <div class="notion-popover-options" id="cat-options-list"></div>
                       </div>
@@ -245,27 +227,15 @@
                       </button>
                       <div class="notion-popover notion-filter-popover hidden" id="acct-popover" role="dialog" aria-label="Filter by account">
                         <div class="notion-popover-header">
-                          <span>Account is</span>
-                          <button class="popover-action-btn" id="acct-clear-btn" title="Clear account filter">Clear</button>
+                          <span class="notion-filter-condition">Account is <span class="condition-chevron">▾</span></span>
+                          <button type="button" class="notion-popover-dots" id="acct-clear-btn" title="Clear account filter">•••</button>
                         </div>
-                        <div class="notion-popover-search">
-                          <input type="text" id="acct-search-input" placeholder="Select one or more options..." autocomplete="off" />
+                        <div class="notion-chip-box" id="acct-chip-box">
+                          <div class="notion-chips-container" id="acct-chips"></div>
+                          <input type="text" class="notion-chip-input" id="acct-search-input" placeholder="Select one or more options..." autocomplete="off" spellcheck="false" />
+                          <button type="button" class="notion-chip-clear-all hidden" id="acct-clear-all-btn" title="Clear all">✕</button>
                         </div>
                         <div class="notion-popover-options" id="acct-options-list"></div>
-                      </div>
-                    </div>
-
-                    <!-- + Filter Ghost Pill -->
-                    <div class="notion-pill-wrap" id="add-filter-wrap">
-                      <button class="notion-ghost-pill" id="add-filter-btn" title="Add filter" aria-haspopup="true" aria-expanded="false">
-                        <span class="ghost-plus">+</span> Filter
-                      </button>
-                      <div class="notion-popover hidden" id="add-filter-popover" role="menu">
-                        <div class="notion-popover-header">Add filter for</div>
-                        <div class="notion-popover-list">
-                          <button class="notion-menu-item" id="add-filter-cat"><span class="pill-icon">📁</span> Category</button>
-                          <button class="notion-menu-item" id="add-filter-acct"><span class="pill-icon">🏛</span> Account</button>
-                        </div>
                       </div>
                     </div>
                   </div>

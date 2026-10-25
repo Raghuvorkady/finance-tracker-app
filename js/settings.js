@@ -20,11 +20,6 @@ export function setFontScale(scale) {
   if (readout) readout.textContent = pct;
   const pill = $('font-scale-pill');
   if (pill) pill.textContent = pct;
-
-  document.querySelectorAll('[data-scale]').forEach(btn => {
-    const btnScale = parseFloat(btn.dataset.scale);
-    btn.classList.toggle('selected', Math.abs(btnScale - num) < 0.05);
-  });
 }
 
 export function adjustFontScale(delta) {
@@ -37,9 +32,6 @@ export function setLayoutView(mode) {
   state.layoutView = valid;
   document.documentElement.setAttribute('data-layout-view', valid);
   setStorage('ledgerly-layout-view', valid);
-  document.querySelectorAll('#view-mode-tabs [data-view-mode]').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.viewMode === valid);
-  });
   document.querySelectorAll('#display-layout-options [data-view-mode]').forEach(btn => {
     btn.classList.toggle('selected', btn.dataset.viewMode === valid);
   });
@@ -80,26 +72,73 @@ export function initSettings() {
 
 export function initSettingsListeners() {
   const displayToggle = $('display-toggle');
-  if (displayToggle) {
-    displayToggle.onclick = () => {
-      const panel = $('display-settings');
-      if (!panel) return;
-      const opening = panel.classList.contains('hidden');
-      panel.classList.toggle('hidden');
+  const displayMenu = $('display-settings');
+  const displayWrap = $('display-dropdown-wrap');
+
+  if (displayToggle && displayMenu) {
+    let hoverTimeout = null;
+
+    const showMenu = () => {
+      if (hoverTimeout) {
+        clearTimeout(hoverTimeout);
+        hoverTimeout = null;
+      }
+      document.querySelectorAll('.notion-popover, .export-menu').forEach(p => p.classList.add('hidden'));
+      displayMenu.classList.add('open');
+      displayToggle.setAttribute('aria-expanded', 'true');
+    };
+
+    const hideMenuWithDelay = () => {
+      if (hoverTimeout) clearTimeout(hoverTimeout);
+      hoverTimeout = setTimeout(() => {
+        displayMenu.classList.remove('open');
+        displayToggle.setAttribute('aria-expanded', 'false');
+      }, 300);
+    };
+
+    if (displayWrap) {
+      displayWrap.addEventListener('mouseenter', showMenu);
+      displayWrap.addEventListener('mouseleave', hideMenuWithDelay);
+    }
+
+    displayToggle.onclick = (e) => {
+      e.stopPropagation();
+      if (hoverTimeout) {
+        clearTimeout(hoverTimeout);
+        hoverTimeout = null;
+      }
+      const opening = !displayMenu.classList.contains('open');
+      document.querySelectorAll('.notion-popover, .export-menu').forEach(p => p.classList.add('hidden'));
+      displayMenu.classList.toggle('open', opening);
       displayToggle.setAttribute('aria-expanded', String(opening));
     };
+
+    displayMenu.onclick = (e) => {
+      e.stopPropagation();
+    };
+
+    document.addEventListener('click', (e) => {
+      if (!displayMenu.contains(e.target) && e.target !== displayToggle && !displayToggle.contains(e.target)) {
+        if (hoverTimeout) clearTimeout(hoverTimeout);
+        displayMenu.classList.remove('open');
+        displayToggle.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        if (hoverTimeout) clearTimeout(hoverTimeout);
+        displayMenu.classList.remove('open');
+        displayToggle.setAttribute('aria-expanded', 'false');
+      }
+    });
   }
 
   if ($('font-dec')) $('font-dec').onclick = () => adjustFontScale(-0.1);
   if ($('font-inc')) $('font-inc').onclick = () => adjustFontScale(+0.1);
-  document.querySelectorAll('[data-scale]').forEach(button => {
-    button.onclick = () => setFontScale(button.dataset.scale);
-  });
+  if ($('font-reset')) $('font-reset').onclick = () => setFontScale(DEFAULT_SCALE);
   document.querySelectorAll('#theme-options [data-theme]').forEach(button => {
     button.onclick = () => setTheme(button.dataset.theme);
-  });
-  document.querySelectorAll('#view-mode-tabs [data-view-mode]').forEach(btn => {
-    btn.onclick = () => setLayoutView(btn.dataset.viewMode);
   });
   document.querySelectorAll('#display-layout-options [data-view-mode]').forEach(btn => {
     btn.onclick = () => setLayoutView(btn.dataset.viewMode);

@@ -1,6 +1,6 @@
 /* Extra interaction and readability controls. Loaded after the base theme. */
 .table-search{width:100%;display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--card);border-radius:8px;padding:0 11px;color:var(--muted)}
-.table-search input{width:100%;border:0;outline:0;background:transparent;padding:9px 0;font-size:calc(13.5px * var(--font-scale, 1));font-weight:500;font-family:var(--body-font,Manrope);color:var(--ink);letter-spacing:0.1px}
+.table-search input{width:100%;border:0;outline:0;background:transparent;padding:9px 0;font-size:calc(13.5px * var(--font-scale, 1));font-weight:400;font-family:var(--body-font,Manrope);color:var(--ink);letter-spacing:0.1px}
 .table-search:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent-light) 70%,transparent)}
 .spend-panel,.insight-panel,.transactions-panel{scroll-margin-top:26px}
 .drill-anim{animation:drillPulse .52s cubic-bezier(.2,.8,.25,1)}
@@ -14,13 +14,8 @@
 .donut-center{pointer-events:none}
 .legend-item{transition:transform .18s ease,background .18s ease}
 .legend-item:hover{transform:translateX(5px);background:var(--sage);border-radius:8px}
-/* Table row hover */
-tbody tr{transition:background .12s ease}
-tbody tr:hover{background:var(--sage);cursor:default}
 /* Subtle alternating rows (non-notion) */
 :not([data-theme="notion"]) tbody tr:nth-child(even){background:color-mix(in srgb,var(--paper) 60%,var(--card))}
-:not([data-theme="notion"]) tbody tr:nth-child(even):hover{background:var(--sage)}
-[data-theme="notion"] tbody tr:hover{background:#f7f7f5}
 @keyframes drillPulse{0%{transform:scale(.985);box-shadow:0 0 0 0 #b9df9422}65%{transform:scale(1.012);box-shadow:0 0 0 9px #b9df9400}100%{transform:scale(1)}}
 @keyframes navPulse{50%{transform:translateX(4px)}}
 @media(min-width:640px){.table-search{width:240px}}

@@ -35,6 +35,7 @@ export function categoryTotals(rows, type = 'expense') {
 
 export function closeAllPopovers() {
   document.querySelectorAll('.notion-popover, .export-menu').forEach(p => p.classList.add('hidden'));
+  document.querySelectorAll('.display-menu').forEach(p => p.classList.remove('open'));
   document.querySelectorAll('[aria-expanded]').forEach(btn => btn.setAttribute('aria-expanded', 'false'));
 }
 
@@ -64,25 +65,118 @@ export function syncSortPill() {
   });
 }
 
+export function renderCategoryChips() {
+  const container = $('cat-chips');
+  const clearAllBtn = $('cat-clear-all-btn');
+  const searchInput = $('cat-search-input');
+  if (!container) return;
+
+  container.innerHTML = '';
+  const selected = [...state.selectedCategories];
+
+  selected.forEach(cat => {
+    const col = categoryColor(cat);
+    const chip = document.createElement('span');
+    chip.className = 'notion-chip';
+    chip.style.backgroundColor = col.bg;
+    chip.style.color = col.fg;
+
+    const label = document.createElement('span');
+    label.className = 'notion-chip-text';
+    label.textContent = formatCategory(cat);
+    chip.appendChild(label);
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'notion-chip-remove';
+    removeBtn.setAttribute('aria-label', `Remove ${formatCategory(cat)}`);
+    removeBtn.textContent = '✕';
+    removeBtn.onclick = (e) => {
+      e.stopPropagation();
+      state.selectedCategories.delete(cat);
+      syncFilterPills();
+      populateCategories();
+      onRender();
+      if (searchInput) searchInput.focus();
+    };
+    chip.appendChild(removeBtn);
+
+    container.appendChild(chip);
+  });
+
+  if (clearAllBtn) {
+    clearAllBtn.classList.toggle('hidden', selected.length === 0);
+  }
+  if (searchInput) {
+    searchInput.placeholder = selected.length === 0 ? 'Select one or more options...' : '';
+  }
+}
+
+export function renderAccountChips() {
+  const container = $('acct-chips');
+  const clearAllBtn = $('acct-clear-all-btn');
+  const searchInput = $('acct-search-input');
+  if (!container) return;
+
+  container.innerHTML = '';
+  const selected = [...state.selectedAccounts];
+
+  selected.forEach(acct => {
+    const chip = document.createElement('span');
+    chip.className = 'notion-chip';
+    chip.style.backgroundColor = '#edece9';
+    chip.style.color = '#37352f';
+
+    const label = document.createElement('span');
+    label.className = 'notion-chip-text';
+    label.textContent = acct;
+    chip.appendChild(label);
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'notion-chip-remove';
+    removeBtn.setAttribute('aria-label', `Remove ${acct}`);
+    removeBtn.textContent = '✕';
+    removeBtn.onclick = (e) => {
+      e.stopPropagation();
+      state.selectedAccounts.delete(acct);
+      syncFilterPills();
+      populateAccounts();
+      onRender();
+      if (searchInput) searchInput.focus();
+    };
+    chip.appendChild(removeBtn);
+
+    container.appendChild(chip);
+  });
+
+  if (clearAllBtn) {
+    clearAllBtn.classList.toggle('hidden', selected.length === 0);
+  }
+  if (searchInput) {
+    searchInput.placeholder = selected.length === 0 ? 'Select one or more options...' : '';
+  }
+}
+
 export function syncFilterPills() {
   // Category Pill
   const catLabel = $('pill-cat-label');
   const catDot = $('cat-active-dot');
   const catPill = $('cat-pill');
   if (catLabel && catDot && catPill) {
-    if (state.selectedCategories.size === 0) {
+    const selectedCats = [...state.selectedCategories];
+    if (selectedCats.length === 0) {
       catLabel.textContent = 'Category';
       catDot.classList.add('hidden');
       catPill.classList.remove('has-filter');
       state.category = 'all';
-    } else if (state.selectedCategories.size === 1) {
-      const single = [...state.selectedCategories][0];
-      catLabel.textContent = formatCategory(single);
+    } else if (selectedCats.length <= 2) {
+      catLabel.textContent = `Category: ${selectedCats.map(formatCategory).join(', ')}`;
       catDot.classList.remove('hidden');
       catPill.classList.add('has-filter');
-      state.category = single;
+      state.category = selectedCats.length === 1 ? selectedCats[0] : 'all';
     } else {
-      catLabel.textContent = `${state.selectedCategories.size} categories`;
+      catLabel.textContent = `Category: ${selectedCats.slice(0, 2).map(formatCategory).join(', ')} +${selectedCats.length - 2}`;
       catDot.classList.remove('hidden');
       catPill.classList.add('has-filter');
       state.category = 'all';
@@ -94,24 +188,27 @@ export function syncFilterPills() {
   const acctDot = $('acct-active-dot');
   const acctPill = $('acct-pill');
   if (acctLabel && acctDot && acctPill) {
-    if (state.selectedAccounts.size === 0) {
+    const selectedAccts = [...state.selectedAccounts];
+    if (selectedAccts.length === 0) {
       acctLabel.textContent = 'Account';
       acctDot.classList.add('hidden');
       acctPill.classList.remove('has-filter');
       state.account = 'all';
-    } else if (state.selectedAccounts.size === 1) {
-      const single = [...state.selectedAccounts][0];
-      acctLabel.textContent = single;
+    } else if (selectedAccts.length <= 2) {
+      acctLabel.textContent = `Account: ${selectedAccts.join(', ')}`;
       acctDot.classList.remove('hidden');
       acctPill.classList.add('has-filter');
-      state.account = single;
+      state.account = selectedAccts.length === 1 ? selectedAccts[0] : 'all';
     } else {
-      acctLabel.textContent = `${state.selectedAccounts.size} accounts`;
+      acctLabel.textContent = `Account: ${selectedAccts.slice(0, 2).join(', ')} +${selectedAccts.length - 2}`;
       acctDot.classList.remove('hidden');
       acctPill.classList.add('has-filter');
       state.account = 'all';
     }
   }
+
+  renderCategoryChips();
+  renderAccountChips();
 
   // Reset Button & Clear category drilldown button
   const hasFilter = state.selectedCategories.size > 0 ||
@@ -145,22 +242,25 @@ export function populateCategories() {
       listEl.innerHTML = '<span class="empty-table" style="padding:10px 8px;font-size:12px">No categories found.</span>';
     } else {
       listEl.innerHTML = cats.map(c => {
-        const count = rows.filter(r => r.category === c).length;
         const isChecked = state.selectedCategories.has(c);
         const col = categoryColor(c);
-        return `<label class="notion-option-item" data-value="${escapeHtml(c.toLowerCase())}">
-          <input type="checkbox" class="notion-checkbox" data-cat="${escapeHtml(c)}" ${isChecked ? 'checked' : ''} />
-          <span class="cat-pill" style="background:${col.bg};color:${col.fg}">${escapeHtml(formatCategory(c))}</span>
-          <span class="notion-option-count">${count}</span>
-        </label>`;
+        return `<div class="notion-filter-option ${isChecked ? 'selected' : ''}" data-cat="${escapeHtml(c)}" data-value="${escapeHtml(c.toLowerCase())}">
+          <span class="notion-custom-check ${isChecked ? 'checked' : ''}">${isChecked ? '✓' : ''}</span>
+          <span class="notion-tag" style="background:${col.bg};color:${col.fg}">${escapeHtml(formatCategory(c))}</span>
+        </div>`;
       }).join('');
 
-      listEl.querySelectorAll('input[type="checkbox"]').forEach(chk => {
-        chk.onchange = () => {
-          const catVal = chk.dataset.cat;
-          if (chk.checked) state.selectedCategories.add(catVal);
-          else state.selectedCategories.delete(catVal);
+      listEl.querySelectorAll('.notion-filter-option').forEach(row => {
+        row.onclick = (e) => {
+          e.stopPropagation();
+          const catVal = row.dataset.cat;
+          if (state.selectedCategories.has(catVal)) {
+            state.selectedCategories.delete(catVal);
+          } else {
+            state.selectedCategories.add(catVal);
+          }
           syncFilterPills();
+          populateCategories();
           onRender();
         };
       });
@@ -194,21 +294,24 @@ export function populateAccounts() {
       listEl.innerHTML = '<span class="empty-table" style="padding:10px 8px;font-size:12px">No accounts found.</span>';
     } else {
       listEl.innerHTML = accts.map(a => {
-        const count = rows.filter(r => r.account === a).length;
         const isChecked = state.selectedAccounts.has(a);
-        return `<label class="notion-option-item" data-value="${escapeHtml(a.toLowerCase())}">
-          <input type="checkbox" class="notion-checkbox" data-acct="${escapeHtml(a)}" ${isChecked ? 'checked' : ''} />
-          <span class="acct-pill"><span class="acct-icon">🏛</span> ${escapeHtml(a)}</span>
-          <span class="notion-option-count">${count}</span>
-        </label>`;
+        return `<div class="notion-filter-option ${isChecked ? 'selected' : ''}" data-acct="${escapeHtml(a)}" data-value="${escapeHtml(a.toLowerCase())}">
+          <span class="notion-custom-check ${isChecked ? 'checked' : ''}">${isChecked ? '✓' : ''}</span>
+          <span class="notion-tag" style="background:#edece9;color:#37352f"><span class="acct-icon">🏛</span> ${escapeHtml(a)}</span>
+        </div>`;
       }).join('');
 
-      listEl.querySelectorAll('input[type="checkbox"]').forEach(chk => {
-        chk.onchange = () => {
-          const acctVal = chk.dataset.acct;
-          if (chk.checked) state.selectedAccounts.add(acctVal);
-          else state.selectedAccounts.delete(acctVal);
+      listEl.querySelectorAll('.notion-filter-option').forEach(row => {
+        row.onclick = (e) => {
+          e.stopPropagation();
+          const acctVal = row.dataset.acct;
+          if (state.selectedAccounts.has(acctVal)) {
+            state.selectedAccounts.delete(acctVal);
+          } else {
+            state.selectedAccounts.add(acctVal);
+          }
           syncFilterPills();
+          populateAccounts();
           onRender();
         };
       });
@@ -293,22 +396,49 @@ export function initFilterListeners() {
       if (opening) {
         pop.classList.remove('hidden');
         $('cat-pill').setAttribute('aria-expanded', 'true');
+        renderCategoryChips();
         if ($('cat-search-input')) {
           $('cat-search-input').value = '';
           $('cat-search-input').focus();
-          document.querySelectorAll('#cat-options-list .notion-option-item').forEach(i => i.style.display = 'flex');
+          document.querySelectorAll('#cat-options-list .notion-filter-option').forEach(i => i.style.display = 'flex');
         }
       }
+    };
+  }
+  if ($('cat-chip-box')) {
+    $('cat-chip-box').onclick = (e) => {
+      e.stopPropagation();
+      $('cat-search-input')?.focus();
     };
   }
   if ($('cat-search-input')) {
     $('cat-search-input').onclick = (e) => e.stopPropagation();
     $('cat-search-input').oninput = (e) => {
       const q = e.target.value.toLowerCase().trim();
-      document.querySelectorAll('#cat-options-list .notion-option-item').forEach(item => {
+      document.querySelectorAll('#cat-options-list .notion-filter-option').forEach(item => {
         const val = item.dataset.value || '';
         item.style.display = (!q || val.includes(q)) ? 'flex' : 'none';
       });
+    };
+    $('cat-search-input').onkeydown = (e) => {
+      if (e.key === 'Backspace' && e.target.value === '' && state.selectedCategories.size > 0) {
+        const arr = [...state.selectedCategories];
+        state.selectedCategories.delete(arr[arr.length - 1]);
+        syncFilterPills();
+        populateCategories();
+        onRender();
+      }
+    };
+  }
+  if ($('cat-clear-all-btn')) {
+    $('cat-clear-all-btn').onclick = (e) => {
+      e.stopPropagation();
+      state.selectedCategories.clear();
+      state.category = 'all';
+      syncFilterPills();
+      populateCategories();
+      onRender();
+      $('cat-search-input')?.focus();
     };
   }
   if ($('cat-clear-btn')) {
@@ -316,6 +446,7 @@ export function initFilterListeners() {
       e.stopPropagation();
       state.selectedCategories.clear();
       state.category = 'all';
+      syncFilterPills();
       populateCategories();
       onRender();
     };
@@ -332,22 +463,49 @@ export function initFilterListeners() {
       if (opening) {
         pop.classList.remove('hidden');
         $('acct-pill').setAttribute('aria-expanded', 'true');
+        renderAccountChips();
         if ($('acct-search-input')) {
           $('acct-search-input').value = '';
           $('acct-search-input').focus();
-          document.querySelectorAll('#acct-options-list .notion-option-item').forEach(i => i.style.display = 'flex');
+          document.querySelectorAll('#acct-options-list .notion-filter-option').forEach(i => i.style.display = 'flex');
         }
       }
+    };
+  }
+  if ($('acct-chip-box')) {
+    $('acct-chip-box').onclick = (e) => {
+      e.stopPropagation();
+      $('acct-search-input')?.focus();
     };
   }
   if ($('acct-search-input')) {
     $('acct-search-input').onclick = (e) => e.stopPropagation();
     $('acct-search-input').oninput = (e) => {
       const q = e.target.value.toLowerCase().trim();
-      document.querySelectorAll('#acct-options-list .notion-option-item').forEach(item => {
+      document.querySelectorAll('#acct-options-list .notion-filter-option').forEach(item => {
         const val = item.dataset.value || '';
         item.style.display = (!q || val.includes(q)) ? 'flex' : 'none';
       });
+    };
+    $('acct-search-input').onkeydown = (e) => {
+      if (e.key === 'Backspace' && e.target.value === '' && state.selectedAccounts.size > 0) {
+        const arr = [...state.selectedAccounts];
+        state.selectedAccounts.delete(arr[arr.length - 1]);
+        syncFilterPills();
+        populateAccounts();
+        onRender();
+      }
+    };
+  }
+  if ($('acct-clear-all-btn')) {
+    $('acct-clear-all-btn').onclick = (e) => {
+      e.stopPropagation();
+      state.selectedAccounts.clear();
+      state.account = 'all';
+      syncFilterPills();
+      populateAccounts();
+      onRender();
+      $('acct-search-input')?.focus();
     };
   }
   if ($('acct-clear-btn')) {
@@ -355,37 +513,9 @@ export function initFilterListeners() {
       e.stopPropagation();
       state.selectedAccounts.clear();
       state.account = 'all';
+      syncFilterPills();
       populateAccounts();
       onRender();
-    };
-  }
-
-  // + Filter Ghost Pill Toggle
-  if ($('add-filter-btn')) {
-    $('add-filter-btn').onclick = (e) => {
-      e.stopPropagation();
-      const pop = $('add-filter-popover');
-      if (!pop) return;
-      const opening = pop.classList.contains('hidden');
-      closeAllPopovers();
-      if (opening) {
-        pop.classList.remove('hidden');
-        $('add-filter-btn').setAttribute('aria-expanded', 'true');
-      }
-    };
-  }
-  if ($('add-filter-cat')) {
-    $('add-filter-cat').onclick = (e) => {
-      e.stopPropagation();
-      closeAllPopovers();
-      $('cat-pill')?.click();
-    };
-  }
-  if ($('add-filter-acct')) {
-    $('add-filter-acct').onclick = (e) => {
-      e.stopPropagation();
-      closeAllPopovers();
-      $('acct-pill')?.click();
     };
   }
 
