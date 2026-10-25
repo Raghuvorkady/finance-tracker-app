@@ -20,7 +20,7 @@ Welcome to the **Ledgerly Finance Analyst** codebase. This guide provides AI age
 
 | Layer | Technology | Details |
 |---|---|---|
-| **Language** | Vanilla JavaScript (ES2022+ ESM) | Native ES modules in `js/`, bundled IIFE in root `app.js` |
+| **Language** | Vanilla JavaScript (ES2022+ ESM) | Native ES modules in `js/`, optional bundled IIFE in `dist/app.bundle.js` |
 | **Markup & Styling** | HTML5 & CSS3 | CSS Custom Properties, CSS Grid, Flexbox, responsive design |
 | **Spreadsheet Engine** | [SheetJS (xlsx)](https://sheetjs.com/) | Loaded via CDN in `index.html` (`xlsx.full.min.js`) |
 | **Typography** | Google Fonts | `Manrope`, `Inter`, `DM Mono` |
@@ -41,6 +41,7 @@ finance-tracker/
 ├── enhancements.css        # Micro-animations, SVG hover states, and typography overrides
 ├── server.py               # Zero-dependency Python 3 development server with LAN discovery
 ├── build.js                # Optional bundler script (outputs to dist/app.bundle.js)
+├── dist/                   # Optional standalone bundle output (gitignored)
 ├── js/                     # Modular frontend source code (ES Modules - single source of truth)
 │   ├── app.js              # Orchestrator, render coordinator, and top-level event listeners
 │   ├── categories.js       # Category styling, Notion emoji mappings, color palettes
@@ -145,12 +146,15 @@ node tests/test_modules.mjs
 ```html
 <script type="module" src="js/app.js"></script>
 ```
-All frontend application logic lives in `js/*.js`.
-1. **Always edit source files within `js/<module>.js`**.
-2. **Always run tests to verify integrity**:
-   ```bash
-   node tests/test_modules.mjs
-   ```
+All frontend application logic lives exclusively in `js/*.js`.
+- **Root `app.js` was removed:** The legacy monolithic root `app.js` file has been completely removed in favor of the modular ES architecture. Do not re-create or commit a root `app.js` (it is gitignored).
+- **Optional bundle:** Running `node build.js` outputs to `dist/app.bundle.js` (gitignored) for standalone distribution, but is not needed for development.
+- **Workflow:**
+  1. **Always edit source files within `js/<module>.js`**.
+  2. **Always run tests to verify integrity**:
+     ```bash
+     node tests/test_modules.mjs
+     ```
 
 ### State Modification Workflow
 When adding or altering features:
