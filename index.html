@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ledgerly — Finance analyst</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="enhancements.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar hidden" id="app-topbar">
+        <div class="topbar-left">
+          <div class="brand"><span class="brand-mark">L</span><span>ledgerly</span></div>
+          <nav class="desktop-nav" aria-label="Primary navigation">
+            <button class="nav-item active" data-nav="overview">Overview</button>
+            <button class="nav-item" data-nav="spending">Spending</button>
+            <button class="nav-item" data-nav="transactions">Transactions</button>
+          </nav>
+        </div>
+        <div class="topbar-actions">
+          <div class="view-mode-tabs" id="view-mode-tabs" role="group" aria-label="Layout view selector">
+            <button class="view-mode-btn active" data-view-mode="a" title="Stacked layout"><span class="view-mode-icon">☰</span> <span class="view-mode-label">Stacked</span></button>
+            <button class="view-mode-btn" data-view-mode="b" title="Split layout"><span class="view-mode-icon">◫</span> <span class="view-mode-label">Split</span></button>
+            <button class="view-mode-btn" data-view-mode="c" title="Tabbed layout"><span class="view-mode-icon">⊞</span> <span class="view-mode-label">Tabbed</span></button>
+          </div>
+          <button class="topbar-btn topbar-btn-secondary" id="display-toggle" aria-expanded="false" aria-controls="display-settings" title="Text size & appearance">
+            <span class="topbar-icon">Aa</span>
+            <span class="topbar-btn-text">Display</span>
+          </button>
+          <label class="topbar-btn topbar-btn-primary" for="file-input" title="Import Money Manager Excel file">
+            <svg class="topbar-svg-icon" width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 2v12M2 8h12"/></svg>
+            <span class="topbar-btn-text">Import</span>
+          </label>
+          <input id="file-input" type="file" accept=".xlsx,.xls" hidden />
+          <div class="export-dropdown-wrap" id="export-dropdown-wrap">
+            <button class="topbar-btn topbar-btn-secondary export-topbar-btn" id="export-toggle-btn" aria-haspopup="true" aria-expanded="false" title="Export transactions to CSV">
+              <svg class="topbar-svg-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              <span class="topbar-btn-text">Export CSV</span>
+              <span class="export-chevron">▾</span>
+            </button>
+            <div class="export-menu hidden" id="export-menu" role="menu">
+              <button class="export-menu-item" id="export-filtered-btn" role="menuitem">
+                <span class="export-menu-icon">⚡</span>
+                <div class="export-menu-text">
+                  <span class="export-menu-title">Filtered data</span>
+                  <span class="export-menu-desc" id="export-filtered-count">Current view</span>
+                </div>
+              </button>
+              <button class="export-menu-item" id="export-all-btn" role="menuitem">
+                <span class="export-menu-icon">📦</span>
+                <div class="export-menu-text">
+                  <span class="export-menu-title">All data</span>
+                  <span class="export-menu-desc" id="export-all-count">Complete workbook</span>
+                </div>
+              </button>
+            </div>
+          </div>
+          <button class="topbar-btn topbar-btn-ghost" id="clear-data" title="Clear workspace">Clear</button>
+        </div>
+      </header>
+
+      <section class="display-settings hidden" id="display-settings" aria-label="Display and font settings">
+        <div class="display-settings-row">
+          <div class="display-settings-label">
+            <strong>Text size</strong>
+            <p>Increase or decrease readability across the app</p>
+          </div>
+          <div class="font-controls-group">
+            <div class="font-stepper" role="group" aria-label="Adjust font size">
+              <button id="font-dec" class="stepper-btn" title="Decrease font size" aria-label="Decrease font size">A−</button>
+              <span id="font-scale-readout" class="scale-readout">100%</span>
+              <button id="font-inc" class="stepper-btn" title="Increase font size" aria-label="Increase font size">A+</button>
+            </div>
+            <div class="size-options font-presets" role="group" aria-label="Font size presets">
+              <button data-scale="0.88">Small</button>
+              <button data-scale="1" class="selected">Default</button>
+              <button data-scale="1.15">Large</button>
+              <button data-scale="1.3">Extra large</button>
+            </div>
+          </div>
+        </div>
+        <div class="display-settings-row theme-setting-row">
+          <div class="display-settings-label">
+            <strong>Theme</strong>
+            <p>Choose your visual style</p>
+          </div>
+          <div class="size-options" role="group" aria-label="Theme" id="theme-options">
+            <button data-theme="ledgerly">Ledgerly</button>
+            <button data-theme="mobile">Mobile</button>
+            <button data-theme="notion">Notion</button>
+          </div>
+        </div>
+        <div class="display-settings-row layout-setting-row">
+          <div class="display-settings-label">
+            <strong>Layout view</strong>
+            <p>Switch between dashboard layouts</p>
+          </div>
+          <div class="size-options" role="group" aria-label="Layout view" id="display-layout-options">
+            <button data-view-mode="a" class="selected">Stacked</button>
+            <button data-view-mode="b">Split</button>
+            <button data-view-mode="c">Tabbed</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="content">
+        <div class="greeting-banner hidden" id="greeting-banner">
+          <h1>Personal Finance Tracker</h1>
+        </div>
+
+        <div id="empty-state" class="empty-state">
+          <div class="empty-brand">
+            <span class="brand-mark">L</span>
+            <span class="brand-name">ledgerly</span>
+          </div>
+          <div class="empty-icon">⌁</div>
+          <h2>Make every rupee visible</h2>
+          <p>Upload your Money Manager Excel export to explore spending patterns, drill into transactions, and find your next saving opportunity.</p>
+          <label class="primary-button cta-button" for="file-input">
+            <svg class="cta-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <span>Import Excel file (.xlsx)</span>
+            <span class="cta-arrow">→</span>
+          </label>
+          <small>Recognizes Period, Category, Income/Expense and Amount columns.</small>
+        </div>
+
+        <div id="dashboard" class="dashboard hidden">
+          <section class="control-row">
+            <div class="period-control">
+              <button class="chevron" id="prev-period" aria-label="Previous period">‹</button>
+              <div><span id="period-mode-label">MONTHLY</span><button id="period-label" class="period-label">—</button></div>
+              <button class="chevron" id="next-period" aria-label="Next period">›</button>
+            </div>
+            <div class="segmented" id="period-tabs" role="tablist">
+              <button data-period="weekly">Week</button><button data-period="monthly" class="selected">Month</button><button data-period="quarterly">Quarter</button><button data-period="yearly">Year</button><button data-period="financial">FY</button><button data-period="custom">Custom</button><button data-period="all">All time</button>
+            </div>
+            <div class="custom-dates hidden" id="custom-dates"><input type="date" id="custom-start" /><span>to</span><input type="date" id="custom-end" /></div>
+          </section>
+
+          <!-- Hidden sync elements for legacy filter handlers -->
+          <div style="display:none">
+            <select id="type-filter" aria-label="Filter by type"><option value="all">All types</option><option value="expense">Expenses</option><option value="income">Income</option><option value="transfer">Transfers</option></select>
+            <select id="category-filter" aria-label="Filter by category"><option value="all">All categories</option></select>
+            <select id="account-filter" aria-label="Filter by account"><option value="all">All accounts</option></select>
+          </div>
+
+          <section class="metric-grid">
+            <article class="metric-card accent-red"><div class="metric-top"><span id="spent-title">Total spent</span><span class="metric-icon">↓</span></div><strong id="spent-value">₹0</strong><p id="spent-compare">No prior period to compare</p></article>
+            <article class="metric-card accent-green"><div class="metric-top"><span>Money in</span><span class="metric-icon">↑</span></div><strong id="income-value">₹0</strong><p id="income-count">0 income transactions</p></article>
+            <article class="metric-card accent-violet"><div class="metric-top"><span>Net flow</span><span class="metric-icon">≋</span></div><strong id="net-value">₹0</strong><p id="net-copy">Income minus expenses</p></article>
+            <article class="metric-card accent-amber"><div class="metric-top"><span>Daily average</span><span class="metric-icon">◌</span></div><strong id="daily-value">₹0</strong><p id="records-copy">0 recorded expenses</p></article>
+          </section>
+
+          <!-- Option C Tab Bar (Active only when Option C is selected) -->
+          <div class="option-c-subtabs" id="option-c-subtabs" role="tablist">
+            <button class="c-tab-btn active" data-c-tab="transactions"><span class="c-tab-icon">⊞</span> Transactions <span id="c-tab-tx-count" class="count-badge">0</span></button>
+            <button class="c-tab-btn" data-c-tab="breakdown"><span class="c-tab-icon">◐</span> Spending Breakdown</button>
+          </div>
+
+          <div class="dashboard-views-container" id="dashboard-views-container">
+            <section class="visual-grid single-panel" id="spending-grid">
+              <article class="panel spend-panel" id="spending-section">
+                <div class="panel-heading"><h2 id="breakdown-title">Breakdown</h2><button class="reset-focus-btn hidden" id="clear-category" aria-label="Reset category drilldown"><span class="reset-icon">✕</span> Reset focus</button></div>
+                <div class="chart-layout"><div class="donut-wrap"><div id="donut" class="donut"><div class="donut-center"><strong id="donut-total">₹0</strong><span id="donut-caption">spent</span></div></div></div><div id="legend" class="legend"></div></div>
+              </article>
+            </section>
+
+            <section class="panel transactions-panel" id="transactions-section">
+            <div class="panel-heading">
+              <div class="tx-header-top">
+                <h2 id="transactions-heading"><span class="view-tab-icon">⊞</span> Transactions <span id="transaction-count" class="count-badge">0</span></h2>
+              </div>
+              <div class="notion-tx-controls">
+                <!-- Line 1: Type Tabs (Left) + Search (Right) -->
+                <div class="notion-controls-row notion-controls-top">
+                  <div class="tx-type-pills" id="tx-type-pills" role="group" aria-label="Filter transactions by type">
+                    <button class="tx-pill active" data-tx-type="all">All</button>
+                    <button class="tx-pill" data-tx-type="expense"><span class="tx-legend-dot dot-expense"></span> Expenses</button>
+                    <button class="tx-pill" data-tx-type="income"><span class="tx-legend-dot dot-income"></span> Income</button>
+                    <button class="tx-pill" data-tx-type="transfer"><span class="tx-legend-dot dot-transfer"></span> Transfers</button>
+                  </div>
+                  <div class="notion-search-wrap">
+                    <span class="notion-search-icon">🔍</span>
+                    <input id="search" type="search" placeholder="Search..." autocomplete="off" spellcheck="false" />
+                  </div>
+                </div>
+
+                <!-- Divider -->
+                <div class="notion-controls-divider"></div>
+
+                <!-- Line 2: Filter & Sort Pills (Left) + Reset (Right) -->
+                <div class="notion-controls-row notion-controls-bottom">
+                  <div class="notion-pills-left">
+                    <!-- Sort Pill -->
+                    <div class="notion-pill-wrap" id="sort-pill-wrap">
+                      <button class="notion-pill sort-pill active-sort" id="sort-pill" aria-label="Sort transactions" aria-haspopup="true" aria-expanded="false">
+                        <span class="pill-sort-icon" id="pill-sort-icon">↑</span>
+                        <span class="pill-label" id="pill-sort-label">Date</span>
+                        <span class="pill-chevron">∨</span>
+                      </button>
+                      <div class="notion-popover hidden" id="sort-popover" role="menu">
+                        <div class="notion-popover-header">Sort by</div>
+                        <div class="notion-popover-list">
+                          <button class="notion-menu-item selected" data-sort="date-desc"><span class="sort-icon">↑</span> Date (Newest first)</button>
+                          <button class="notion-menu-item" data-sort="date-asc"><span class="sort-icon">↓</span> Date (Oldest first)</button>
+                          <button class="notion-menu-item" data-sort="amount-desc"><span class="sort-icon">↓</span> Amount (Highest first)</button>
+                          <button class="notion-menu-item" data-sort="amount-asc"><span class="sort-icon">↑</span> Amount (Lowest first)</button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Category Filter Pill -->
+                    <div class="notion-pill-wrap" id="cat-pill-wrap">
+                      <button class="notion-pill" id="cat-pill" aria-label="Filter by category" aria-haspopup="true" aria-expanded="false">
+                        <span class="pill-icon">📁</span>
+                        <span class="pill-label" id="pill-cat-label">Category</span>
+                        <span class="pill-dot hidden" id="cat-active-dot"></span>
+                        <span class="pill-chevron">∨</span>
+                      </button>
+                      <div class="notion-popover notion-filter-popover hidden" id="cat-popover" role="dialog" aria-label="Filter by category">
+                        <div class="notion-popover-header">
+                          <span>Category is</span>
+                          <button class="popover-action-btn" id="cat-clear-btn" title="Clear category filter">Clear</button>
+                        </div>
+                        <div class="notion-popover-search">
+                          <input type="text" id="cat-search-input" placeholder="Select one or more options..." autocomplete="off" />
+                        </div>
+                        <div class="notion-popover-options" id="cat-options-list"></div>
+                      </div>
+                    </div>
+
+                    <!-- Account Filter Pill -->
+                    <div class="notion-pill-wrap" id="acct-pill-wrap">
+                      <button class="notion-pill" id="acct-pill" aria-label="Filter by account" aria-haspopup="true" aria-expanded="false">
+                        <span class="pill-icon">🏛</span>
+                        <span class="pill-label" id="pill-acct-label">Account</span>
+                        <span class="pill-dot hidden" id="acct-active-dot"></span>
+                        <span class="pill-chevron">∨</span>
+                      </button>
+                      <div class="notion-popover notion-filter-popover hidden" id="acct-popover" role="dialog" aria-label="Filter by account">
+                        <div class="notion-popover-header">
+                          <span>Account is</span>
+                          <button class="popover-action-btn" id="acct-clear-btn" title="Clear account filter">Clear</button>
+                        </div>
+                        <div class="notion-popover-search">
+                          <input type="text" id="acct-search-input" placeholder="Select one or more options..." autocomplete="off" />
+                        </div>
+                        <div class="notion-popover-options" id="acct-options-list"></div>
+                      </div>
+                    </div>
+
+                    <!-- + Filter Ghost Pill -->
+                    <div class="notion-pill-wrap" id="add-filter-wrap">
+                      <button class="notion-ghost-pill" id="add-filter-btn" title="Add filter" aria-haspopup="true" aria-expanded="false">
+                        <span class="ghost-plus">+</span> Filter
+                      </button>
+                      <div class="notion-popover hidden" id="add-filter-popover" role="menu">
+                        <div class="notion-popover-header">Add filter for</div>
+                        <div class="notion-popover-list">
+                          <button class="notion-menu-item" id="add-filter-cat"><span class="pill-icon">📁</span> Category</button>
+                          <button class="notion-menu-item" id="add-filter-acct"><span class="pill-icon">🏛</span> Account</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Reset Button (Far Right) -->
+                  <div class="notion-pills-right">
+                    <button class="notion-reset-filter-btn hidden" id="notion-reset-filters" title="Reset all filters and sort">
+                      Reset
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Desktop Table View -->
+            <div class="table-wrap desktop-only-view">
+              <table>
+                <thead id="transaction-head">
+                  <tr>
+                    <th>Date</th>
+                    <th>Category</th>
+                    <th>Expense / Note</th>
+                    <th>Account</th>
+                    <th class="align-right">Amount</th>
+                  </tr>
+                </thead>
+                <tbody id="transaction-body"></tbody>
+              </table>
+            </div>
+            <!-- Mobile List View -->
+            <div class="mobile-tx-list mobile-only-view" id="mobile-tx-list"></div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+      <nav class="bottom-nav hidden" id="bottom-nav" aria-label="Primary navigation">
+        <button class="bottom-nav-item active" data-nav="overview"><span>▦</span>Overview</button>
+        <button class="bottom-nav-item" data-nav="spending"><span>↗</span>Spending</button>
+        <button class="bottom-nav-item" data-nav="transactions"><span>◫</span>Txns</button>
+      </nav>
+    </main>
+    <div id="toast" class="toast" role="status"></div>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
