@@ -43,7 +43,16 @@ export function render() {
   // Header period labels
   if ($('period-label')) $('period-label').textContent = range.label;
   if ($('period-mode-label')) {
-    $('period-mode-label').textContent = state.period === 'financial' ? 'FINANCIAL YEAR' : state.period.toUpperCase();
+    const periodModeNames = {
+      weekly: 'Weekly',
+      monthly: 'Monthly',
+      quarterly: 'Quarterly',
+      yearly: 'Yearly',
+      financial: 'Financial Year',
+      custom: 'Custom',
+      all: 'All Time'
+    };
+    $('period-mode-label').textContent = periodModeNames[state.period] || state.period;
   }
 
   // Top metric cards

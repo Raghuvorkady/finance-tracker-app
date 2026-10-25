@@ -1570,10 +1570,24 @@ select{
 [data-theme="notion"] .notion-pill{
   background:transparent;
   color:#787774;
+  border-radius:4px;
+  font-family:'Inter',ui-sans-serif,sans-serif;
+  font-size:calc(13px * var(--font-scale, 1));
 }
 [data-theme="notion"] .notion-pill:hover{
   background:rgba(55, 53, 47, 0.06);
   color:#37352f;
+}
+[data-theme="notion"] .notion-pill .pill-chevron{
+  opacity:0.55;
+  color:#9b9a97;
+}
+[data-theme="notion"] .notion-pill.active-sort,
+[data-theme="notion"] .notion-pill.has-filter{
+  border-radius:4px;
+}
+[data-theme="notion"] .notion-search-wrap input#search{
+  font-family:'Inter',ui-sans-serif,sans-serif;
 }
 .notion-pill.active-sort{
   background:rgba(35, 131, 226, 0.09) !important;
@@ -2854,6 +2868,9 @@ td.account-cell{color:var(--muted);font-size:calc(12px * var(--font-scale, 1))}
   background:#ffffff;
   border-bottom:1px solid #edece9;
 }
+[data-theme="notion"] .topbar-btn{
+  font-family:'Inter',ui-sans-serif,sans-serif;
+}
 [data-theme="notion"] .brand{
   font-family:'Inter',ui-sans-serif,sans-serif;
   font-weight:600;
@@ -2870,6 +2887,19 @@ td.account-cell{color:var(--muted);font-size:calc(12px * var(--font-scale, 1))}
   background:rgba(55,53,47,0.08);
   color:#37352f;
   font-weight:500;
+}
+[data-theme="notion"] .period-control span{
+  text-transform:none;
+  letter-spacing:0;
+  font-weight:400;
+  font-size:calc(11px * var(--font-scale, 1));
+  font-family:'Inter',ui-sans-serif,sans-serif;
+  color:#9b9a97;
+}
+[data-theme="notion"] .period-label{
+  font-family:'Inter',ui-sans-serif,sans-serif;
+  font-weight:600;
+  letter-spacing:-0.3px;
 }
 [data-theme="notion"] .greeting-banner h1{
   font-family:'Inter',ui-sans-serif,sans-serif;
@@ -2894,8 +2924,8 @@ td.account-cell{color:var(--muted);font-size:calc(12px * var(--font-scale, 1))}
 [data-theme="notion"] .panel h2{
   font-family:'Inter',ui-sans-serif,sans-serif;
   font-weight:600;
-  font-size:18px;
-  letter-spacing:-0.3px;
+  font-size:16px;
+  letter-spacing:0;
   color:#37352f;
 }
 [data-theme="notion"] .metric-card{
@@ -2957,7 +2987,7 @@ td.account-cell{color:var(--muted);font-size:calc(12px * var(--font-scale, 1))}
   font-family:'Inter',ui-sans-serif,sans-serif;
   letter-spacing:-0.5px;
   font-weight:600;
-  color:#37352f!important;
+  color:#37352f;
 }
 [data-theme="notion"] .metric-card p{
   font-family:'Inter',ui-sans-serif,sans-serif;
@@ -2975,12 +3005,41 @@ td.account-cell{color:var(--muted);font-size:calc(12px * var(--font-scale, 1))}
   font-size:12px;
   color:#787774;
   font-weight:400;
+  padding:6px 12px;
+  min-height:auto;
 }
 [data-theme="notion"] .segmented button.selected{
   background:rgba(55,53,47,0.08);
   color:#37352f;
   font-weight:500;
   box-shadow:none;
+}
+[data-theme="notion"] .legend-item{
+  font-family:'Inter',ui-sans-serif,sans-serif;
+  font-size:calc(13px * var(--font-scale, 1));
+  font-weight:400;
+}
+[data-theme="notion"] .legend-label{
+  font-family:'Inter',ui-sans-serif,sans-serif;
+  font-size:calc(13px * var(--font-scale, 1));
+  font-weight:400;
+  color:#37352f;
+}
+[data-theme="notion"] .legend-pct{
+  font-family:'Inter',ui-sans-serif,sans-serif;
+  font-size:calc(12px * var(--font-scale, 1));
+  color:#787774;
+  font-weight:400;
+}
+[data-theme="notion"] .legend-amt{
+  font-family:'Inter',ui-sans-serif,sans-serif;
+  font-size:calc(12.5px * var(--font-scale, 1));
+  color:#787774;
+  font-weight:400;
+}
+[data-theme="notion"] .donut-cat-pct{
+  font-size:calc(12px * var(--font-scale, 1));
+  color:#787774;
 }
 [data-theme="notion"] .tx-type-pills{
   background:transparent;
@@ -2991,7 +3050,7 @@ td.account-cell{color:var(--muted);font-size:calc(12px * var(--font-scale, 1))}
 [data-theme="notion"] .tx-pill{
   border-radius:4px;
   font-family:'Inter',ui-sans-serif,sans-serif;
-  font-size:12px;
+  font-size:calc(13px * var(--font-scale, 1));
   color:#787774;
   font-weight:400;
   min-height:26px;
@@ -3026,9 +3085,9 @@ td.account-cell{color:var(--muted);font-size:calc(12px * var(--font-scale, 1))}
   align-items:center;
   gap:8px;
   font-family:'Inter',ui-sans-serif,sans-serif;
-  font-size:18px;
+  font-size:16px;
   font-weight:600;
-  letter-spacing:-0.3px;
+  letter-spacing:0;
   color:#37352f;
   background:transparent;
   padding:0;
