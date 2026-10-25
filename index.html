@@ -23,12 +23,12 @@
         </div>
         <div class="topbar-actions">
           <div class="display-dropdown-wrap" id="display-dropdown-wrap">
-            <button class="topbar-btn topbar-btn-secondary" id="display-toggle" aria-expanded="false" aria-controls="display-settings" title="Display settings">
+            <button class="topbar-btn topbar-btn-secondary" id="display-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="display-settings" title="Display settings">
               <span class="topbar-icon">Aa</span>
               <span class="topbar-btn-text">Display</span>
               <span class="display-chevron">▾</span>
             </button>
-            <div class="display-menu" id="display-settings" role="menu" aria-label="Display settings">
+            <div class="display-menu hidden" id="display-settings" role="menu" aria-label="Display settings">
               <div class="display-menu-row font-row">
                 <div class="font-stepper" role="group" aria-label="Adjust font size">
                   <button id="font-dec" class="stepper-btn" title="Decrease font size" aria-label="Decrease font size">A−</button>
@@ -85,7 +85,6 @@
               </button>
             </div>
           </div>
-          <button class="topbar-btn topbar-btn-ghost" id="clear-data" title="Clear workspace">Clear</button>
         </div>
       </header>
 

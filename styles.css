@@ -231,13 +231,12 @@ body{
   margin-left:2px;
   transition:transform 0.15s ease;
 }
-.display-dropdown-wrap:hover .display-chevron,
 #display-toggle[aria-expanded="true"] .display-chevron{
   transform:rotate(180deg);
 }
 .display-menu{
   position:absolute;
-  top:calc(100% + 4px);
+  top:calc(100% + 5px);
   right:0;
   z-index:1200;
   background:var(--card, #ffffff);
@@ -246,28 +245,12 @@ body{
   box-shadow:0 8px 24px rgba(15, 15, 15, 0.12), 0 2px 6px rgba(15, 15, 15, 0.05);
   padding:8px;
   min-width:220px;
-  display:none;
+  display:flex;
   flex-direction:column;
   gap:6px;
 }
-/* Invisible hover bridge to prevent menu from disappearing while cursor crosses the gap */
-.display-menu::before{
-  content:'';
-  position:absolute;
-  top:-12px;
-  left:-10px;
-  right:-10px;
-  height:16px;
-  background:transparent;
-  z-index:1;
-}
-.display-menu.open{
-  display:flex;
-}
-@media (hover: hover) {
-  .display-dropdown-wrap:hover .display-menu{
-    display:flex;
-  }
+.display-menu.hidden{
+  display:none;
 }
 .display-menu-row{
   display:flex;

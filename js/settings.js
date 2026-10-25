@@ -4,6 +4,7 @@
 
 import { $, getStorage, setStorage } from './utils.js';
 import { state, DEFAULT_SCALE } from './state.js';
+import { closeAllPopovers } from './filters.js';
 
 let onSettingsChange = () => {};
 export function registerSettingsCallback(fn) {
@@ -73,65 +74,21 @@ export function initSettings() {
 export function initSettingsListeners() {
   const displayToggle = $('display-toggle');
   const displayMenu = $('display-settings');
-  const displayWrap = $('display-dropdown-wrap');
 
   if (displayToggle && displayMenu) {
-    let hoverTimeout = null;
-
-    const showMenu = () => {
-      if (hoverTimeout) {
-        clearTimeout(hoverTimeout);
-        hoverTimeout = null;
-      }
-      document.querySelectorAll('.notion-popover, .export-menu').forEach(p => p.classList.add('hidden'));
-      displayMenu.classList.add('open');
-      displayToggle.setAttribute('aria-expanded', 'true');
-    };
-
-    const hideMenuWithDelay = () => {
-      if (hoverTimeout) clearTimeout(hoverTimeout);
-      hoverTimeout = setTimeout(() => {
-        displayMenu.classList.remove('open');
-        displayToggle.setAttribute('aria-expanded', 'false');
-      }, 300);
-    };
-
-    if (displayWrap) {
-      displayWrap.addEventListener('mouseenter', showMenu);
-      displayWrap.addEventListener('mouseleave', hideMenuWithDelay);
-    }
-
     displayToggle.onclick = (e) => {
       e.stopPropagation();
-      if (hoverTimeout) {
-        clearTimeout(hoverTimeout);
-        hoverTimeout = null;
+      const opening = displayMenu.classList.contains('hidden');
+      closeAllPopovers();
+      if (opening) {
+        displayMenu.classList.remove('hidden');
+        displayToggle.setAttribute('aria-expanded', 'true');
       }
-      const opening = !displayMenu.classList.contains('open');
-      document.querySelectorAll('.notion-popover, .export-menu').forEach(p => p.classList.add('hidden'));
-      displayMenu.classList.toggle('open', opening);
-      displayToggle.setAttribute('aria-expanded', String(opening));
     };
 
     displayMenu.onclick = (e) => {
       e.stopPropagation();
     };
-
-    document.addEventListener('click', (e) => {
-      if (!displayMenu.contains(e.target) && e.target !== displayToggle && !displayToggle.contains(e.target)) {
-        if (hoverTimeout) clearTimeout(hoverTimeout);
-        displayMenu.classList.remove('open');
-        displayToggle.setAttribute('aria-expanded', 'false');
-      }
-    });
-
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        if (hoverTimeout) clearTimeout(hoverTimeout);
-        displayMenu.classList.remove('open');
-        displayToggle.setAttribute('aria-expanded', 'false');
-      }
-    });
   }
 
   if ($('font-dec')) $('font-dec').onclick = () => adjustFontScale(-0.1);

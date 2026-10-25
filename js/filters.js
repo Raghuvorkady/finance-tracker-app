@@ -34,8 +34,10 @@ export function categoryTotals(rows, type = 'expense') {
 }
 
 export function closeAllPopovers() {
-  document.querySelectorAll('.notion-popover, .export-menu').forEach(p => p.classList.add('hidden'));
-  document.querySelectorAll('.display-menu').forEach(p => p.classList.remove('open'));
+  document.querySelectorAll('.notion-popover, .export-menu, .display-menu').forEach(p => {
+    p.classList.add('hidden');
+    p.classList.remove('open');
+  });
   document.querySelectorAll('[aria-expanded]').forEach(btn => btn.setAttribute('aria-expanded', 'false'));
 }
 
@@ -563,7 +565,7 @@ export function initFilterListeners() {
 
   // Global click & Escape to dismiss popovers
   document.addEventListener('click', (e) => {
-    if (!e.target.closest('.notion-pill-wrap') && !e.target.closest('.export-dropdown-wrap')) {
+    if (!e.target.closest('.notion-pill-wrap') && !e.target.closest('.export-dropdown-wrap') && !e.target.closest('.display-dropdown-wrap')) {
       closeAllPopovers();
     }
   });
