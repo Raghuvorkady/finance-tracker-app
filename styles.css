@@ -754,9 +754,12 @@ body{
     gap:20px;
     align-items:start;
   }
+  [data-layout-view="b"] #spending-grid{
+    align-self:stretch;
+  }
   [data-layout-view="b"] #spending-section{
     position:sticky;
-    top:60px;
+    top:74px;
   }
   [data-layout-view="b"] #spending-section .chart-layout{
     grid-template-columns:1fr;
@@ -765,6 +768,52 @@ body{
   [data-layout-view="b"] #spending-section .donut-wrap{
     margin-bottom:8px;
   }
+  [data-layout-view="b"] #transactions-section{
+    min-width:0;
+    max-width:100%;
+  }
+  [data-layout-view="b"] .notion-controls-bottom{
+    flex-wrap:wrap;
+    gap:10px;
+  }
+}
+
+/* ── Split View Mode (Option B): Scrollable Table & Prevent Text Wrapping ── */
+[data-layout-view="b"] #transactions-section{
+  min-width:0;
+  max-width:100%;
+}
+[data-layout-view="b"] .table-wrap{
+  overflow-x:auto !important;
+  max-width:100%;
+  -webkit-overflow-scrolling:touch;
+}
+[data-layout-view="b"] .table-wrap table{
+  width:max-content !important;
+  min-width:100%;
+}
+[data-layout-view="b"] .table-wrap th,
+[data-layout-view="b"] .table-wrap td{
+  white-space:nowrap !important;
+}
+[data-layout-view="b"] .table-wrap .th-name,
+[data-layout-view="b"] .table-wrap .th-content-wrap,
+[data-layout-view="b"] .table-wrap .notion-item-text,
+[data-layout-view="b"] .table-wrap .notion-item-title,
+[data-layout-view="b"] .table-wrap .notion-title-cell,
+[data-layout-view="b"] .table-wrap .note-cell,
+[data-layout-view="b"] .table-wrap .note-text,
+[data-layout-view="b"] .table-wrap .note-with-desc,
+[data-layout-view="b"] .table-wrap .category-cell,
+[data-layout-view="b"] .table-wrap .cat-pill,
+[data-layout-view="b"] .table-wrap .account-cell,
+[data-layout-view="b"] .table-wrap .date-cell,
+[data-layout-view="b"] .table-wrap .amount,
+[data-layout-view="b"] .table-wrap .type-tag{
+  white-space:nowrap !important;
+}
+[data-layout-view="b"] .table-wrap .tx-desc-tooltip{
+  white-space:normal !important;
 }
 
 .control-row{
@@ -2218,6 +2267,22 @@ select{
   overflow-x:auto;
   margin-top:20px;
   -webkit-overflow-scrolling:touch;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(55, 53, 47, 0.2) transparent;
+}
+.table-wrap::-webkit-scrollbar{
+  height:6px;
+  width:6px;
+}
+.table-wrap::-webkit-scrollbar-track{
+  background:transparent;
+}
+.table-wrap::-webkit-scrollbar-thumb{
+  background:rgba(55, 53, 47, 0.18);
+  border-radius:4px;
+}
+.table-wrap::-webkit-scrollbar-thumb:hover{
+  background:rgba(55, 53, 47, 0.35);
 }
 
 /* ── Mobile Transaction List ── */

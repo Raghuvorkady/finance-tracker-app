@@ -100,6 +100,7 @@ const {
   hasCustomColumns,
   getVisibleColumns
 } = await import('../js/table.js');
+const { setLayoutView } = await import('../js/settings.js');
 
 console.log('✓ ES Modules successfully loaded!');
 
@@ -188,5 +189,10 @@ moveColumn('amount', 'left');
 renderTable(state.data);
 console.log('✓ renderTable executed with custom columns without error');
 resetColumns();
+
+// 7. Test Split View layout mode
+setLayoutView('b');
+console.log('✓ setLayoutView("b") state.layoutView:', state.layoutView, '(expected b)');
+if (state.layoutView !== 'b') throw new Error('Expected layoutView to be b');
 
 console.log('\nAll refactored module tests PASSED successfully!');
