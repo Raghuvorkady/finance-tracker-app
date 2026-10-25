@@ -221,4 +221,17 @@ console.log('✓ setActionLayout("p2") applied');
 setActionLayout('existing');
 console.log('✓ setActionLayout("existing") applied');
 
+// 9. Test Palette & Unbounded Categories Edge Case
+const { getSliceColor } = await import('../js/charts.js');
+const c0 = getSliceColor(0, 'expense');
+const c9 = getSliceColor(9, 'expense');
+const cOther = getSliceColor(7, 'expense', true);
+const c15 = getSliceColor(15, 'expense');
+console.log('✓ getSliceColor(0):', c0, '| getSliceColor(9):', c9);
+console.log('✓ getSliceColor(other):', cOther, '(expected #94a3b8)');
+console.log('✓ getSliceColor(15) fallback:', c15);
+if (cOther !== '#94a3b8') throw new Error('Expected #94a3b8 for Other');
+if (!c15.startsWith('hsl(')) throw new Error('Expected dynamic HSL generation for index >= 10');
+console.log('✓ Color edge case handling verified successfully!');
+
 console.log('\nAll refactored module tests PASSED successfully!');

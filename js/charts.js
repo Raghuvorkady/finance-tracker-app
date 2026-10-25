@@ -131,6 +131,17 @@ export function renderMacroDonut(expenses, income, transfers, net) {
   }
 }
 
+export function getSliceColor(index, analysisType = 'expense', isOther = false) {
+  if (isOther) return '#94a3b8';
+  const palette = analysisType === 'income' ? INCOME_PALETTE : (analysisType === 'transfer' ? TRANSFER_PALETTE : EXPENSE_PALETTE);
+  if (index < palette.length) {
+    return palette[index];
+  }
+  // Fallback for unbounded categories: golden angle (~137.508°) generates non-repeating vibrant hues
+  const hue = Math.round((210 + (index - palette.length) * 137.508) % 360);
+  return `hsl(${hue}, 75%, 52%)`;
+}
+
 export function renderDonut(totals, expenses, analysisType = 'expense') {
   const visible = totals.slice(0, 7);
   const other = totals.slice(7).reduce((s, [, v]) => s + v, 0);
@@ -157,10 +168,10 @@ export function renderDonut(totals, expenses, analysisType = 'expense') {
   }
 
   let position = 0;
-  const palette = analysisType === 'income' ? INCOME_PALETTE : (analysisType === 'transfer' ? TRANSFER_PALETTE : EXPENSE_PALETTE);
   const slices = visible.map(([name, value], i) => {
     const percent = expenses > 0 ? (value / expenses) * 100 : 0;
-    const color = name.toLowerCase() === 'other' ? '#94a3b8' : palette[i % palette.length];
+    const isOther = name.toLowerCase() === 'other';
+    const color = getSliceColor(i, analysisType, isOther);
     const item = { name, value, percent, start: position, color, index: i };
     position += percent;
     return item;
