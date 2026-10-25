@@ -80,6 +80,14 @@
                   <span class="export-menu-desc" id="export-all-count">Complete workbook</span>
                 </div>
               </button>
+              <div class="export-menu-divider"></div>
+              <button class="export-menu-item" id="export-pdf-btn" role="menuitem">
+                <span class="export-menu-icon">📄</span>
+                <div class="export-menu-text">
+                  <span class="export-menu-title">PDF statement</span>
+                  <span class="export-menu-desc">Print / Save as PDF</span>
+                </div>
+              </button>
             </div>
           </div>
         </div>
@@ -103,6 +111,22 @@
         </div>
 
         <div id="dashboard" class="dashboard hidden">
+          <!-- Printable Statement Header (visible during window.print()) -->
+          <header class="print-statement-header" id="print-statement-header" aria-hidden="true">
+            <div class="print-header-top">
+              <div class="print-brand">
+                <span class="print-brand-mark">L</span>
+                <span class="print-brand-name">ledgerly</span>
+                <span class="print-doc-badge">Financial Statement</span>
+              </div>
+              <div class="print-meta">
+                <div class="print-meta-item"><span class="print-meta-label">Period:</span> <strong id="print-period-label">—</strong></div>
+                <div class="print-meta-item"><span class="print-meta-label">Generated:</span> <span id="print-date-generated">—</span></div>
+              </div>
+            </div>
+            <div class="print-filter-summary" id="print-filter-summary">All Categories · All Accounts</div>
+          </header>
+
           <section class="control-row">
             <div class="period-control">
               <button class="chevron" id="prev-period" aria-label="Previous period" title="Previous period">
@@ -144,8 +168,30 @@
           <div class="dashboard-views-container" id="dashboard-views-container">
             <section class="visual-grid single-panel" id="spending-grid">
               <article class="panel spend-panel" id="spending-section">
-                <div class="panel-heading"><h2 id="breakdown-title">Breakdown</h2><button class="reset-focus-btn hidden" id="clear-category" aria-label="Reset category drilldown" title="Reset focus">✕</button></div>
-                <div class="chart-layout"><div class="donut-wrap"><div id="donut" class="donut"><div class="donut-center"><strong id="donut-total">₹ 0.00</strong><span id="donut-caption">spent</span></div></div></div><div id="legend" class="legend"></div></div>
+                <div class="panel-heading">
+                  <div class="panel-heading-left">
+                    <h2 id="breakdown-title">Breakdown</h2>
+                    <button class="reset-focus-btn hidden" id="clear-category" aria-label="Reset category drilldown" title="Reset focus">✕</button>
+                  </div>
+                  <div class="chart-view-toggle segmented" id="chart-view-toggle" role="group" aria-label="Chart view mode">
+                    <button type="button" class="chart-view-btn selected" data-chart-view="donut" title="Category composition">◐ Donut</button>
+                    <button type="button" class="chart-view-btn" data-chart-view="trend" title="Cash flow trends">📈 Trends</button>
+                  </div>
+                </div>
+                <!-- Composition Donut Chart View -->
+                <div class="chart-layout" id="donut-chart-layout">
+                  <div class="donut-wrap"><div id="donut" class="donut"><div class="donut-center"><strong id="donut-total">₹ 0.00</strong><span id="donut-caption">spent</span></div></div></div>
+                  <div id="legend" class="legend"></div>
+                </div>
+                <!-- Time-series Trend Line Chart View -->
+                <div class="trend-chart-layout hidden" id="trend-chart-layout">
+                  <div class="trend-summary-strip" id="trend-summary-strip"></div>
+                  <div class="trend-svg-container" id="trend-chart-wrap">
+                    <div id="trend-chart" class="trend-chart"></div>
+                    <div id="trend-tooltip" class="trend-tooltip hidden"></div>
+                  </div>
+                  <div class="trend-footer-legend" id="trend-footer-legend"></div>
+                </div>
               </article>
             </section>
 
@@ -379,6 +425,13 @@
                 <div class="sheet-card-text">
                   <strong>Export All Data</strong>
                   <span>Download entire dataset as CSV</span>
+                </div>
+              </button>
+              <button type="button" class="sheet-action-card" id="sheet-export-pdf">
+                <span class="sheet-card-icon">📄</span>
+                <div class="sheet-card-text">
+                  <strong>Export PDF Statement</strong>
+                  <span>Print or save report as PDF</span>
                 </div>
               </button>
             </div>

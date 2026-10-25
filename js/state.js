@@ -49,6 +49,16 @@ function loadSavedHiddenColumns() {
   return new Set();
 }
 
+function loadSavedChartView() {
+  try {
+    if (typeof localStorage !== 'undefined') {
+      const saved = localStorage.getItem('ledgerly_chart_view');
+      if (saved === 'donut' || saved === 'trend') return saved;
+    }
+  } catch (e) {}
+  return 'donut';
+}
+
 export const state = {
   data: [],
   period: 'monthly',
@@ -64,9 +74,20 @@ export const state = {
   customEnd: '',
   layoutView: 'a',
   activeTab: 'transactions',
+  chartView: loadSavedChartView(),
   columnOrder: loadSavedColumnOrder(),
   hiddenColumns: loadSavedHiddenColumns()
 };
+
+export function setChartView(view) {
+  if (view !== 'donut' && view !== 'trend') return;
+  state.chartView = view;
+  try {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('ledgerly_chart_view', view);
+    }
+  } catch (e) {}
+}
 
 export const DEFAULT_SCALE = 1.0;
 

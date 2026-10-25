@@ -30,7 +30,16 @@ function mockElement(id) {
     appendChild(child) {},
     getAttribute(name) { return name === 'data-theme' ? 'notion' : null; },
     querySelectorAll(selector) {
+      if (selector && selector.includes('[data-chart-view]')) {
+        return [
+          { dataset: { chartView: 'donut' }, classList: { toggle() {} } },
+          { dataset: { chartView: 'trend' }, classList: { toggle() {} } }
+        ];
+      }
       return [];
+    },
+    querySelector(selector) {
+      return null;
     },
     addEventListener() {}
   };
@@ -42,6 +51,7 @@ global.$ = (id) => {
 };
 
 global.document = {
+  title: 'Ledgerly — Finance analyst',
   createElement(tag) {
     return mockElement('mock-' + tag);
   },
@@ -69,6 +79,12 @@ global.document = {
         classList: { toggle() {} }
       }));
     }
+    if (selector.includes('[data-chart-view]')) {
+      return [
+        { dataset: { chartView: 'donut' }, classList: { toggle() {} } },
+        { dataset: { chartView: 'trend' }, classList: { toggle() {} } }
+      ];
+    }
     return [];
   },
   querySelector: (selector) => {
@@ -79,6 +95,8 @@ global.document = {
 
 global.window = {
   XLSX: {},
+  printCalled: false,
+  print() { this.printCalled = true; },
   matchMedia: () => ({ matches: false, addEventListener() {} })
 };
 
@@ -253,5 +271,87 @@ if (mNegative.includes('-') || mNegative.includes('−') || mNegative.includes('
 if (!mNegative.startsWith('₹\u00A051,325.44')) throw new Error('Expected unsigned ₹ 51,325.44 for negative amount');
 if (!mCompact.startsWith('₹\u00A0')) throw new Error('Expected space after ₹ in compact money()');
 console.log('✓ Money currency formatting & space verified successfully!');
+
+// ── 11. Test Line Chart Analysis (Time-Series Aggregation & SVG Curves) ──
+const { aggregateTimeSeries, renderLineChart } = await import('../js/charts.js');
+const { setChartView } = await import('../js/state.js');
+
+// Test Monthly Buckets (October 2026: 31 days)
+const octRange = {
+  start: new Date(2026, 9, 1, 0, 0, 0, 0),
+  end: new Date(2026, 9, 31, 23, 59, 59, 999),
+  label: 'October 2026'
+};
+const monthlyBuckets = aggregateTimeSeries(state.data, octRange, 'monthly');
+console.log('✓ Monthly time series bucket count:', monthlyBuckets.length, '(expected 31)');
+if (monthlyBuckets.length !== 31) throw new Error('Expected 31 daily buckets for October');
+
+// Check that transactions mapped into the correct daily buckets
+// 15th: Food expense ₹450
+// 16th: Salary income ₹150,000
+// 17th: Transfer ₹25,000
+// 18th: Groceries expense ₹1200
+// 19th: Entertainment expense ₹800
+const day15 = monthlyBuckets[14];
+const day16 = monthlyBuckets[15];
+const day17 = monthlyBuckets[16];
+const day18 = monthlyBuckets[17];
+console.log('✓ Day 15 expense:', day15.expense, 'top category:', day15.topCategory);
+if (day15.expense !== 450 || day15.topCategory !== 'Food') throw new Error('Bucket 15 aggregation mismatch');
+if (day16.income !== 150000) throw new Error('Bucket 16 income mismatch');
+if (day17.transfer !== 25000) throw new Error('Bucket 17 transfer mismatch');
+if (day18.expense !== 1200 || day18.topCategory !== 'Groceries') throw new Error('Bucket 18 expense mismatch');
+
+// Test Weekly Buckets (7 days)
+const weekRange = {
+  start: new Date(2026, 9, 12, 0, 0, 0, 0),
+  end: new Date(2026, 9, 18, 23, 59, 59, 999),
+  label: 'Week 42'
+};
+const weeklyBuckets = aggregateTimeSeries(state.data, weekRange, 'weekly');
+console.log('✓ Weekly time series bucket count:', weeklyBuckets.length, '(expected 7)');
+if (weeklyBuckets.length !== 7) throw new Error('Expected 7 buckets for weekly period');
+
+// Test Yearly Buckets (12 months)
+const yearRange = {
+  start: new Date(2026, 0, 1, 0, 0, 0, 0),
+  end: new Date(2026, 11, 31, 23, 59, 59, 999),
+  label: '2026'
+};
+const yearlyBuckets = aggregateTimeSeries(state.data, yearRange, 'yearly');
+console.log('✓ Yearly time series bucket count:', yearlyBuckets.length, '(expected 12)');
+if (yearlyBuckets.length !== 12) throw new Error('Expected 12 buckets for yearly period');
+
+// Test SVG Line Chart rendering
+const mockChartContainer = mockElement('trend-chart');
+elementStore['trend-chart'] = mockChartContainer;
+elementStore['trend-summary-strip'] = mockElement('trend-summary-strip');
+elementStore['trend-footer-legend'] = mockElement('trend-footer-legend');
+elementStore['trend-chart-wrap'] = mockElement('trend-chart-wrap');
+
+renderLineChart(state.data, octRange, 'all');
+console.log('✓ renderLineChart SVG output generated:', mockChartContainer.innerHTML.includes('<svg class="trend-svg"'));
+if (!mockChartContainer.innerHTML.includes('<svg class="trend-svg"')) throw new Error('renderLineChart failed to output SVG');
+if (!mockChartContainer.innerHTML.includes('class="trend-path path-expense"')) throw new Error('Expense curve missing from trend chart SVG');
+if (!mockChartContainer.innerHTML.includes('class="trend-path path-income"')) throw new Error('Income curve missing from trend chart SVG');
+
+// Test Chart View Switcher
+setChartView('trend');
+console.log('✓ setChartView("trend") state.chartView:', state.chartView);
+if (state.chartView !== 'trend') throw new Error('Expected chartView to be "trend"');
+setChartView('donut');
+console.log('✓ setChartView("donut") state.chartView:', state.chartView);
+if (state.chartView !== 'donut') throw new Error('Expected chartView to be "donut"');
+
+// ── 12. Test PDF Statement Export ──
+const { exportPdf } = await import('../js/export.js');
+window.printCalled = false;
+exportPdf();
+console.log('✓ exportPdf executed cleanly');
+console.log('✓ Print statement period label:', document.getElementById('print-period-label').textContent);
+console.log('✓ Print statement filter summary:', document.getElementById('print-filter-summary').textContent);
+if (!document.getElementById('print-filter-summary').textContent.includes('transaction')) {
+  throw new Error('Expected transaction count in print statement summary');
+}
 
 console.log('\nAll refactored module tests PASSED successfully!');

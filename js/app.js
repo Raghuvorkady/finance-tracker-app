@@ -6,7 +6,7 @@ import { state } from './state.js';
 import { $, money, periodDays, toast, showLoading, hideLoading } from './utils.js';
 import { normalizeRows } from './parser.js';
 import { bounds, movePeriod, priorExpense } from './dates.js';
-import { renderDonut, renderMacroDonut } from './charts.js';
+import { renderDonut, renderMacroDonut, renderLineChart, initChartViewToggle, syncChartViewToggle } from './charts.js';
 import { renderTable, registerTableRenderCallback, initColumnMenu, resetTableDisplayLimit } from './table.js';
 import {
   filtered,
@@ -91,15 +91,13 @@ export function render() {
     }
   }
 
-  // Panel title
-  if ($('breakdown-title')) {
-    $('breakdown-title').textContent = 'Breakdown';
-  }
-
   // Clear drilldown button in spending panel
   if ($('clear-category')) {
     $('clear-category').classList.toggle('hidden', state.selectedCategories.size === 0);
   }
+
+  // Synchronize Breakdown / Trend View Toggle
+  syncChartViewToggle();
 
   // Charts
   if (state.type === 'all' && state.selectedCategories.size === 0) {
@@ -107,6 +105,7 @@ export function render() {
   } else {
     renderDonut(categoryTotals(rows, chartType), chartTotal, chartType);
   }
+  renderLineChart(rows, range, state.type);
 
   // Table
   renderTable(rows);
@@ -267,5 +266,6 @@ function initEventListeners() {
   initFilterListeners();
   initColumnMenu();
   initExportListeners();
+  initChartViewToggle(render);
   initEventListeners();
 })();
