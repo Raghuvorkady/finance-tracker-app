@@ -4311,7 +4311,7 @@ td.account-cell{color:var(--muted);font-size:calc(12px * var(--font-scale, 1))}
 
 /* ── Print Statement Header (Screen Hidden) ── */
 .print-statement-header {
-  display: none;
+  display: none !important;
 }
 
 /* ── Dedicated Vector Print / PDF Statement Stylesheet ── */
@@ -4365,7 +4365,8 @@ td.account-cell{color:var(--muted);font-size:calc(12px * var(--font-scale, 1))}
   }
 
   /* Printable Header */
-  .print-statement-header {
+  .print-statement-header,
+  .print-statement-header.hidden {
     display: block !important;
     border-bottom: 2px solid #111827;
     padding-bottom: 12px;
