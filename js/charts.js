@@ -3,7 +3,7 @@
  */
 
 import { $, money, escapeHtml } from './utils.js';
-import { state, PALETTE } from './state.js';
+import { state, PALETTE, EXPENSE_PALETTE, INCOME_PALETTE, TRANSFER_PALETTE, MACRO_COLORS } from './state.js';
 import { splitCategoryEmoji } from './categories.js';
 import { setTypeFilter, selectCategory } from './filters.js';
 
@@ -30,7 +30,7 @@ export function renderMacroDonut(expenses, income, transfers, net) {
       name: 'Income',
       typeKey: 'income',
       value: income,
-      color: '#0f7b6c',
+      color: MACRO_COLORS.income,
       dotClass: 'dot-income',
       emoji: '💰'
     });
@@ -40,7 +40,7 @@ export function renderMacroDonut(expenses, income, transfers, net) {
       name: 'Expenses',
       typeKey: 'expense',
       value: expenses,
-      color: '#eb5757',
+      color: MACRO_COLORS.expense,
       dotClass: 'dot-expense',
       emoji: '💸'
     });
@@ -50,7 +50,7 @@ export function renderMacroDonut(expenses, income, transfers, net) {
       name: 'Transfers',
       typeKey: 'transfer',
       value: transfers,
-      color: '#787774',
+      color: MACRO_COLORS.transfer,
       dotClass: 'dot-transfer',
       emoji: '🔄'
     });
@@ -94,7 +94,7 @@ export function renderMacroDonut(expenses, income, transfers, net) {
     const totalEl = $('donut-total');
     if (totalEl) {
       totalEl.textContent = money(item.value, true);
-      totalEl.className = item.typeKey === 'income' ? 'amount-income' : (item.typeKey === 'expense' ? 'amount-expense' : 'amount-neutral');
+      totalEl.className = item.typeKey === 'income' ? 'amount-income' : (item.typeKey === 'expense' ? 'amount-expense' : 'amount-transfer');
     }
     const capEl = $('donut-caption');
     if (capEl) capEl.innerHTML = `<span class="donut-cat-name">${item.emoji} ${escapeHtml(item.name)}</span><span class="donut-cat-pct">${Math.round(item.percent)}%</span>`;
@@ -140,9 +140,10 @@ export function renderDonut(totals, expenses, analysisType = 'expense') {
   if (!donut) return;
 
   const caption = analysisType === 'transfer' ? 'moved' : analysisType === 'income' ? 'received' : 'spent';
+  const typeColorClass = analysisType === 'income' ? 'amount-income' : (analysisType === 'transfer' ? 'amount-transfer' : 'amount-expense');
   const totalEl = $('donut-total');
   if (totalEl) {
-    totalEl.className = '';
+    totalEl.className = typeColorClass;
     totalEl.textContent = money(expenses, true);
   }
   const capEl = $('donut-caption');
@@ -150,21 +151,22 @@ export function renderDonut(totals, expenses, analysisType = 'expense') {
 
   const legendEl = $('legend');
   if (!visible.length) {
-    donut.innerHTML = `<div class="donut-center"><strong id="donut-total">₹0</strong><span id="donut-caption">${caption}</span></div>`;
+    donut.innerHTML = `<div class="donut-center"><strong id="donut-total" class="${typeColorClass}">₹0</strong><span id="donut-caption">${caption}</span></div>`;
     if (legendEl) legendEl.innerHTML = `<span class="empty-table">No ${analysisType === 'transfer' ? 'transfers' : analysisType === 'income' ? 'income' : 'expenses'} for these filters.</span>`;
     return;
   }
 
   let position = 0;
+  const palette = analysisType === 'income' ? INCOME_PALETTE : (analysisType === 'transfer' ? TRANSFER_PALETTE : EXPENSE_PALETTE);
   const slices = visible.map(([name, value], i) => {
     const percent = expenses > 0 ? (value / expenses) * 100 : 0;
-    const color = name.toLowerCase() === 'other' ? '#94a3b8' : PALETTE[i % PALETTE.length];
+    const color = name.toLowerCase() === 'other' ? '#94a3b8' : palette[i % palette.length];
     const item = { name, value, percent, start: position, color, index: i };
     position += percent;
     return item;
   });
 
-  donut.innerHTML = `<svg class="donut-svg" viewBox="0 0 100 100" aria-label="${analysisType === 'transfer' ? 'Transfer channels' : analysisType === 'income' ? 'Income categories' : 'Spending categories'}"><circle class="donut-ring" cx="50" cy="50" r="42" pathLength="100"></circle>${slices.map((item) => `<circle class="donut-slice" data-index="${item.index}" cx="50" cy="50" r="42" pathLength="100" stroke="${item.color}" stroke-dasharray="${item.percent} ${100 - item.percent}" stroke-dashoffset="${-item.start}"></circle>`).join('')}</svg><div class="donut-center"><strong id="donut-total">${money(expenses, true)}</strong><span id="donut-caption">${caption}</span></div>`;
+  donut.innerHTML = `<svg class="donut-svg" viewBox="0 0 100 100" aria-label="${analysisType === 'transfer' ? 'Transfer channels' : analysisType === 'income' ? 'Income categories' : 'Spending categories'}"><circle class="donut-ring" cx="50" cy="50" r="42" pathLength="100"></circle>${slices.map((item) => `<circle class="donut-slice" data-index="${item.index}" cx="50" cy="50" r="42" pathLength="100" stroke="${item.color}" stroke-dasharray="${item.percent} ${100 - item.percent}" stroke-dashoffset="${-item.start}"></circle>`).join('')}</svg><div class="donut-center"><strong id="donut-total" class="${typeColorClass}">${money(expenses, true)}</strong><span id="donut-caption">${caption}</span></div>`;
 
   if (legendEl) {
     legendEl.innerHTML = slices.map((item) => {
@@ -190,7 +192,7 @@ export function renderDonut(totals, expenses, analysisType = 'expense') {
     const { emoji, text } = splitCategoryEmoji(item.name);
     const t = $('donut-total');
     if (t) {
-      t.className = '';
+      t.className = typeColorClass;
       t.textContent = money(item.value, true);
     }
     const c = $('donut-caption');
@@ -202,7 +204,7 @@ export function renderDonut(totals, expenses, analysisType = 'expense') {
     donut.querySelectorAll('.donut-slice').forEach(slice => slice.classList.remove('hovered'));
     const t = $('donut-total');
     if (t) {
-      t.className = '';
+      t.className = typeColorClass;
       t.textContent = money(expenses, true);
     }
     const c = $('donut-caption');

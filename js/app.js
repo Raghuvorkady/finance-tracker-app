@@ -61,7 +61,7 @@ export function render() {
   }
   if ($('spent-value')) {
     $('spent-value').textContent = money(chartType === 'transfer' ? transfers : chartType === 'income' ? income : expenses);
-    $('spent-value').className = chartType === 'transfer' ? 'amount-neutral' : chartType === 'income' ? 'amount-income' : 'amount-expense';
+    $('spent-value').className = chartType === 'transfer' ? 'amount-transfer' : chartType === 'income' ? 'amount-income' : 'amount-expense';
   }
   if ($('income-value')) {
     $('income-value').textContent = money(income);

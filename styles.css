@@ -4,7 +4,7 @@
 }
 :root,[data-theme="ledgerly"] {
   --ink:#17221c; --muted:#778078; --line:#e8ebe7; --paper:#f8f9f6; --card:#ffffff;
-  --sage:#d8e8c7; --lime:#c9f27f; --red:#ef6f61; --green:#43b989; --violet:#8c7ae6; --amber:#f6b24c;
+  --sage:#d8e8c7; --lime:#84cc16; --red:#f43f5e; --green:#10b981; --transfer:#6366f1; --violet:#8b5cf6; --amber:#f59e0b;
   --accent:#497433; --accent-light:#d9edc4; --body-font:Manrope,Arial,sans-serif;
 }
 /* ── Mobile theme (Money Manager inspired) ── */
@@ -16,7 +16,7 @@
 /* ── Notion theme (Directly matched to Notion template) ── */
 [data-theme="notion"] {
   --ink:#37352f; --muted:#787774; --line:#edece9; --paper:#ffffff; --card:#ffffff;
-  --sage:#f1f1ef; --lime:#dbeddb; --red:#eb5757; --green:#0f7b6c; --violet:#6940a5; --amber:#dfab01;
+  --sage:#f1f1ef; --lime:#dbeddb; --red:#f43f5e; --green:#10b981; --transfer:#6366f1; --violet:#8b5cf6; --amber:#f59e0b;
   --accent:#37352f; --accent-light:#f7f7f5; --body-font:'Inter',ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
 }
 
@@ -1151,11 +1151,13 @@ select{
   white-space:nowrap;
   display:block;
 }
-.donut-center strong.amount-expense{ color:var(--red, #eb5757); }
-.donut-center strong.amount-income{ color:var(--green, #0f7b6c); }
+.donut-center strong.amount-expense{ color:var(--red, #f43f5e); }
+.donut-center strong.amount-income{ color:var(--green, #10b981); }
+.donut-center strong.amount-transfer{ color:var(--transfer, #6366f1); }
 .donut-center strong.amount-neutral{ color:var(--ink, #37352f); }
-[data-theme="notion"] .donut-center strong.amount-expense{ color:#eb5757; }
-[data-theme="notion"] .donut-center strong.amount-income{ color:#0f7b6c; }
+[data-theme="notion"] .donut-center strong.amount-expense{ color:#f43f5e; }
+[data-theme="notion"] .donut-center strong.amount-income{ color:#10b981; }
+[data-theme="notion"] .donut-center strong.amount-transfer{ color:#6366f1; }
 [data-theme="notion"] .donut-center strong.amount-neutral{ color:#37352f; }
 .donut-center span{
   color:var(--muted);
@@ -1374,13 +1376,13 @@ select{
   flex-shrink:0;
 }
 .dot-expense{
-  background:var(--red, #eb5757);
+  background:var(--red, #f43f5e);
 }
 .dot-income{
-  background:var(--green, #0f7b6c);
+  background:var(--green, #10b981);
 }
 .dot-transfer{
-  background:var(--muted, #787774);
+  background:var(--transfer, #6366f1);
 }
 .count-badge{
   background:var(--line);
@@ -2685,9 +2687,9 @@ select{
   margin-bottom:4px;
   line-height:1.35;
 }
-.tx-amount.amount-expense{color:var(--red)}
-.tx-amount.amount-income{color:var(--green)}
-.tx-amount.amount-transfer{color:var(--muted, #787774)}
+.tx-amount.amount-expense{color:var(--red, #f43f5e)}
+.tx-amount.amount-income{color:var(--green, #10b981)}
+.tx-amount.amount-transfer{color:var(--transfer, #6366f1)}
 .tx-type{
   display:flex;
   justify-content:flex-end;
@@ -2816,9 +2818,9 @@ td.account-cell{color:var(--muted);font-size:calc(12px * var(--font-scale, 1))}
   letter-spacing:0.2px;
   line-height:1.6;
 }
-.amount-expense{color:var(--red)}
-.amount-income{color:var(--green)}
-.amount-transfer{color:var(--muted, #787774)}
+.amount-expense{color:var(--red, #f43f5e)}
+.amount-income{color:var(--green, #10b981)}
+.amount-transfer{color:var(--transfer, #6366f1)}
 .type-tag{
   display:inline-flex;
   align-items:center;
@@ -2829,9 +2831,9 @@ td.account-cell{color:var(--muted);font-size:calc(12px * var(--font-scale, 1))}
   line-height:1.4;
   letter-spacing:0.2px;
 }
-.type-expense{background:#feeceb;color:#b71c1c}
-.type-income{background:#e8f5e9;color:#1b5e20}
-.type-transfer{background:#f1f0ef;color:#555452}
+.type-expense{background:#ffe4e6;color:#be123c}
+.type-income{background:#d1fae5;color:#047857}
+.type-transfer{background:#e0e7ff;color:#4338ca}
 .cat-pill{
   display:inline-flex;
   align-items:center;
@@ -2975,30 +2977,30 @@ td.account-cell{color:var(--muted);font-size:calc(12px * var(--font-scale, 1))}
   border-color:rgba(235, 87, 87, 0.3);
 }
 [data-theme="notion"] .metric-card.accent-red:hover{
-  border-color:rgba(235, 87, 87, 0.5);
+  border-color:rgba(244, 63, 94, 0.5);
 }
 [data-theme="notion"] .metric-card.accent-red .metric-icon{
-  color:#eb5757;
+  color:#f43f5e;
   opacity:0.85;
 }
 [data-theme="notion"] .metric-card.accent-green{
-  border-color:rgba(15, 123, 108, 0.3);
+  border-color:rgba(16, 185, 129, 0.3);
 }
 [data-theme="notion"] .metric-card.accent-green:hover{
-  border-color:rgba(15, 123, 108, 0.5);
+  border-color:rgba(16, 185, 129, 0.5);
 }
 [data-theme="notion"] .metric-card.accent-green .metric-icon{
-  color:#0f7b6c;
+  color:#10b981;
   opacity:0.85;
 }
 [data-theme="notion"] .metric-card.accent-violet{
-  border-color:rgba(144, 98, 184, 0.3);
+  border-color:rgba(99, 102, 241, 0.3);
 }
 [data-theme="notion"] .metric-card.accent-violet:hover{
-  border-color:rgba(144, 98, 184, 0.5);
+  border-color:rgba(99, 102, 241, 0.5);
 }
 [data-theme="notion"] .metric-card.accent-violet .metric-icon{
-  color:#9062b8;
+  color:#6366f1;
   opacity:0.85;
 }
 [data-theme="notion"] .metric-card.accent-amber{
@@ -3235,15 +3237,15 @@ td.account-cell{color:var(--muted);font-size:calc(12px * var(--font-scale, 1))}
   font-variant-numeric:tabular-nums;
   line-height:1.45;
 }
-[data-theme="notion"] .amount-expense{color:#eb5757;}
-[data-theme="notion"] .amount-income{color:#0f7b6c;}
-[data-theme="notion"] .amount-transfer{color:#787774;}
-[data-theme="notion"] .tx-amount.amount-expense{color:#eb5757;}
-[data-theme="notion"] .tx-amount.amount-income{color:#0f7b6c;}
-[data-theme="notion"] .tx-amount.amount-transfer{color:#787774;}
-[data-theme="notion"] .dot-expense{background:#eb5757;}
-[data-theme="notion"] .dot-income{background:#0f7b6c;}
-[data-theme="notion"] .dot-transfer{background:#787774;}
+[data-theme="notion"] .amount-expense{color:#f43f5e;}
+[data-theme="notion"] .amount-income{color:#10b981;}
+[data-theme="notion"] .amount-transfer{color:#6366f1;}
+[data-theme="notion"] .tx-amount.amount-expense{color:#f43f5e;}
+[data-theme="notion"] .tx-amount.amount-income{color:#10b981;}
+[data-theme="notion"] .tx-amount.amount-transfer{color:#6366f1;}
+[data-theme="notion"] .dot-expense{background:#f43f5e;}
+[data-theme="notion"] .dot-income{background:#10b981;}
+[data-theme="notion"] .dot-transfer{background:#6366f1;}
 /* Notion Select Tags: 100% matched to Notion color tags with high contrast */
 [data-theme="notion"] .type-tag{
   font-family:'Inter',ui-sans-serif,sans-serif;
