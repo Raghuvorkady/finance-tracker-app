@@ -7,8 +7,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css" />
-    <link rel="stylesheet" href="enhancements.css" />
+    <link rel="stylesheet" href="styles.css?v=5" />
+    <link rel="stylesheet" href="enhancements.css?v=5" />
   </head>
   <body>
     <main class="app-shell">
@@ -89,10 +89,6 @@
       </header>
 
       <section class="content">
-        <div class="greeting-banner hidden" id="greeting-banner">
-          <h1>Personal Finance Tracker</h1>
-        </div>
-
         <div id="empty-state" class="empty-state">
           <div class="empty-brand">
             <span class="brand-mark">L</span>
@@ -237,11 +233,28 @@
                         <div class="notion-popover-options" id="acct-options-list"></div>
                       </div>
                     </div>
+
+                    <!-- Columns Customization Pill -->
+                    <div class="notion-pill-wrap" id="cols-pill-wrap">
+                      <button class="notion-pill" id="cols-pill" aria-label="Customize columns" aria-haspopup="true" aria-expanded="false">
+                        <span class="pill-icon">☷</span>
+                        <span class="pill-label" id="pill-cols-label">Columns</span>
+                        <span class="pill-dot hidden" id="cols-active-dot"></span>
+                        <span class="pill-chevron">∨</span>
+                      </button>
+                      <div class="notion-popover notion-cols-popover hidden" id="cols-popover" role="dialog" aria-label="Customize columns">
+                        <div class="notion-popover-header">
+                          <span class="notion-cols-popover-title">Columns in view</span>
+                          <button type="button" class="notion-cols-reset-btn" id="cols-reset-btn" title="Reset column order and visibility">Reset</button>
+                        </div>
+                        <div class="notion-cols-list" id="cols-list"></div>
+                      </div>
+                    </div>
                   </div>
 
                   <!-- Reset Button (Far Right) -->
                   <div class="notion-pills-right">
-                    <button class="notion-reset-filter-btn hidden" id="notion-reset-filters" title="Reset all filters and sort">
+                    <button class="notion-reset-filter-btn hidden" id="notion-reset-filters" title="Reset all filters, sort, and columns">
                       Reset
                     </button>
                   </div>
@@ -261,7 +274,33 @@
                   </tr>
                 </thead>
                 <tbody id="transaction-body"></tbody>
+                <tfoot id="transaction-foot"></tfoot>
               </table>
+            </div>
+
+            <!-- Floating Column Header Context Menu -->
+            <div class="notion-popover notion-col-menu hidden" id="notion-col-menu" role="menu" aria-label="Column Options">
+              <div class="notion-col-menu-header">
+                <span class="col-menu-icon" id="col-menu-icon">📅</span>
+                <span class="col-menu-title" id="col-menu-title">Date</span>
+                <span class="col-menu-badge">Property</span>
+              </div>
+              <div class="notion-col-menu-divider"></div>
+              <div class="notion-col-menu-actions">
+                <button type="button" class="notion-col-menu-btn" id="col-menu-move-left">
+                  <span class="col-menu-action-icon">←</span>
+                  <span>Move left</span>
+                </button>
+                <button type="button" class="notion-col-menu-btn" id="col-menu-move-right">
+                  <span class="col-menu-action-icon">→</span>
+                  <span>Move right</span>
+                </button>
+                <div class="notion-col-menu-divider"></div>
+                <button type="button" class="notion-col-menu-btn" id="col-menu-hide">
+                  <span class="col-menu-action-icon">👁️</span>
+                  <span>Hide in view</span>
+                </button>
+              </div>
             </div>
             <!-- Mobile List View -->
             <div class="mobile-tx-list mobile-only-view" id="mobile-tx-list"></div>

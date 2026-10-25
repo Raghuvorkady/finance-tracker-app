@@ -13,9 +13,9 @@ const moduleOrder = [
   'parser.js',
   'dates.js',
   'categories.js',
+  'table.js',
   'filters.js',
   'charts.js',
-  'table.js',
   'export.js',
   'settings.js',
   'app.js'

@@ -3,9 +3,10 @@
  */
 
 import { $, escapeHtml, toast } from './utils.js';
-import { state } from './state.js';
+import { state, COLUMN_DEFINITIONS } from './state.js';
 import { bounds } from './dates.js';
 import { categoryColor, formatCategory } from './categories.js';
+import { hasCustomColumns, resetColumns, moveColumn, toggleColumn, getVisibleColumns } from './table.js';
 
 let onRender = () => {};
 export function registerRenderCallback(fn) {
@@ -209,6 +210,15 @@ export function syncFilterPills() {
     }
   }
 
+  // Columns Pill
+  const colsPill = $('cols-pill');
+  const colsDot = $('cols-active-dot');
+  const isCustomCols = hasCustomColumns();
+  if (colsPill && colsDot) {
+    colsDot.classList.toggle('hidden', !isCustomCols);
+    colsPill.classList.toggle('has-filter', isCustomCols);
+  }
+
   renderCategoryChips();
   renderAccountChips();
 
@@ -216,13 +226,85 @@ export function syncFilterPills() {
   const hasFilter = state.selectedCategories.size > 0 ||
                     state.selectedAccounts.size > 0 ||
                     Boolean(state.search && state.search.trim()) ||
-                    state.sort !== 'date-desc';
+                    state.sort !== 'date-desc' ||
+                    isCustomCols;
   if ($('notion-reset-filters')) $('notion-reset-filters').classList.toggle('hidden', !hasFilter);
   if ($('clear-category')) $('clear-category').classList.toggle('hidden', state.selectedCategories.size === 0);
 
   // Sync hidden legacy selects if present
   if ($('category-filter')) $('category-filter').value = state.category;
   if ($('account-filter')) $('account-filter').value = state.account;
+}
+
+export function populateColsList() {
+  const listEl = $('cols-list');
+  if (!listEl) return;
+
+  const visible = getVisibleColumns();
+  const itemsHtml = state.columnOrder.map((colId) => {
+    const def = COLUMN_DEFINITIONS[colId] || { id: colId, label: colId, icon: '' };
+    const isHidden = state.hiddenColumns.has(colId);
+    const visIdx = visible.indexOf(colId);
+    const canMoveLeft = !isHidden && visIdx > 0;
+    const canMoveRight = !isHidden && visIdx >= 0 && visIdx < visible.length - 1;
+
+    return `<div class="notion-col-item ${isHidden ? 'is-hidden' : ''}" data-col="${colId}">
+      <div class="notion-col-item-left">
+        <span class="notion-col-item-icon">${def.icon}</span>
+        <span class="notion-col-item-name">${def.label}</span>
+      </div>
+      <div class="notion-col-item-actions">
+        <button type="button" class="notion-col-action-btn btn-col-left ${canMoveLeft ? '' : 'disabled'}" data-col="${colId}" title="Move left" ${canMoveLeft ? '' : 'disabled'}>←</button>
+        <button type="button" class="notion-col-action-btn btn-col-right ${canMoveRight ? '' : 'disabled'}" data-col="${colId}" title="Move right" ${canMoveRight ? '' : 'disabled'}>→</button>
+        <button type="button" class="notion-col-action-btn btn-col-toggle ${isHidden ? 'hidden-col' : 'visible-col'}" data-col="${colId}" title="${isHidden ? 'Show in view' : 'Hide in view'}">
+          ${isHidden ? '👁‍🗨' : '👁️'}
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+
+  listEl.innerHTML = itemsHtml;
+
+  listEl.querySelectorAll('.btn-col-left').forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      const col = btn.dataset.col;
+      if (moveColumn(col, 'left')) {
+        populateColsList();
+        syncFilterPills();
+        onRender();
+        toast('Column moved left');
+      }
+    };
+  });
+
+  listEl.querySelectorAll('.btn-col-right').forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      const col = btn.dataset.col;
+      if (moveColumn(col, 'right')) {
+        populateColsList();
+        syncFilterPills();
+        onRender();
+        toast('Column moved right');
+      }
+    };
+  });
+
+  listEl.querySelectorAll('.btn-col-toggle').forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      const col = btn.dataset.col;
+      const def = COLUMN_DEFINITIONS[col];
+      const wasHidden = state.hiddenColumns.has(col);
+      if (toggleColumn(col)) {
+        populateColsList();
+        syncFilterPills();
+        onRender();
+        toast(wasHidden ? `"${def ? def.label : col}" visible` : `"${def ? def.label : col}" hidden`);
+      }
+    };
+  });
 }
 
 export function populateCategories() {
@@ -521,7 +603,35 @@ export function initFilterListeners() {
     };
   }
 
-  // Reset Filter Button
+  // Columns Pill Toggle
+  if ($('cols-pill')) {
+    $('cols-pill').onclick = (e) => {
+      e.stopPropagation();
+      const pop = $('cols-popover');
+      if (!pop) return;
+      const opening = pop.classList.contains('hidden');
+      closeAllPopovers();
+      if (opening) {
+        pop.classList.remove('hidden');
+        $('cols-pill').setAttribute('aria-expanded', 'true');
+        populateColsList();
+      }
+    };
+  }
+
+  // Columns Reset Button
+  if ($('cols-reset-btn')) {
+    $('cols-reset-btn').onclick = (e) => {
+      e.stopPropagation();
+      resetColumns();
+      populateColsList();
+      syncFilterPills();
+      onRender();
+      toast('Columns reset to default');
+    };
+  }
+
+  // Reset Filter Button (resets filters, search, sort, AND column order/visibility)
   if ($('notion-reset-filters')) {
     $('notion-reset-filters').onclick = () => {
       state.selectedCategories.clear();
@@ -531,11 +641,13 @@ export function initFilterListeners() {
       state.search = '';
       if ($('search')) $('search').value = '';
       state.sort = 'date-desc';
+      resetColumns();
       closeAllPopovers();
       syncSortPill();
       syncFilterPills();
+      populateColsList();
       onRender();
-      toast('Filters and sort reset');
+      toast('Filters and columns reset');
     };
   }
 
@@ -565,7 +677,7 @@ export function initFilterListeners() {
 
   // Global click & Escape to dismiss popovers
   document.addEventListener('click', (e) => {
-    if (!e.target.closest('.notion-pill-wrap') && !e.target.closest('.export-dropdown-wrap') && !e.target.closest('.display-dropdown-wrap')) {
+    if (!e.target.closest('.notion-pill-wrap') && !e.target.closest('.export-dropdown-wrap') && !e.target.closest('.display-dropdown-wrap') && !e.target.closest('#notion-col-menu') && !e.target.closest('.notion-th-draggable')) {
       closeAllPopovers();
     }
   });

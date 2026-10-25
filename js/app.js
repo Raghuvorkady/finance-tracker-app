@@ -7,7 +7,7 @@ import { $, money, periodDays, toast } from './utils.js';
 import { normalizeRows } from './parser.js';
 import { bounds, movePeriod, priorExpense } from './dates.js';
 import { renderDonut, renderMacroDonut } from './charts.js';
-import { renderTable } from './table.js';
+import { renderTable, registerTableRenderCallback, initColumnMenu } from './table.js';
 import {
   filtered,
   categoryTotals,
@@ -142,7 +142,6 @@ function initEventListeners() {
         $('empty-state')?.classList.add('hidden');
         $('dashboard')?.classList.remove('hidden');
         $('app-topbar')?.classList.remove('hidden');
-        $('greeting-banner')?.classList.remove('hidden');
         $('bottom-nav')?.classList.remove('hidden');
 
         render();
@@ -183,7 +182,6 @@ function initEventListeners() {
 
       $('dashboard')?.classList.add('hidden');
       $('app-topbar')?.classList.add('hidden');
-      $('greeting-banner')?.classList.add('hidden');
       $('bottom-nav')?.classList.add('hidden');
       $('display-settings')?.classList.add('hidden');
       $('empty-state')?.classList.remove('hidden');
@@ -216,6 +214,10 @@ function initEventListeners() {
 // ── Application Initialization ──
 (function bootstrap() {
   registerRenderCallback(render);
+  registerTableRenderCallback(() => {
+    if (state.data.length) render();
+    else renderTable([]);
+  });
   registerSettingsCallback(() => {
     if (state.data.length) render();
     else renderTable([]);
@@ -224,6 +226,7 @@ function initEventListeners() {
   initSettings();
   initSettingsListeners();
   initFilterListeners();
+  initColumnMenu();
   initExportListeners();
   initEventListeners();
 })();

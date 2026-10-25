@@ -87,6 +87,16 @@ const { normalizeRows } = await import('../js/parser.js');
 const { bounds } = await import('../js/dates.js');
 const { filtered, setTypeFilter, setSort } = await import('../js/filters.js');
 const { render } = await import('../js/app.js');
+const {
+  renderTable,
+  moveColumn,
+  hideColumn,
+  unhideColumn,
+  toggleColumn,
+  resetColumns,
+  hasCustomColumns,
+  getVisibleColumns
+} = await import('../js/table.js');
 
 console.log('✓ ES Modules successfully loaded!');
 
@@ -127,5 +137,53 @@ state.selectedCategories.add('Groceries');
 const f = filtered();
 console.log('✓ Multi-select Food + Groceries filtered count:', f.length, '(expected 2)');
 console.log('✓ Multi-select categories match:', f.map(r => r.category).sort().join(', '), '(expected Food, Groceries)');
+
+// Test Column Ordering, Hiding, and Resetting
+console.log('\n--- Column Feature Tests ---');
+resetColumns();
+console.log('✓ Initial columns:', getVisibleColumns().join(', '), '(hasCustomColumns:', hasCustomColumns(), 'expected false)');
+
+// 1. Move column left
+const movedLeft = moveColumn('note', 'left');
+console.log('✓ moveColumn("note", "left"):', movedLeft, '| Order:', state.columnOrder.join(', '));
+if (state.columnOrder[1] !== 'note' || state.columnOrder[2] !== 'category') {
+  throw new Error('moveColumn left failed: expected note at index 1, category at index 2');
+}
+console.log('✓ hasCustomColumns after move:', hasCustomColumns(), '(expected true)');
+
+// 2. Move column right
+const movedRight = moveColumn('date', 'right');
+console.log('✓ moveColumn("date", "right"):', movedRight, '| Order:', state.columnOrder.join(', '));
+if (state.columnOrder[0] !== 'note' || state.columnOrder[1] !== 'date') {
+  throw new Error('moveColumn right failed: expected note at index 0, date at index 1');
+}
+
+// 3. Hide column
+const hiddenCat = hideColumn('category');
+console.log('✓ hideColumn("category"):', hiddenCat, '| Visible:', getVisibleColumns().join(', '));
+if (getVisibleColumns().includes('category')) {
+  throw new Error('hideColumn failed: category should not be visible');
+}
+
+// 4. Toggle column (unhide)
+const toggledCat = toggleColumn('category');
+console.log('✓ toggleColumn("category") unhide:', toggledCat, '| Visible:', getVisibleColumns().join(', '));
+if (!getVisibleColumns().includes('category')) {
+  throw new Error('toggleColumn unhide failed: category should be visible');
+}
+
+// 5. Reset columns
+resetColumns();
+console.log('✓ resetColumns() -> Order:', state.columnOrder.join(', '), '| Hidden size:', state.hiddenColumns.size);
+if (hasCustomColumns()) {
+  throw new Error('resetColumns failed: hasCustomColumns should be false');
+}
+
+// 6. Test renderTable with customized columns
+hideColumn('account');
+moveColumn('amount', 'left');
+renderTable(state.data);
+console.log('✓ renderTable executed with custom columns without error');
+resetColumns();
 
 console.log('\nAll refactored module tests PASSED successfully!');

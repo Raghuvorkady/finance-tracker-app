@@ -2,12 +2,212 @@
  * Transactions Table & Mobile Card View Rendering
  */
 
-import { $, money, escapeHtml } from './utils.js';
-import { state } from './state.js';
+import { $, money, escapeHtml, toast, setStorage } from './utils.js';
+import { state, DEFAULT_COLUMN_ORDER, COLUMN_DEFINITIONS } from './state.js';
 import { categoryPill, categoryColor, getNotionIcon, formatCategory } from './categories.js';
+
+let tableRerenderCallback = () => {};
+export function registerTableRenderCallback(fn) {
+  tableRerenderCallback = fn;
+}
+
+let activeDragCol = null;
+let activeColMenuId = null;
+
+export function getVisibleColumns() {
+  const visible = state.columnOrder.filter(c => !state.hiddenColumns.has(c));
+  return visible.length ? visible : [...DEFAULT_COLUMN_ORDER];
+}
+
+export function hasCustomColumns() {
+  if (state.hiddenColumns && state.hiddenColumns.size > 0) return true;
+  if (!state.columnOrder || state.columnOrder.length !== DEFAULT_COLUMN_ORDER.length) return true;
+  for (let i = 0; i < DEFAULT_COLUMN_ORDER.length; i++) {
+    if (state.columnOrder[i] !== DEFAULT_COLUMN_ORDER[i]) return true;
+  }
+  return false;
+}
+
+export function saveColumns() {
+  setStorage('ledgerly_column_order', JSON.stringify(state.columnOrder));
+  setStorage('ledgerly_hidden_columns', JSON.stringify([...state.hiddenColumns]));
+}
+
+export function reorderColumnTo(sourceCol, targetCol, position = 'before') {
+  if (sourceCol === targetCol) return false;
+  const newOrder = [...state.columnOrder];
+  const fromIdx = newOrder.indexOf(sourceCol);
+  if (fromIdx === -1) return false;
+  newOrder.splice(fromIdx, 1);
+  const toIdx = newOrder.indexOf(targetCol);
+  if (toIdx === -1) return false;
+  if (position === 'before') {
+    newOrder.splice(toIdx, 0, sourceCol);
+  } else {
+    newOrder.splice(toIdx + 1, 0, sourceCol);
+  }
+  state.columnOrder = newOrder;
+  saveColumns();
+  return true;
+}
+
+export function moveColumn(colId, direction) {
+  const visible = getVisibleColumns();
+  const idx = visible.indexOf(colId);
+  if (idx === -1) return false;
+  const targetIdx = direction === 'left' ? idx - 1 : idx + 1;
+  if (targetIdx < 0 || targetIdx >= visible.length) return false;
+  const targetCol = visible[targetIdx];
+  return reorderColumnTo(colId, targetCol, direction === 'left' ? 'before' : 'after');
+}
+
+export function hideColumn(colId) {
+  const visible = getVisibleColumns();
+  if (visible.length <= 1) {
+    toast('At least one column must remain visible');
+    return false;
+  }
+  state.hiddenColumns.add(colId);
+  saveColumns();
+  return true;
+}
+
+export function unhideColumn(colId) {
+  if (state.hiddenColumns.has(colId)) {
+    state.hiddenColumns.delete(colId);
+    saveColumns();
+    return true;
+  }
+  return false;
+}
+
+export function toggleColumn(colId) {
+  if (state.hiddenColumns.has(colId)) {
+    return unhideColumn(colId);
+  }
+  return hideColumn(colId);
+}
+
+export function resetColumns() {
+  state.columnOrder = [...DEFAULT_COLUMN_ORDER];
+  state.hiddenColumns = new Set();
+  saveColumns();
+}
+
+export function closeColumnMenu() {
+  const menu = $('notion-col-menu');
+  if (menu) {
+    menu.classList.add('hidden');
+  }
+  activeColMenuId = null;
+}
+
+export function openColumnMenu(colId, anchorEl) {
+  const menu = $('notion-col-menu');
+  if (!menu || !anchorEl) return;
+
+  activeColMenuId = colId;
+  const def = COLUMN_DEFINITIONS[colId];
+  if (!def) return;
+
+  const iconEl = $('col-menu-icon');
+  const titleEl = $('col-menu-title');
+  if (iconEl) iconEl.textContent = def.icon;
+  if (titleEl) titleEl.textContent = def.label;
+
+  const visible = getVisibleColumns();
+  const idx = visible.indexOf(colId);
+
+  const leftBtn = $('col-menu-move-left');
+  const rightBtn = $('col-menu-move-right');
+  const hideBtn = $('col-menu-hide');
+
+  if (leftBtn) {
+    const disabled = idx <= 0;
+    leftBtn.disabled = disabled;
+    leftBtn.classList.toggle('disabled', disabled);
+  }
+  if (rightBtn) {
+    const disabled = idx >= visible.length - 1;
+    rightBtn.disabled = disabled;
+    rightBtn.classList.toggle('disabled', disabled);
+  }
+  if (hideBtn) {
+    const disabled = visible.length <= 1;
+    hideBtn.disabled = disabled;
+    hideBtn.classList.toggle('disabled', disabled);
+  }
+
+  // Position popover
+  const rect = anchorEl.getBoundingClientRect();
+  const scrollTop = (typeof window !== 'undefined' ? (window.scrollY || document.documentElement.scrollTop) : 0) || 0;
+  const scrollLeft = (typeof window !== 'undefined' ? (window.scrollX || document.documentElement.scrollLeft) : 0) || 0;
+
+  menu.style.top = `${rect.bottom + scrollTop + 4}px`;
+  const menuWidth = 190;
+  const winWidth = typeof window !== 'undefined' ? window.innerWidth : 1024;
+  const leftPos = Math.max(10, Math.min(winWidth - menuWidth - 10, rect.left + scrollLeft));
+  menu.style.left = `${leftPos}px`;
+
+  menu.classList.remove('hidden');
+}
+
+export function initColumnMenu() {
+  const leftBtn = $('col-menu-move-left');
+  if (leftBtn) {
+    leftBtn.onclick = (e) => {
+      e.stopPropagation();
+      if (!activeColMenuId) return;
+      if (moveColumn(activeColMenuId, 'left')) {
+        closeColumnMenu();
+        tableRerenderCallback();
+        toast('Moved column left');
+      }
+    };
+  }
+
+  const rightBtn = $('col-menu-move-right');
+  if (rightBtn) {
+    rightBtn.onclick = (e) => {
+      e.stopPropagation();
+      if (!activeColMenuId) return;
+      if (moveColumn(activeColMenuId, 'right')) {
+        closeColumnMenu();
+        tableRerenderCallback();
+        toast('Moved column right');
+      }
+    };
+  }
+
+  const hideBtn = $('col-menu-hide');
+  if (hideBtn) {
+    hideBtn.onclick = (e) => {
+      e.stopPropagation();
+      if (!activeColMenuId) return;
+      const def = COLUMN_DEFINITIONS[activeColMenuId];
+      if (hideColumn(activeColMenuId)) {
+        closeColumnMenu();
+        tableRerenderCallback();
+        toast(`"${def ? def.label : activeColMenuId}" hidden from view`);
+      }
+    };
+  }
+
+  if (typeof document !== 'undefined') {
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#notion-col-menu') && !e.target.closest('.th-dots-btn') && !e.target.closest('th.notion-th-draggable')) {
+        closeColumnMenu();
+      }
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeColumnMenu();
+    });
+  }
+}
 
 export function renderTable(rows) {
   const isNotion = typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme') === 'notion';
+  const visibleCols = getVisibleColumns();
 
   const sorted = [...rows].sort((a, b) => {
     if (state.sort === 'date-asc') return a.date - b.date;
@@ -22,23 +222,90 @@ export function renderTable(rows) {
 
   const head = $('transaction-head');
   if (head) {
-    if (isNotion) {
-      head.innerHTML = `<tr>
-        <th class="col-title" style="min-width:180px"><span class="notion-th-icon">Aa</span> Expense</th>
-        <th class="col-amount align-right" style="min-width:110px"><span class="notion-th-icon">#</span> Amount</th>
-        <th class="col-category" style="min-width:110px"><span class="notion-th-icon">▾</span> Category</th>
-        <th class="col-date" style="min-width:110px"><span class="notion-th-icon">📅</span> Date</th>
-        <th class="col-account" style="min-width:90px"><span class="notion-th-icon">🏛</span> Account</th>
-      </tr>`;
-    } else {
-      head.innerHTML = `<tr>
-        <th>Date</th>
-        <th>Category</th>
-        <th>Expense / Note</th>
-        <th>Account</th>
-        <th class="align-right">Amount</th>
-      </tr>`;
-    }
+    const ths = visibleCols.map(colId => {
+      const def = COLUMN_DEFINITIONS[colId] || { id: colId, label: colId, icon: '', nonNotionLabel: colId, minWidth: '100px', align: 'left' };
+      const isRight = def.align === 'right';
+      if (isNotion) {
+        return `<th class="col-${colId} ${isRight ? 'align-right' : ''} notion-th-draggable" data-col="${colId}" style="min-width:${def.minWidth}" draggable="true">
+          <div class="th-content-wrap">
+            <div class="th-title-area">
+              <span class="notion-th-icon">${def.icon}</span>
+              <span class="th-name">${def.label}</span>
+            </div>
+            <button type="button" class="th-dots-btn" aria-label="Options for ${def.label} column" title="Options">•••</button>
+          </div>
+        </th>`;
+      }
+      return `<th class="col-${colId} ${isRight ? 'align-right' : ''} notion-th-draggable" data-col="${colId}" style="min-width:${def.minWidth}" draggable="true">
+        <div class="th-content-wrap">
+          <span class="th-name">${def.nonNotionLabel}</span>
+          <button type="button" class="th-dots-btn" aria-label="Options for ${def.nonNotionLabel} column" title="Options">•••</button>
+        </div>
+      </th>`;
+    }).join('');
+
+    head.innerHTML = `<tr>${ths}</tr>`;
+
+    // Attach listeners to th elements
+    head.querySelectorAll('th.notion-th-draggable').forEach(th => {
+      const colId = th.dataset.col;
+
+      th.onclick = (e) => {
+        e.stopPropagation();
+        openColumnMenu(colId, th);
+      };
+
+      th.ondragstart = (e) => {
+        activeDragCol = colId;
+        th.classList.add('th-dragging');
+        if (e.dataTransfer) {
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', colId);
+        }
+      };
+
+      th.ondragover = (e) => {
+        e.preventDefault();
+        if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+        const rect = th.getBoundingClientRect();
+        const isLeft = e.clientX < rect.left + rect.width / 2;
+        if (isLeft) {
+          th.classList.add('th-drag-over-left');
+          th.classList.remove('th-drag-over-right');
+        } else {
+          th.classList.add('th-drag-over-right');
+          th.classList.remove('th-drag-over-left');
+        }
+      };
+
+      th.ondragleave = () => {
+        th.classList.remove('th-drag-over-left', 'th-drag-over-right');
+      };
+
+      th.ondragend = () => {
+        if (typeof document !== 'undefined') {
+          document.querySelectorAll('th.notion-th-draggable').forEach(el => {
+            el.classList.remove('th-dragging', 'th-drag-over-left', 'th-drag-over-right');
+          });
+        }
+        activeDragCol = null;
+      };
+
+      th.ondrop = (e) => {
+        e.preventDefault();
+        th.classList.remove('th-drag-over-left', 'th-drag-over-right');
+        const sourceCol = activeDragCol || (e.dataTransfer && e.dataTransfer.getData('text/plain'));
+        const targetCol = colId;
+        if (sourceCol && targetCol && sourceCol !== targetCol) {
+          const rect = th.getBoundingClientRect();
+          const isLeft = e.clientX < rect.left + rect.width / 2;
+          if (reorderColumnTo(sourceCol, targetCol, isLeft ? 'before' : 'after')) {
+            tableRerenderCallback();
+            toast('Column reordered');
+          }
+        }
+      };
+    });
   }
 
   const txBody = $('transaction-body');
@@ -57,31 +324,35 @@ export function renderTable(rows) {
       const amountClass = `amount amount-${r.type}`;
       const amountPrefix = r.type === 'expense' ? '−' : (r.type === 'income' ? '+' : '');
 
-      if (isNotion) {
-        return `<tr>
-          <td class="notion-title-cell" title="${escapeHtml(fullTooltip)}">${noteDisplay}</td>
-          <td class="align-right ${amountClass}">${amountPrefix}${money(r.amount)}</td>
-          <td class="category-cell">${categoryPill(r.category)}</td>
-          <td class="date-cell">${dateFormatted}</td>
-          <td class="account-cell">${escapeHtml(r.account)}</td>
-        </tr>`;
-      }
-      return `<tr>
-        <td>${dateFormatted}</td>
-        <td>${categoryPill(r.category)}</td>
-        <td title="${escapeHtml(fullTooltip)}">${noteDisplay}</td>
-        <td>${escapeHtml(r.account)}</td>
-        <td class="align-right ${amountClass}">${amountPrefix}${money(r.amount)}</td>
-      </tr>`;
-    }).join('')) : `<tr><td colspan="5" class="empty-table">No transactions found for this period.</td></tr>`;
+      const tds = visibleCols.map(colId => {
+        if (colId === 'date') {
+          return isNotion
+            ? `<td class="date-cell">${dateFormatted}</td>`
+            : `<td>${dateFormatted}</td>`;
+        }
+        if (colId === 'category') {
+          return isNotion
+            ? `<td class="category-cell">${categoryPill(r.category)}</td>`
+            : `<td>${categoryPill(r.category)}</td>`;
+        }
+        if (colId === 'note') {
+          return isNotion
+            ? `<td class="notion-title-cell" title="${escapeHtml(fullTooltip)}">${noteDisplay}</td>`
+            : `<td title="${escapeHtml(fullTooltip)}">${noteDisplay}</td>`;
+        }
+        if (colId === 'account') {
+          return isNotion
+            ? `<td class="account-cell">${escapeHtml(r.account)}</td>`
+            : `<td>${escapeHtml(r.account)}</td>`;
+        }
+        if (colId === 'amount') {
+          return `<td class="align-right ${amountClass}">${amountPrefix}${money(r.amount)}</td>`;
+        }
+        return `<td></td>`;
+      }).join('');
 
-    if (isNotion && sliced.length) {
-      const newRow = document.createElement('tr');
-      newRow.className = 'notion-new-row';
-      newRow.innerHTML = `<td colspan="5" class="notion-new-cell"><span class="notion-plus-icon">+</span> <span class="notion-new-text">New transaction (Import file)</span></td>`;
-      newRow.onclick = () => $('file-input')?.click();
-      txBody.appendChild(newRow);
-    }
+      return `<tr>${tds}</tr>`;
+    }).join('')) : `<tr><td colspan="${visibleCols.length}" class="empty-table">No transactions found for this period.</td></tr>`;
   }
 
   // Footer Calculation Row
@@ -89,19 +360,30 @@ export function renderTable(rows) {
   if (foot) {
     if (isNotion) {
       const expenses = rows.filter(r => r.type === 'expense').reduce((s, r) => s + r.amount, 0);
-      foot.innerHTML = `<tr class="notion-calc-row">
-        <td class="notion-calc-cell"><span class="notion-calc-label">Count</span> <span class="notion-calc-val">${rows.length}</span></td>
-        <td class="notion-calc-cell align-right"><span class="notion-calc-label">Total Out</span> <span class="notion-calc-val">${money(expenses)}</span></td>
-        <td class="notion-calc-cell"></td>
-        <td class="notion-calc-cell"></td>
-        <td class="notion-calc-cell"></td>
-      </tr>`;
+      const cells = visibleCols.map((colId, index) => {
+        if (index === 0) {
+          return `<td class="notion-calc-cell"><span class="notion-calc-label">Count</span> <span class="notion-calc-val">${rows.length}</span></td>`;
+        }
+        if (colId === 'amount') {
+          return `<td class="notion-calc-cell align-right"><span class="notion-calc-label">Total Out</span> <span class="notion-calc-val">${money(expenses)}</span></td>`;
+        }
+        return `<td class="notion-calc-cell"></td>`;
+      }).join('');
+      foot.innerHTML = `<tr class="notion-calc-row">${cells}</tr>`;
     } else if (rows.length) {
       const sum = rows.reduce((s, r) => s + (r.type === 'expense' ? r.amount : -r.amount), 0);
-      foot.innerHTML = `<tr>
-        <td colspan="4" class="align-right" style="font-weight:500;font-size:11px;color:var(--muted)">SUM</td>
-        <td class="align-right" style="font-weight:500;font-size:12px">${money(Math.abs(sum))}</td>
-      </tr>`;
+      const hasAmount = visibleCols.includes('amount');
+      if (hasAmount) {
+        const colSpan = Math.max(1, visibleCols.length - 1);
+        foot.innerHTML = `<tr>
+          <td colspan="${colSpan}" class="align-right" style="font-weight:500;font-size:11px;color:var(--muted)">SUM</td>
+          <td class="align-right" style="font-weight:500;font-size:12px">${money(Math.abs(sum))}</td>
+        </tr>`;
+      } else {
+        foot.innerHTML = `<tr>
+          <td colspan="${visibleCols.length}" class="align-right" style="font-weight:500;font-size:12px;color:var(--muted)">Count: ${rows.length}</td>
+        </tr>`;
+      }
     } else {
       foot.innerHTML = '';
     }
@@ -139,13 +421,5 @@ export function renderTable(rows) {
           </div>
         </div>`;
     }).join('')) : `<div class="empty-table" style="padding:28px 16px">No transactions found for this period.</div>`;
-
-    if (isNotion && sliced.length) {
-      const mobileNew = document.createElement('div');
-      mobileNew.className = 'notion-mobile-new-btn';
-      mobileNew.innerHTML = `<span class="notion-plus-icon">+</span> Import more transactions`;
-      mobileNew.onclick = () => $('file-input')?.click();
-      mobileList.appendChild(mobileNew);
-    }
   }
 }
