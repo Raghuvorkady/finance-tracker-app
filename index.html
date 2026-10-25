@@ -7,8 +7,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=8" />
-    <link rel="stylesheet" href="enhancements.css?v=8" />
+    <link rel="stylesheet" href="styles.css?v=9" />
+    <link rel="stylesheet" href="enhancements.css?v=9" />
   </head>
   <body>
     <main class="app-shell">
@@ -313,6 +313,11 @@
       </nav>
     </main>
     <div id="toast" class="toast" role="status"></div>
+    <div id="top-loading-bar" class="top-loading-bar hidden" role="progressbar" aria-label="Loading progress"></div>
+    <div id="loading-indicator" class="loading-indicator hidden" role="status" aria-live="polite">
+      <div class="loading-spinner"></div>
+      <span id="loading-text" class="loading-text">Loading...</span>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script type="module" src="js/app.js"></script>
   </body>

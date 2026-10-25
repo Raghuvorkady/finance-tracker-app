@@ -2,13 +2,24 @@
  * Transactions Table & Mobile Card View Rendering
  */
 
-import { $, money, escapeHtml, toast, setStorage } from './utils.js';
+import { $, money, escapeHtml, toast, setStorage, showLoading, hideLoading } from './utils.js';
 import { state, DEFAULT_COLUMN_ORDER, COLUMN_DEFINITIONS } from './state.js';
 import { categoryPill, categoryColor, getNotionIcon, formatCategory } from './categories.js';
 
 let tableRerenderCallback = () => {};
 export function registerTableRenderCallback(fn) {
   tableRerenderCallback = fn;
+}
+
+let tableDisplayLimit = 100;
+export function resetTableDisplayLimit() {
+  tableDisplayLimit = 100;
+}
+export function getTableDisplayLimit() {
+  return tableDisplayLimit;
+}
+export function setTableDisplayLimit(limit) {
+  tableDisplayLimit = limit;
 }
 
 let activeDragCol = null;
@@ -219,7 +230,10 @@ export function renderTable(rows) {
     return b.date - a.date;
   });
 
-  const sliced = sorted;
+  const totalCount = sorted.length;
+  const sliced = sorted.slice(0, tableDisplayLimit);
+  const hasMore = totalCount > tableDisplayLimit;
+
   if ($('transaction-count')) $('transaction-count').textContent = rows.length;
   if ($('c-tab-tx-count')) $('c-tab-tx-count').textContent = rows.length;
 
@@ -314,7 +328,7 @@ export function renderTable(rows) {
 
   const txBody = $('transaction-body');
   if (txBody) {
-    txBody.innerHTML = sliced.length ? (sliced.map(r => {
+    let rowsHtml = sliced.map(r => {
       const noteText = r.note && r.note !== '—' ? r.note : r.category;
       const hasDesc = Boolean(r.description && r.description !== r.note && r.description !== '—');
       const fullTooltip = hasDesc ? `${noteText} — ${r.description}` : noteText;
@@ -356,7 +370,44 @@ export function renderTable(rows) {
       }).join('');
 
       return `<tr>${tds}</tr>`;
-    }).join('')) : `<tr><td colspan="${visibleCols.length}" class="empty-table">No transactions found for this period.</td></tr>`;
+    }).join('');
+
+    if (hasMore) {
+      rowsHtml += `<tr class="tx-load-more-row">
+        <td colspan="${visibleCols.length}" class="tx-load-more-cell">
+          <div class="tx-load-more-wrap">
+            <span class="tx-load-more-info">Showing ${sliced.length} of ${totalCount.toLocaleString('en-IN')} transactions</span>
+            <button type="button" class="tx-load-more-btn" id="tx-load-more-btn">Load more (+100)</button>
+            <button type="button" class="tx-load-all-btn" id="tx-load-all-btn">Show all (${totalCount.toLocaleString('en-IN')})</button>
+          </div>
+        </td>
+      </tr>`;
+    }
+
+    txBody.innerHTML = sliced.length ? rowsHtml : `<tr><td colspan="${visibleCols.length}" class="empty-table">No transactions found for this period.</td></tr>`;
+
+    if (hasMore) {
+      const moreBtn = $('tx-load-more-btn');
+      if (moreBtn) {
+        moreBtn.onclick = () => {
+          tableDisplayLimit = Math.min(totalCount, tableDisplayLimit + 100);
+          renderTable(rows);
+        };
+      }
+      const allBtn = $('tx-load-all-btn');
+      if (allBtn) {
+        allBtn.onclick = () => {
+          showLoading('Rendering all transactions...');
+          requestAnimationFrame(() => {
+            setTimeout(() => {
+              tableDisplayLimit = totalCount;
+              renderTable(rows);
+              hideLoading();
+            }, 16);
+          });
+        };
+      }
+    }
   }
 
   // Footer Calculation Row
@@ -396,7 +447,7 @@ export function renderTable(rows) {
   // Mobile List View rendering
   const mobileList = $('mobile-tx-list');
   if (mobileList) {
-    mobileList.innerHTML = sliced.length ? (sliced.map(r => {
+    let mobHtml = sliced.map(r => {
       const noteText = r.note && r.note !== '—' ? r.note : r.category;
       const hasDesc = Boolean(r.description && r.description !== r.note && r.description !== '—');
       const fullTooltip = hasDesc ? `${noteText} — ${r.description}` : noteText;
@@ -424,6 +475,39 @@ export function renderTable(rows) {
             <div class="tx-amount ${amountClass}">${amountPrefix}${money(r.amount)}</div>
           </div>
         </div>`;
-    }).join('')) : `<div class="empty-table" style="padding:28px 16px">No transactions found for this period.</div>`;
+    }).join('');
+
+    if (hasMore) {
+      mobHtml += `<div class="tx-load-more-wrap mobile-load-more">
+        <span class="tx-load-more-info">Showing ${sliced.length} of ${totalCount.toLocaleString('en-IN')}</span>
+        <button type="button" class="tx-load-more-btn" id="mobile-load-more-btn">Load more (+100)</button>
+      </div>`;
+    }
+
+    mobileList.innerHTML = sliced.length ? mobHtml : `<div class="empty-table" style="padding:28px 16px">No transactions found for this period.</div>`;
+
+    if (hasMore) {
+      const mobBtn = $('mobile-load-more-btn');
+      if (mobBtn) {
+        mobBtn.onclick = () => {
+          tableDisplayLimit = Math.min(totalCount, tableDisplayLimit + 100);
+          renderTable(rows);
+        };
+      }
+    }
+  }
+
+  // Automatic load on scroll
+  if (typeof document !== 'undefined' && typeof document.querySelector === 'function') {
+    const tableWrap = document.querySelector('.table-wrap');
+    if (tableWrap && !tableWrap._hasScrollListener) {
+      tableWrap._hasScrollListener = true;
+      tableWrap.addEventListener('scroll', () => {
+        if (tableDisplayLimit < rows.length && (tableWrap.scrollTop + tableWrap.clientHeight >= tableWrap.scrollHeight - 250)) {
+          tableDisplayLimit = Math.min(rows.length, tableDisplayLimit + 100);
+          renderTable(rows);
+        }
+      }, { passive: true });
+    }
   }
 }

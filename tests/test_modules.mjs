@@ -71,6 +71,9 @@ global.document = {
     }
     return [];
   },
+  querySelector: (selector) => {
+    return null;
+  },
   addEventListener: () => {}
 };
 

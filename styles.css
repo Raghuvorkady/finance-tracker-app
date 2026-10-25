@@ -3003,6 +3003,116 @@ td.account-cell{color:var(--muted);font-size:calc(12px * var(--font-scale, 1))}
   font-variant-numeric:tabular-nums;
 }
 
+/* ── Loading Indicators & Progressive Table Loading ── */
+.top-loading-bar{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:3px;
+  z-index:99999;
+  background:linear-gradient(90deg, #2383e2, #0f7b6c, #8372c7, #2383e2);
+  background-size:200% 100%;
+  animation:topBarSlide 1.1s ease-in-out infinite;
+  pointer-events:none;
+}
+.top-loading-bar.hidden{
+  display:none !important;
+}
+@keyframes topBarSlide{
+  0%{background-position:200% 0}
+  100%{background-position:-200% 0}
+}
+
+.loading-indicator{
+  position:fixed;
+  bottom:24px;
+  right:24px;
+  z-index:99999;
+  display:inline-flex;
+  align-items:center;
+  gap:9px;
+  padding:7px 14px;
+  background:var(--card, #ffffff);
+  color:var(--ink, #37352f);
+  border:1px solid var(--line, #edece9);
+  border-radius:24px;
+  box-shadow:0 6px 20px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.04);
+  font-size:calc(12.5px * var(--font-scale, 1));
+  font-weight:500;
+  font-family:inherit;
+  pointer-events:none;
+  transition:all 0.2s ease;
+}
+.loading-indicator.hidden{
+  opacity:0;
+  transform:translateY(8px);
+  pointer-events:none;
+  display:none !important;
+}
+.loading-spinner{
+  width:14px;
+  height:14px;
+  border:2px solid rgba(55, 53, 47, 0.15);
+  border-top-color:#2383e2;
+  border-radius:50%;
+  animation:spinnerRotate 0.75s linear infinite;
+  flex-shrink:0;
+}
+@keyframes spinnerRotate{
+  to{transform:rotate(360deg)}
+}
+
+/* Progressive Table Load More */
+.tx-load-more-row{
+  background:transparent !important;
+}
+.tx-load-more-cell{
+  padding:12px 14px !important;
+  text-align:center;
+  border-bottom:1px solid var(--line, #edece9);
+}
+.tx-load-more-wrap{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  font-size:calc(12.5px * var(--font-scale, 1));
+}
+.tx-load-more-info{
+  color:var(--muted, #787774);
+}
+.tx-load-more-btn,
+.tx-load-all-btn{
+  background:rgba(55, 53, 47, 0.06);
+  border:1px solid transparent;
+  border-radius:5px;
+  padding:4px 12px;
+  font-size:calc(12px * var(--font-scale, 1));
+  font-family:inherit;
+  font-weight:500;
+  color:var(--ink, #37352f);
+  cursor:pointer;
+  transition:all 0.15s ease;
+}
+.tx-load-more-btn:hover,
+.tx-load-all-btn:hover{
+  background:rgba(55, 53, 47, 0.12);
+}
+[data-theme="notion"] .tx-load-more-btn,
+[data-theme="notion"] .tx-load-all-btn{
+  background:#f1f0ef;
+  color:#37352f;
+}
+[data-theme="notion"] .tx-load-more-btn:hover,
+[data-theme="notion"] .tx-load-all-btn:hover{
+  background:#e3e2e0;
+}
+.mobile-load-more{
+  padding:16px 8px;
+  border-bottom:1px solid var(--line);
+}
+
 /* ══════════════════════════════════════════════════════
    MOBILE THEME: iOS Money Manager Style
    ══════════════════════════════════════════════════════ */

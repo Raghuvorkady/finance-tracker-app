@@ -5,20 +5,45 @@
 import { state } from './state.js';
 import { shortDate } from './utils.js';
 
+let cachedDataRef = null;
+let cachedMinDate = null;
+let cachedMaxDate = null;
+
+export function getDataDateRange() {
+  if (cachedDataRef === state.data && cachedMinDate && cachedMaxDate) {
+    return { min: cachedMinDate, max: cachedMaxDate };
+  }
+  if (!state.data.length) {
+    const now = new Date();
+    return { min: now, max: now };
+  }
+  let minTime = Infinity;
+  let maxTime = -Infinity;
+  for (let i = 0; i < state.data.length; i++) {
+    const t = +state.data[i].date;
+    if (t < minTime) minTime = t;
+    if (t > maxTime) maxTime = t;
+  }
+  cachedDataRef = state.data;
+  cachedMinDate = new Date(minTime);
+  cachedMinDate.setHours(0, 0, 0, 0);
+  cachedMaxDate = new Date(maxTime);
+  cachedMaxDate.setHours(23, 59, 59, 999);
+  return { min: cachedMinDate, max: cachedMaxDate };
+}
+
 export function bounds() {
   const anchor = state.anchor || new Date();
   if (state.period === 'all') {
     if (!state.data.length) return { start: new Date(), end: new Date(), label: 'All activity' };
-    const minD = new Date(Math.min(...state.data.map(r => +r.date)));
-    minD.setHours(0, 0, 0, 0);
-    const maxD = new Date(Math.max(...state.data.map(r => +r.date)));
-    maxD.setHours(23, 59, 59, 999);
-    return { start: minD, end: maxD, label: 'All activity' };
+    const { min, max } = getDataDateRange();
+    return { start: new Date(min), end: new Date(max), label: 'All activity' };
   }
   if (state.period === 'custom') {
-    const start = state.customStart ? new Date(`${state.customStart}T00:00:00`) : new Date(Math.min(...state.data.map(r => +r.date)));
+    const { min, max } = getDataDateRange();
+    const start = state.customStart ? new Date(`${state.customStart}T00:00:00`) : new Date(min);
     start.setHours(0, 0, 0, 0);
-    const end = state.customEnd ? new Date(`${state.customEnd}T23:59:59.999`) : new Date(Math.max(...state.data.map(r => +r.date)));
+    const end = state.customEnd ? new Date(`${state.customEnd}T23:59:59.999`) : new Date(max);
     end.setHours(23, 59, 59, 999);
     return { start, end, label: `${shortDate(start)} – ${shortDate(end)}` };
   }

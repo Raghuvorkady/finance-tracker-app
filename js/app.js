@@ -3,11 +3,11 @@
  */
 
 import { state } from './state.js';
-import { $, money, periodDays, toast } from './utils.js';
+import { $, money, periodDays, toast, showLoading, hideLoading } from './utils.js';
 import { normalizeRows } from './parser.js';
 import { bounds, movePeriod, priorExpense } from './dates.js';
 import { renderDonut, renderMacroDonut } from './charts.js';
-import { renderTable, registerTableRenderCallback, initColumnMenu } from './table.js';
+import { renderTable, registerTableRenderCallback, initColumnMenu, resetTableDisplayLimit } from './table.js';
 import {
   filtered,
   categoryTotals,
@@ -123,6 +123,7 @@ function initEventListeners() {
         return;
       }
       try {
+        showLoading('Reading spreadsheet...');
         const wb = window.XLSX.read(await file.arrayBuffer(), { type: 'array', cellDates: true });
         const sheet = wb.Sheets[wb.SheetNames[0]];
         const rows = window.XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
@@ -144,9 +145,12 @@ function initEventListeners() {
         $('app-topbar')?.classList.remove('hidden');
         $('bottom-nav')?.classList.remove('hidden');
 
+        resetTableDisplayLimit();
         render();
+        hideLoading();
         toast(`${state.data.length.toLocaleString('en-IN')} transactions imported from ${file.name}`);
       } catch (err) {
+        hideLoading();
         toast(err.message || 'Could not read that workbook.');
         console.error(err);
       }
@@ -156,16 +160,50 @@ function initEventListeners() {
   // Period Tabs
   document.querySelectorAll('[data-period]').forEach(btn => {
     btn.addEventListener('click', () => {
-      state.period = btn.dataset.period;
+      const nextPeriod = btn.dataset.period;
+      if (state.period === nextPeriod) return;
+      state.period = nextPeriod;
       document.querySelectorAll('[data-period]').forEach(b => b.classList.toggle('selected', b === btn));
       $('custom-dates')?.classList.toggle('hidden', state.period !== 'custom');
-      render();
+      
+      showLoading(state.period === 'all' ? 'Loading all activity...' : `Loading ${state.period}...`);
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          resetTableDisplayLimit();
+          render();
+          hideLoading();
+        }, 12);
+      });
     });
   });
 
   // Prev / Next Period
-  if ($('prev-period')) $('prev-period').onclick = () => { movePeriod(-1); render(); };
-  if ($('next-period')) $('next-period').onclick = () => { movePeriod(1); render(); };
+  if ($('prev-period')) {
+    $('prev-period').onclick = () => {
+      showLoading('Updating period...');
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          movePeriod(-1);
+          resetTableDisplayLimit();
+          render();
+          hideLoading();
+        }, 12);
+      });
+    };
+  }
+  if ($('next-period')) {
+    $('next-period').onclick = () => {
+      showLoading('Updating period...');
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          movePeriod(1);
+          resetTableDisplayLimit();
+          render();
+          hideLoading();
+        }, 12);
+      });
+    };
+  }
 
   // Custom Dates
   if ($('custom-start')) $('custom-start').onchange = (e) => { state.customStart = e.target.value; render(); };

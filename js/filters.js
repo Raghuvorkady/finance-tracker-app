@@ -2,11 +2,11 @@
  * Filter & Sort Controls, Multi-Select Popovers & State Synchronization
  */
 
-import { $, escapeHtml, toast } from './utils.js';
+import { $, escapeHtml, toast, showLoading, hideLoading } from './utils.js';
 import { state, COLUMN_DEFINITIONS } from './state.js';
 import { bounds } from './dates.js';
 import { categoryColor, formatCategory } from './categories.js';
-import { hasCustomColumns, resetColumns, moveColumn, toggleColumn, getVisibleColumns } from './table.js';
+import { hasCustomColumns, resetColumns, moveColumn, toggleColumn, getVisibleColumns, resetTableDisplayLimit } from './table.js';
 
 let onRender = () => {};
 export function registerRenderCallback(fn) {
@@ -14,10 +14,11 @@ export function registerRenderCallback(fn) {
 }
 
 export function filtered() {
+  const isAll = state.period === 'all';
   const { start, end } = bounds();
-  const lower = state.search.toLowerCase();
+  const lower = state.search ? state.search.toLowerCase() : '';
   return state.data.filter(r =>
-    r.date >= start && r.date <= end &&
+    (isAll || (r.date >= start && r.date <= end)) &&
     (state.type === 'all' || r.type === state.type) &&
     (state.selectedCategories.size === 0 || state.selectedCategories.has(r.category)) &&
     (state.selectedAccounts.size === 0 || state.selectedAccounts.has(r.account)) &&
@@ -309,8 +310,9 @@ export function populateColsList() {
 }
 
 export function populateCategories() {
+  const isAll = state.period === 'all';
   const { start, end } = bounds();
-  const periodRows = state.data.filter(r => r.date >= start && r.date <= end);
+  const periodRows = isAll ? state.data : state.data.filter(r => r.date >= start && r.date <= end);
   let rows = periodRows;
   if (state.type !== 'all') {
     rows = periodRows.filter(r => r.type === state.type);
@@ -361,8 +363,9 @@ export function populateCategories() {
 }
 
 export function populateAccounts() {
+  const isAll = state.period === 'all';
   const { start, end } = bounds();
-  const periodRows = state.data.filter(r => r.date >= start && r.date <= end);
+  const periodRows = isAll ? state.data : state.data.filter(r => r.date >= start && r.date <= end);
   let rows = periodRows;
   if (state.type !== 'all') {
     rows = periodRows.filter(r => r.type === state.type);
@@ -420,6 +423,7 @@ export function setTypeFilter(newType) {
   document.querySelectorAll('#tx-type-pills [data-tx-type]').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.txType === newType);
   });
+  resetTableDisplayLimit();
   onRender();
 }
 
@@ -427,6 +431,7 @@ export function setSort(newSort) {
   state.sort = newSort;
   syncSortPill();
   closeAllPopovers();
+  resetTableDisplayLimit();
   onRender();
 }
 
@@ -643,6 +648,7 @@ export function initFilterListeners() {
       if ($('search')) $('search').value = '';
       state.sort = 'date-desc';
       resetColumns();
+      resetTableDisplayLimit();
       closeAllPopovers();
       syncSortPill();
       syncFilterPills();
@@ -657,6 +663,7 @@ export function initFilterListeners() {
     $('clear-category').onclick = () => {
       state.selectedCategories.clear();
       state.category = 'all';
+      resetTableDisplayLimit();
       syncFilterPills();
       onRender();
     };
@@ -666,6 +673,7 @@ export function initFilterListeners() {
   if ($('search')) {
     $('search').oninput = (e) => {
       state.search = e.target.value;
+      resetTableDisplayLimit();
       syncFilterPills();
       onRender();
     };

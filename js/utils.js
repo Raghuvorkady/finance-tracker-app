@@ -58,3 +58,21 @@ export function toast(message) {
   el.classList.add('visible');
   setTimeout(() => el.classList.remove('visible'), 2600);
 }
+
+export function showLoading(message = 'Loading...') {
+  const bar = $('top-loading-bar');
+  const indicator = $('loading-indicator');
+  const text = $('loading-text');
+  if (bar) bar.classList.remove('hidden');
+  if (indicator) {
+    if (text) text.textContent = message;
+    indicator.classList.remove('hidden');
+  }
+}
+
+export function hideLoading() {
+  const bar = $('top-loading-bar');
+  const indicator = $('loading-indicator');
+  if (bar) bar.classList.add('hidden');
+  if (indicator) indicator.classList.add('hidden');
+}
