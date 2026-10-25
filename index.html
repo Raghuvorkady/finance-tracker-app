@@ -7,8 +7,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=7" />
-    <link rel="stylesheet" href="enhancements.css?v=7" />
+    <link rel="stylesheet" href="styles.css?v=8" />
+    <link rel="stylesheet" href="enhancements.css?v=8" />
   </head>
   <body>
     <main class="app-shell">
@@ -152,7 +152,7 @@
                 <h2 id="transactions-heading">Transactions <span id="transaction-count" class="count-badge">0</span></h2>
               </div>
               <div class="notion-tx-controls">
-                <!-- Line 1: Type Tabs (Left) + Search (Right) -->
+                <!-- Line 1: Type Tabs -->
                 <div class="notion-controls-row notion-controls-top">
                   <div class="tx-type-pills" id="tx-type-pills" role="group" aria-label="Filter transactions by type">
                     <button class="tx-pill active" data-tx-type="all">All</button>
@@ -160,16 +160,9 @@
                     <button class="tx-pill" data-tx-type="income"><span class="tx-legend-dot dot-income"></span> Income</button>
                     <button class="tx-pill" data-tx-type="transfer"><span class="tx-legend-dot dot-transfer"></span> Transfers</button>
                   </div>
-                  <div class="notion-search-wrap">
-                    <span class="notion-search-icon">🔍</span>
-                    <input id="search" type="search" placeholder="Search..." autocomplete="off" spellcheck="false" />
-                  </div>
                 </div>
 
-                <!-- Divider -->
-                <div class="notion-controls-divider"></div>
-
-                <!-- Line 2: Filter & Sort Pills (Left) + Reset (Right) -->
+                <!-- Line 2: Filter & Sort Pills (Left) + Search & Reset (Right) -->
                 <div class="notion-controls-row notion-controls-bottom">
                   <div class="notion-pills-left">
                     <!-- Sort Pill -->
@@ -252,8 +245,12 @@
                     </div>
                   </div>
 
-                  <!-- Reset Button (Far Right) -->
+                  <!-- Right: Search Field & Reset Button (Aligned with Sort & Filters) -->
                   <div class="notion-pills-right">
+                    <div class="notion-search-wrap">
+                      <span class="notion-search-icon">🔍</span>
+                      <input id="search" type="search" placeholder="Search..." autocomplete="off" spellcheck="false" />
+                    </div>
                     <button class="notion-reset-filter-btn hidden" id="notion-reset-filters" title="Reset all filters, sort, and columns">
                       Reset
                     </button>

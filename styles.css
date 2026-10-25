@@ -1423,7 +1423,8 @@ select{
   display:flex;
   flex-direction:column;
   width:100%;
-  margin-top:2px;
+  gap:10px;
+  margin-top:4px;
 }
 .notion-controls-row{
   display:flex;
@@ -1436,10 +1437,7 @@ select{
   flex-wrap:nowrap;
 }
 .notion-controls-divider{
-  height:1px;
-  background:var(--line, #edece9);
-  margin:10px 0;
-  width:100%;
+  display:none;
 }
 .notion-controls-bottom{
   display:flex;
@@ -1454,7 +1452,6 @@ select{
   position:relative;
   display:inline-flex;
   align-items:center;
-  margin-left:auto;
 }
 .notion-search-icon{
   position:absolute;
@@ -1465,7 +1462,7 @@ select{
 }
 .notion-search-wrap input#search{
   height:28px;
-  width:180px;
+  width:160px;
   padding:0 10px 0 26px;
   border-radius:4px;
   border:1px solid var(--line, #edece9);
@@ -1475,11 +1472,12 @@ select{
   color:var(--ink, #37352f);
   outline:none;
   transition:all 0.15s ease;
+  box-sizing:border-box;
 }
 .notion-search-wrap input#search:focus{
   border-color:#2383e2;
-  box-shadow:0 0 0 2px rgba(35, 131, 226, 0.2);
-  width:220px;
+  box-shadow:0 0 0 2px rgba(35, 131, 226, 0.18);
+  width:190px;
 }
 
 /* Filter & Sort Pills */
@@ -2754,9 +2752,9 @@ td.account-cell{color:var(--muted);font-size:calc(12px * var(--font-scale, 1))}
 }
 [data-theme="notion"] .tx-type-pills{
   background:transparent;
-  border:1px solid #edece9;
-  border-radius:5px;
-  padding:2px;
+  border:none;
+  padding:0;
+  gap:2px;
 }
 [data-theme="notion"] .tx-pill{
   border-radius:4px;
@@ -3303,22 +3301,34 @@ td.account-cell{color:var(--muted);font-size:calc(12px * var(--font-scale, 1))}
     font-size:calc(12px * var(--font-scale, 1));
   }
   .notion-controls-top{
+    align-items:stretch;
+  }
+  .notion-controls-bottom{
     flex-direction:column;
     align-items:stretch;
     gap:8px;
   }
-  .notion-search-wrap{
+  .notion-pills-left{
+    overflow-x:auto;
+    padding-bottom:2px;
+    -webkit-overflow-scrolling:touch;
+  }
+  .notion-pills-right{
     width:100%;
+    margin-left:0;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .notion-search-wrap{
+    flex:1;
+    min-width:0;
   }
   .notion-search-wrap input#search{
     width:100%;
   }
   .notion-search-wrap input#search:focus{
     width:100%;
-  }
-  .notion-controls-bottom{
-    flex-wrap:wrap;
-    gap:8px;
   }
   .notion-popover{
     max-width:calc(100vw - 32px);
