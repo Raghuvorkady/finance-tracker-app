@@ -4042,19 +4042,37 @@ td.account-cell{color:var(--muted);font-size:calc(12px * var(--font-scale, 1))}
 }
 
 /* ── Panel Heading Controls & Chart View Switcher ── */
-.panel-heading-left {
+.spend-panel .panel-heading {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.panel-heading-left {
+  display: inline-flex;
+  align-items: center;
   gap: 8px;
+  flex-shrink: 0;
+}
+.panel-heading-left h2 {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
 }
 .chart-view-toggle {
   display: inline-flex;
   align-items: center;
   background: rgba(0, 0, 0, 0.04);
-  padding: 3px;
-  border-radius: 8px;
+  padding: 2.5px;
+  border-radius: 7px;
   border: 1px solid var(--line, #e2e8f0);
   gap: 2px;
+  width: auto !important;
+  max-width: fit-content;
+  flex-shrink: 0;
+  box-sizing: border-box;
 }
 [data-theme="notion"] .chart-view-toggle {
   background: #f7f6f5;
@@ -4064,17 +4082,21 @@ td.account-cell{color:var(--muted);font-size:calc(12px * var(--font-scale, 1))}
   border: none;
   background: transparent;
   padding: 4px 10px;
-  border-radius: 6px;
+  border-radius: 5px;
   font-size: calc(11.5px * var(--font-scale, 1));
-  font-weight: 600;
+  font-weight: 500;
   color: var(--muted, #64748b);
   cursor: pointer;
   transition: all 0.15s ease;
   font-family: inherit;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 4px;
   user-select: none;
+  line-height: 1;
+  min-height: 26px;
+  white-space: nowrap;
 }
 .chart-view-btn:hover {
   color: var(--ink, #1e293b);
@@ -4083,6 +4105,7 @@ td.account-cell{color:var(--muted);font-size:calc(12px * var(--font-scale, 1))}
 .chart-view-btn.selected {
   background: var(--card, #ffffff);
   color: var(--ink, #0f172a);
+  font-weight: 600;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 [data-theme="notion"] .chart-view-btn.selected {
@@ -4306,6 +4329,32 @@ td.account-cell{color:var(--muted);font-size:calc(12px * var(--font-scale, 1))}
   .trend-summary-strip {
     grid-template-columns: 1fr;
     gap: 8px;
+  }
+  .spend-panel .panel-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .panel-heading-left {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+  }
+  .panel-heading-left h2 {
+    font-size: calc(15px * var(--font-scale, 1));
+    white-space: nowrap;
+  }
+  .chart-view-toggle {
+    width: auto !important;
+    flex-shrink: 0;
+  }
+  .chart-view-btn {
+    padding: 3.5px 8px;
+    font-size: calc(11px * var(--font-scale, 1));
+    min-height: 25px;
   }
 }
 
