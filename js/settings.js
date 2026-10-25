@@ -64,7 +64,7 @@ export function setTheme(theme) {
 }
 
 export function setActionLayout(mode) {
-  const valid = ['existing', 'p1', 'p2', 'p3'].includes(mode) ? mode : 'existing';
+  const valid = ['p1', 'existing', 'p2', 'p3'].includes(mode) ? mode : 'p1';
   document.documentElement.setAttribute('data-action-layout', valid);
   setStorage('ledgerly-action-layout', valid);
   document.querySelectorAll('[data-action-mode]').forEach(btn => {
@@ -93,8 +93,8 @@ export function initSettings() {
   setLayoutView(savedLayout);
   const savedTab = getStorage('ledgerly-active-c-tab', 'transactions');
   setOptionCTab(savedTab);
-  const savedActionLayout = getStorage('ledgerly-action-layout', 'existing');
-  setActionLayout(savedActionLayout);
+  const savedActionLayout = getStorage('ledgerly-action-layout', 'p1');
+  setActionLayout(savedActionLayout === 'existing' ? 'p1' : savedActionLayout);
 }
 
 export function initSettingsListeners() {
@@ -142,15 +142,6 @@ export function initSettingsListeners() {
     };
   }
 
-  // Mobile Bottom Nav More Tab (Proposal 3)
-  const bottomNavMore = $('bottom-nav-more');
-  if (bottomNavMore) {
-    bottomNavMore.onclick = (e) => {
-      e.stopPropagation();
-      openBottomSheet();
-    };
-  }
-
   // Bottom Sheet backdrop & close button
   const sheetClose = $('sheet-close-btn');
   if (sheetClose) sheetClose.onclick = () => closeBottomSheet();
@@ -190,35 +181,4 @@ export function initSettingsListeners() {
   // Sheet font stepper
   if ($('sheet-font-dec')) $('sheet-font-dec').onclick = () => adjustFontScale(-0.1);
   if ($('sheet-font-inc')) $('sheet-font-inc').onclick = () => adjustFontScale(+0.1);
-
-  // Proposal 2 Table Export Pill
-  const tableExpBtn = $('table-export-btn');
-  const tableExpPopover = $('table-export-popover');
-  if (tableExpBtn && tableExpPopover) {
-    tableExpBtn.onclick = (e) => {
-      e.stopPropagation();
-      const opening = tableExpPopover.classList.contains('hidden');
-      closeAllPopovers();
-      if (opening) {
-        tableExpPopover.classList.remove('hidden');
-        tableExpBtn.setAttribute('aria-expanded', 'true');
-      }
-    };
-  }
-  const tableExpFiltered = $('table-export-filtered');
-  if (tableExpFiltered) {
-    tableExpFiltered.onclick = (e) => {
-      e.stopPropagation();
-      closeAllPopovers();
-      downloadCsv(false);
-    };
-  }
-  const tableExpAll = $('table-export-all');
-  if (tableExpAll) {
-    tableExpAll.onclick = (e) => {
-      e.stopPropagation();
-      closeAllPopovers();
-      downloadCsv(true);
-    };
-  }
 }

@@ -3786,10 +3786,9 @@ td.account-cell{color:var(--muted);font-size:calc(12px * var(--font-scale, 1))}
 }
 
 /* ══════════════════════════════════════════════════════
-   ACTION LAYOUT MODES (Proposals 1, 2, 3 Testing System)
+   MOBILE HAMBURGER & BOTTOM SHEET ACTIONS
    ══════════════════════════════════════════════════════ */
 
-/* Default Baseline Elements */
 .hamburger-btn {
   display: none;
   width: 32px;
@@ -3810,49 +3809,15 @@ td.account-cell{color:var(--muted);font-size:calc(12px * var(--font-scale, 1))}
   border-color: rgba(55, 53, 47, 0.2);
 }
 
-.table-export-wrap {
-  display: none;
-}
-.table-export-wrap .notion-pill {
-  color: var(--muted, #787774);
-}
-.table-export-wrap .notion-pill:hover {
-  color: var(--ink, #37352f);
-}
-
-.bottom-nav-more {
-  display: none;
-}
-
-/* ── Proposal 1: Mobile Hamburger Sheet ── */
+/* On mobile (≤ 768px): Hide desktop topbar action buttons and show sleek hamburger button */
 @media (max-width: 768px) {
-  [data-action-layout="p1"] .topbar-actions .display-dropdown-wrap,
-  [data-action-layout="p1"] .topbar-actions label[for="file-input"],
-  [data-action-layout="p1"] .topbar-actions .export-dropdown-wrap {
+  .topbar-actions .display-dropdown-wrap,
+  .topbar-actions label[for="file-input"],
+  .topbar-actions .export-dropdown-wrap {
     display: none !important;
   }
-  [data-action-layout="p1"] .hamburger-btn {
+  .hamburger-btn {
     display: inline-flex !important;
-  }
-}
-
-/* ── Proposal 2: Table Export (Export moved from Topbar to Table Toolbar) ── */
-[data-action-layout="p2"] .export-dropdown-wrap {
-  display: none !important;
-}
-[data-action-layout="p2"] .table-export-wrap {
-  display: inline-flex !important;
-}
-
-/* ── Proposal 3: Bottom Nav More Tab ── */
-@media (max-width: 768px) {
-  [data-action-layout="p3"] .topbar-actions .display-dropdown-wrap,
-  [data-action-layout="p3"] .topbar-actions label[for="file-input"],
-  [data-action-layout="p3"] .topbar-actions .export-dropdown-wrap {
-    display: none !important;
-  }
-  [data-action-layout="p3"] .bottom-nav-more {
-    display: flex !important;
   }
 }
 

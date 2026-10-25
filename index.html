@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=16" />
+    <link rel="stylesheet" href="styles.css?v=17" />
     <link rel="stylesheet" href="enhancements.css?v=15" />
   </head>
   <body>
@@ -50,15 +50,6 @@
                   <button data-view-mode="a" class="selected">Stacked</button>
                   <button data-view-mode="b">Split</button>
                   <button data-view-mode="c">Tabbed</button>
-                </div>
-              </div>
-              <div class="display-menu-divider"></div>
-              <div class="display-menu-row">
-                <div class="display-segmented" role="group" aria-label="Action layout mode" id="action-layout-options">
-                  <button data-action-mode="existing" class="selected" title="Baseline: 3 topbar buttons">Default</button>
-                  <button data-action-mode="p1" title="Proposal 1: Mobile Hamburger Sheet">Prop 1</button>
-                  <button data-action-mode="p2" title="Proposal 2: Table Export">Prop 2</button>
-                  <button data-action-mode="p3" title="Proposal 3: Bottom Nav More Tab">Prop 3</button>
                 </div>
               </div>
             </div>
@@ -287,24 +278,6 @@
                         <div class="notion-cols-list hidden" id="cols-list"></div>
                       </div>
                     </div>
-
-                    <!-- Table Export Pill (Active in Proposal 2) -->
-                    <div class="notion-pill-wrap table-export-wrap" id="table-export-wrap">
-                      <button class="notion-pill" id="table-export-btn" aria-label="Export transactions" aria-haspopup="true" aria-expanded="false">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-                        </svg>
-                        <span class="pill-label">Export</span>
-                        <span class="pill-chevron"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-                      </button>
-                      <div class="notion-popover hidden" id="table-export-popover" role="menu">
-                        <div class="notion-popover-header">Export CSV</div>
-                        <div class="notion-popover-list">
-                          <button class="notion-menu-item" id="table-export-filtered"><span class="sort-icon">⚡</span> Filtered view</button>
-                          <button class="notion-menu-item" id="table-export-all"><span class="sort-icon">📦</span> All transactions</button>
-                        </div>
-                      </div>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -353,7 +326,6 @@
         <button class="bottom-nav-item active" data-nav="overview"><span>▦</span>Overview</button>
         <button class="bottom-nav-item" data-nav="spending"><span>↗</span>Spending</button>
         <button class="bottom-nav-item" data-nav="transactions"><span>◫</span>Txns</button>
-        <button class="bottom-nav-item bottom-nav-more" id="bottom-nav-more" data-nav="more"><span>⋯</span>More</button>
       </nav>
     </main>
     <div id="toast" class="toast" role="status"></div>
@@ -421,15 +393,6 @@
               <button data-view-mode="a">Stacked</button>
               <button data-view-mode="b">Split</button>
               <button data-view-mode="c">Tabbed</button>
-            </div>
-          </div>
-          <div class="sheet-section">
-            <span class="sheet-section-title">Action Style (Testing Proposals)</span>
-            <div class="display-segmented" id="sheet-action-options">
-              <button data-action-mode="existing">Default</button>
-              <button data-action-mode="p1">Prop 1</button>
-              <button data-action-mode="p2">Prop 2</button>
-              <button data-action-mode="p3">Prop 3</button>
             </div>
           </div>
         </div>
