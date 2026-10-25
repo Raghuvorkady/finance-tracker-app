@@ -2,7 +2,7 @@
  * Ledgerly State & Core Constants
  */
 
-export const DEFAULT_COLUMN_ORDER = ['date', 'category', 'note', 'account', 'amount'];
+export const DEFAULT_COLUMN_ORDER = ['date', 'note', 'category', 'account', 'amount'];
 
 export const COLUMN_DEFINITIONS = {
   date: { id: 'date', label: 'Date', icon: '📅', nonNotionLabel: 'Date', minWidth: '110px', align: 'left' },
