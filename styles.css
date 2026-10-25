@@ -2243,17 +2243,16 @@ select{
   padding:2px 14px 4px 14px;
 }
 .cols-section-label{
-  font-size:calc(11px * var(--font-scale, 1));
+  font-size:calc(10.5px * var(--font-scale, 1));
   font-weight:500;
   color:var(--muted, #9b9a97);
-  text-transform:uppercase;
-  letter-spacing:0.04em;
+  letter-spacing:0.01em;
 }
 .cols-section-action{
   background:transparent;
   border:none;
-  font-size:calc(12px * var(--font-scale, 1));
-  font-weight:500;
+  font-size:calc(11.5px * var(--font-scale, 1));
+  font-weight:400;
   color:var(--accent, #2383e2);
   cursor:pointer;
   padding:1px 4px;
