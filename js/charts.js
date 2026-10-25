@@ -56,6 +56,9 @@ export function renderMacroDonut(expenses, income, transfers, net) {
     });
   }
 
+  // Sort streams in descending order (largest amount first)
+  streams.sort((a, b) => b.value - a.value);
+
   let position = 0;
   const slices = streams.map((item, i) => {
     const percent = (item.value / totalVolume) * 100;
