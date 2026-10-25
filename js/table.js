@@ -112,7 +112,10 @@ export function openColumnMenu(colId, anchorEl) {
 
   const iconEl = $('col-menu-icon');
   const titleEl = $('col-menu-title');
-  if (iconEl) iconEl.textContent = def.icon;
+  if (iconEl) {
+    iconEl.textContent = def.icon;
+    iconEl.style.display = def.icon ? 'inline-block' : 'none';
+  }
   if (titleEl) titleEl.textContent = def.label;
 
   const visible = getVisibleColumns();
@@ -225,11 +228,12 @@ export function renderTable(rows) {
     const ths = visibleCols.map(colId => {
       const def = COLUMN_DEFINITIONS[colId] || { id: colId, label: colId, icon: '', nonNotionLabel: colId, minWidth: '100px', align: 'left' };
       const isRight = def.align === 'right';
+      const iconHtml = def.icon ? `<span class="notion-th-icon">${def.icon}</span>` : '';
       if (isNotion) {
         return `<th class="col-${colId} ${isRight ? 'align-right' : ''} notion-th-draggable" data-col="${colId}" style="min-width:${def.minWidth}" draggable="true">
           <div class="th-content-wrap">
             <div class="th-title-area">
-              <span class="notion-th-icon">${def.icon}</span>
+              ${iconHtml}
               <span class="th-name">${def.label}</span>
             </div>
             <button type="button" class="th-dots-btn" aria-label="Options for ${def.label} column" title="Options">•••</button>

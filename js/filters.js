@@ -247,10 +247,11 @@ export function populateColsList() {
     const visIdx = visible.indexOf(colId);
     const canMoveLeft = !isHidden && visIdx > 0;
     const canMoveRight = !isHidden && visIdx >= 0 && visIdx < visible.length - 1;
+    const iconHtml = def.icon ? `<span class="notion-col-item-icon">${def.icon}</span>` : '';
 
     return `<div class="notion-col-item ${isHidden ? 'is-hidden' : ''}" data-col="${colId}">
       <div class="notion-col-item-left">
-        <span class="notion-col-item-icon">${def.icon}</span>
+        ${iconHtml}
         <span class="notion-col-item-name">${def.label}</span>
       </div>
       <div class="notion-col-item-actions">

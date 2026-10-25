@@ -6,10 +6,10 @@ export const DEFAULT_COLUMN_ORDER = ['date', 'category', 'note', 'account', 'amo
 
 export const COLUMN_DEFINITIONS = {
   date: { id: 'date', label: 'Date', icon: '📅', nonNotionLabel: 'Date', minWidth: '110px', align: 'left' },
-  category: { id: 'category', label: 'Category', icon: '▾', nonNotionLabel: 'Category', minWidth: '110px', align: 'left' },
+  category: { id: 'category', label: 'Category', icon: '', nonNotionLabel: 'Category', minWidth: '110px', align: 'left' },
   note: { id: 'note', label: 'Note', icon: 'Aa', nonNotionLabel: 'Expense / Note', minWidth: '180px', align: 'left' },
   account: { id: 'account', label: 'Account', icon: '🏛', nonNotionLabel: 'Account', minWidth: '100px', align: 'left' },
-  amount: { id: 'amount', label: 'Amount', icon: '#', nonNotionLabel: 'Amount', minWidth: '110px', align: 'right' }
+  amount: { id: 'amount', label: 'Amount', icon: '', nonNotionLabel: 'Amount', minWidth: '110px', align: 'right' }
 };
 
 function loadSavedColumnOrder() {
