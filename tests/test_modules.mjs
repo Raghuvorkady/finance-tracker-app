@@ -238,4 +238,20 @@ if (cTransfer0 !== '#6366f1') throw new Error('Expected vibrant indigo for trans
 if (!c15.startsWith('hsl(')) throw new Error('Expected dynamic HSL generation for index >= 10');
 console.log('✓ Color edge case handling verified successfully!');
 
+// 10. Test money formatting (space after ₹ and no signs)
+const { money } = await import('../js/utils.js');
+const mPositive = money(51325.44);
+const mNegative = money(-51325.44);
+const mZero = money(0);
+const mCompact = money(91940, true);
+console.log('✓ money(51325.44):', JSON.stringify(mPositive));
+console.log('✓ money(-51325.44):', JSON.stringify(mNegative));
+console.log('✓ money(91940, true):', JSON.stringify(mCompact));
+
+if (!mPositive.startsWith('₹\u00A0')) throw new Error('Expected space after ₹ in money()');
+if (mNegative.includes('-') || mNegative.includes('−') || mNegative.includes('+')) throw new Error('money() must not include + or - signs');
+if (!mNegative.startsWith('₹\u00A051,325.44')) throw new Error('Expected unsigned ₹ 51,325.44 for negative amount');
+if (!mCompact.startsWith('₹\u00A0')) throw new Error('Expected space after ₹ in compact money()');
+console.log('✓ Money currency formatting & space verified successfully!');
+
 console.log('\nAll refactored module tests PASSED successfully!');

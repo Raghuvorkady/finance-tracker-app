@@ -17,14 +17,17 @@ export function escapeHtml(str) {
     .replaceAll("'", '&#039;');
 }
 
-export const money = (n, compact = false) =>
-  new Intl.NumberFormat('en-IN', {
+export const money = (n, compact = false) => {
+  const absVal = Math.abs(Number(n) || 0);
+  const formatted = new Intl.NumberFormat('en-IN', {
     style: 'currency',
     currency: 'INR',
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
     notation: compact ? 'compact' : 'standard'
-  }).format(n || 0);
+  }).format(absVal);
+  return formatted.replace(/^[-+−]?\s*₹\s*/, '₹\u00A0');
+};
 
 export const dateKey = (date) =>
   new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();

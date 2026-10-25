@@ -87,7 +87,7 @@ export function render() {
       const pct = Math.abs((expenses - prior) / prior * 100).toFixed(0);
       const sign = expenses >= prior ? '+' : '-';
       $('spent-compare').textContent = `${sign}${pct}%`;
-      $('spent-compare').title = `${Math.abs((expenses - prior) / prior * 100).toFixed(1)}% ${expenses >= prior ? 'more' : 'less'} compared to prior period (₹${money(prior)})`;
+      $('spent-compare').title = `${Math.abs((expenses - prior) / prior * 100).toFixed(1)}% ${expenses >= prior ? 'more' : 'less'} compared to prior period (${money(prior)})`;
     }
   }
 

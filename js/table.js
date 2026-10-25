@@ -299,7 +299,6 @@ export function renderTable(rows) {
         ? r.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
         : r.date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
       const amountClass = `amount amount-${r.type}`;
-      const amountPrefix = r.type === 'expense' ? '−' : (r.type === 'income' ? '+' : '');
 
       const tds = visibleCols.map(colId => {
         if (colId === 'date') {
@@ -323,7 +322,7 @@ export function renderTable(rows) {
             : `<td>${escapeHtml(r.account)}</td>`;
         }
         if (colId === 'amount') {
-          return `<td class="align-right ${amountClass}">${amountPrefix}${money(r.amount)}</td>`;
+          return `<td class="align-right ${amountClass}">${money(r.amount)}</td>`;
         }
         return `<td></td>`;
       }).join('');
@@ -389,7 +388,6 @@ export function renderTable(rows) {
         ? r.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
         : r.date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
       const amountClass = `amount amount-${r.type}`;
-      const amountPrefix = r.type === 'expense' ? '−' : (r.type === 'income' ? '+' : '');
       return `
         <div class="tx-item">
           <div class="tx-icon-badge" style="background:${c.bg};color:${c.fg}">${icon}</div>
@@ -403,7 +401,7 @@ export function renderTable(rows) {
             </div>
           </div>
           <div class="tx-right">
-            <div class="tx-amount ${amountClass}">${amountPrefix}${money(r.amount)}</div>
+            <div class="tx-amount ${amountClass}">${money(r.amount)}</div>
           </div>
         </div>`;
     }).join('');

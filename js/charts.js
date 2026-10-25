@@ -12,13 +12,12 @@ export function renderMacroDonut(expenses, income, transfers, net) {
   if (!donut) return;
 
   const totalVolume = expenses + income + transfers;
-  const netSign = net > 0 ? '+' : (net < 0 ? '−' : '');
   const netCaption = net > 0 ? 'Net saved' : (net < 0 ? 'Net deficit' : 'Net flow');
   const netColorClass = net > 0 ? 'amount-income' : (net < 0 ? 'amount-expense' : 'amount-neutral');
-  const defaultTotalFormatted = `${netSign}${money(Math.abs(net), true)}`;
+  const defaultTotalFormatted = money(Math.abs(net), true);
 
   if (totalVolume <= 0) {
-    donut.innerHTML = `<div class="donut-center"><strong id="donut-total" class="amount-neutral">₹0</strong><span id="donut-caption">No activity</span></div>`;
+    donut.innerHTML = `<div class="donut-center"><strong id="donut-total" class="amount-neutral">${money(0)}</strong><span id="donut-caption">No activity</span></div>`;
     const legendEl = $('legend');
     if (legendEl) legendEl.innerHTML = `<span class="empty-table">No transactions for this period.</span>`;
     return;
@@ -162,7 +161,7 @@ export function renderDonut(totals, expenses, analysisType = 'expense') {
 
   const legendEl = $('legend');
   if (!visible.length) {
-    donut.innerHTML = `<div class="donut-center"><strong id="donut-total" class="${typeColorClass}">₹0</strong><span id="donut-caption">${caption}</span></div>`;
+    donut.innerHTML = `<div class="donut-center"><strong id="donut-total" class="${typeColorClass}">${money(0)}</strong><span id="donut-caption">${caption}</span></div>`;
     if (legendEl) legendEl.innerHTML = `<span class="empty-table">No ${analysisType === 'transfer' ? 'transfers' : analysisType === 'income' ? 'income' : 'expenses'} for these filters.</span>`;
     return;
   }
