@@ -1015,7 +1015,11 @@ select{
   position: relative;
   display: inline-flex;
   align-items: center;
+  align-self: flex-start;
+  width: fit-content;
   max-width: 100%;
+  padding: 2px 4px;
+  margin: -2px -4px;
 }
 .spent-compare {
   margin: 0;
@@ -1025,7 +1029,6 @@ select{
   gap: 4px;
   border-radius: 4px;
   padding: 1px 4px;
-  margin-left: -4px;
   transition: all 0.15s ease;
   user-select: none;
 }
@@ -1096,7 +1099,7 @@ select{
 .metric-compare-wrap:focus-within .metric-tooltip {
   opacity: 1;
   visibility: visible;
-  pointer-events: auto;
+  pointer-events: none;
   transform: translateY(0);
 }
 

@@ -27,6 +27,7 @@ function mockElement(id) {
     value: '',
     className: '',
     setAttribute() {},
+    removeAttribute() {},
     appendChild(child) {},
     getAttribute(name) { return name === 'data-theme' ? 'notion' : null; },
     querySelectorAll(selector) {

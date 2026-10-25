@@ -82,12 +82,14 @@ export function render() {
     if (chartType === 'transfer') {
       const txLen = rows.filter(r => r.type === 'transfer').length;
       compareEl.textContent = `${txLen} transfer${txLen === 1 ? '' : 's'}`;
-      compareEl.title = `${txLen} transfer${txLen === 1 ? '' : 's'} recorded`;
+      compareEl.setAttribute('aria-label', `${txLen} transfer${txLen === 1 ? '' : 's'} recorded`);
+      if (typeof compareEl.removeAttribute === 'function') compareEl.removeAttribute('title'); else compareEl.title = '';
       if (tooltipEl) tooltipEl.textContent = `${txLen} transfer${txLen === 1 ? '' : 's'} recorded in this period`;
     } else if (!priorRange || prior === null || prior === 0) {
       compareEl.textContent = 'No prior period';
       const msg = !priorRange ? 'No prior period to compare against' : `No prior activity recorded (${priorRange.label})`;
-      compareEl.title = msg;
+      compareEl.setAttribute('aria-label', msg);
+      if (typeof compareEl.removeAttribute === 'function') compareEl.removeAttribute('title'); else compareEl.title = '';
       if (tooltipEl) tooltipEl.textContent = msg;
     } else {
       const targetVal = chartType === 'income' ? income : expenses;
@@ -100,7 +102,8 @@ export function render() {
       const pctDetailed = Math.abs((targetVal - prior) / prior * 100).toFixed(1);
       const fullDetail = `${pctDetailed}% ${directionWord} ${typeWord} compared to ${priorRange.label} (${money(prior)})`;
 
-      compareEl.title = fullDetail;
+      compareEl.setAttribute('aria-label', fullDetail);
+      if (typeof compareEl.removeAttribute === 'function') compareEl.removeAttribute('title'); else compareEl.title = '';
       if (tooltipEl) tooltipEl.textContent = fullDetail;
     }
   }
@@ -271,7 +274,7 @@ function initEventListeners() {
     compareEl.dataset.tooltipBound = 'true';
     compareEl.addEventListener('click', (e) => {
       e.stopPropagation();
-      const text = compareEl.title || $('spent-tooltip')?.textContent;
+      const text = compareEl.getAttribute('aria-label') || compareEl.title || $('spent-tooltip')?.textContent;
       if (text && text !== 'No prior period') {
         toast(text);
       }
