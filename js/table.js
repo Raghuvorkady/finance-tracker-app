@@ -130,22 +130,7 @@ export function openColumnMenu(colId, anchorEl) {
   if (titleEl) titleEl.textContent = def.label;
 
   const visible = getVisibleColumns();
-  const idx = visible.indexOf(colId);
-
-  const leftBtn = $('col-menu-move-left');
-  const rightBtn = $('col-menu-move-right');
   const hideBtn = $('col-menu-hide');
-
-  if (leftBtn) {
-    const disabled = idx <= 0;
-    leftBtn.disabled = disabled;
-    leftBtn.classList.toggle('disabled', disabled);
-  }
-  if (rightBtn) {
-    const disabled = idx >= visible.length - 1;
-    rightBtn.disabled = disabled;
-    rightBtn.classList.toggle('disabled', disabled);
-  }
   if (hideBtn) {
     const disabled = visible.length <= 1;
     hideBtn.disabled = disabled;
@@ -167,32 +152,6 @@ export function openColumnMenu(colId, anchorEl) {
 }
 
 export function initColumnMenu() {
-  const leftBtn = $('col-menu-move-left');
-  if (leftBtn) {
-    leftBtn.onclick = (e) => {
-      e.stopPropagation();
-      if (!activeColMenuId) return;
-      if (moveColumn(activeColMenuId, 'left')) {
-        closeColumnMenu();
-        tableRerenderCallback();
-        toast('Moved column left');
-      }
-    };
-  }
-
-  const rightBtn = $('col-menu-move-right');
-  if (rightBtn) {
-    rightBtn.onclick = (e) => {
-      e.stopPropagation();
-      if (!activeColMenuId) return;
-      if (moveColumn(activeColMenuId, 'right')) {
-        closeColumnMenu();
-        tableRerenderCallback();
-        toast('Moved column right');
-      }
-    };
-  }
-
   const hideBtn = $('col-menu-hide');
   if (hideBtn) {
     hideBtn.onclick = (e) => {
