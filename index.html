@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=15" />
+    <link rel="stylesheet" href="styles.css?v=16" />
     <link rel="stylesheet" href="enhancements.css?v=15" />
   </head>
   <body>
@@ -31,9 +31,9 @@
             <div class="display-menu hidden" id="display-settings" role="menu" aria-label="Display settings">
               <div class="display-menu-row font-row">
                 <div class="font-stepper" role="group" aria-label="Adjust font size">
-                  <button id="font-dec" class="stepper-btn" title="Decrease font size" aria-label="Decrease font size">A−</button>
+                  <button id="font-dec" class="stepper-btn" title="Decrease font size" aria-label="Decrease font size">A<span class="stepper-sign">−</span></button>
                   <span id="font-scale-readout" class="scale-readout">100%</span>
-                  <button id="font-inc" class="stepper-btn" title="Increase font size" aria-label="Increase font size">A+</button>
+                  <button id="font-inc" class="stepper-btn" title="Increase font size" aria-label="Increase font size">A<span class="stepper-sign">+</span></button>
                 </div>
                 <button id="font-reset" class="font-reset-btn" title="Reset font size to 100%">Reset</button>
               </div>
@@ -407,10 +407,12 @@
           </div>
           <div class="sheet-section">
             <span class="sheet-section-title">Font Size</span>
-            <div class="font-stepper" style="justify-content:center;">
-              <button id="sheet-font-dec" class="stepper-btn" aria-label="Decrease font">A−</button>
-              <span id="sheet-font-scale" class="scale-readout">100%</span>
-              <button id="sheet-font-inc" class="stepper-btn" aria-label="Increase font">A+</button>
+            <div class="sheet-stepper-wrap">
+              <div class="font-stepper" role="group" aria-label="Adjust font size">
+                <button id="sheet-font-dec" class="stepper-btn" aria-label="Decrease font">A<span class="stepper-sign">−</span></button>
+                <span id="sheet-font-scale" class="scale-readout">100%</span>
+                <button id="sheet-font-inc" class="stepper-btn" aria-label="Increase font">A<span class="stepper-sign">+</span></button>
+              </div>
             </div>
           </div>
           <div class="sheet-section">
