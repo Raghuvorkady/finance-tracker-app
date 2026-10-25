@@ -376,4 +376,44 @@ if (!document.getElementById('print-filter-summary').textContent.includes('Type:
   throw new Error('Expected dynamic filter criteria in print summary');
 }
 
+// ── 13. Test Exact Calendar Prior Period Math & Tooltip ──
+const { getPriorPeriodBounds, priorExpense } = await import('../js/dates.js');
+
+// Test June 2026 prior is exact full May 2026 (May 1 to May 31)
+state.anchor = new Date(2026, 5, 15);
+state.period = 'monthly';
+const junePrior = getPriorPeriodBounds();
+console.log('✓ June 2026 prior period label:', junePrior.label, '(expected May 2026)');
+if (junePrior.label !== 'May 2026') throw new Error('Expected May 2026 as prior period for June 2026');
+if (junePrior.start.getDate() !== 1 || junePrior.end.getDate() !== 31) {
+  throw new Error('Expected full calendar month May 1 to May 31');
+}
+
+// Test May 2026 prior is exact full April 2026 (April 1 to April 30)
+state.anchor = new Date(2026, 4, 15);
+const mayPrior = getPriorPeriodBounds();
+console.log('✓ May 2026 prior period label:', mayPrior.label, '(expected April 2026)');
+if (mayPrior.label !== 'April 2026') throw new Error('Expected April 2026 as prior period for May 2026');
+if (mayPrior.start.getDate() !== 1 || mayPrior.end.getDate() !== 30) {
+  throw new Error('Expected full calendar month April 1 to April 30');
+}
+
+// Test January 2026 prior is exact full December 2025
+state.anchor = new Date(2026, 0, 15);
+const janPrior = getPriorPeriodBounds();
+console.log('✓ Jan 2026 prior period label:', janPrior.label, '(expected December 2025)');
+if (janPrior.label !== 'December 2025') throw new Error('Expected December 2025 as prior period for Jan 2026');
+if (janPrior.start.getFullYear() !== 2025 || janPrior.end.getFullYear() !== 2025) {
+  throw new Error('Expected year boundary transition to 2025');
+}
+
+// Reset state for clean conclusion
+state.anchor = new Date('2026-10-15T12:00:00');
+state.period = 'monthly';
+state.type = 'all';
+state.search = '';
+state.selectedCategories.clear();
+state.category = 'all';
+render();
+
 console.log('\nAll refactored module tests PASSED successfully!');

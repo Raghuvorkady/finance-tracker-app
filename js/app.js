@@ -5,7 +5,7 @@
 import { state } from './state.js';
 import { $, money, periodDays, toast, showLoading, hideLoading } from './utils.js';
 import { normalizeRows } from './parser.js';
-import { bounds, movePeriod, priorExpense } from './dates.js';
+import { bounds, movePeriod, priorExpense, getPriorPeriodBounds } from './dates.js';
 import { renderDonut, renderMacroDonut, renderLineChart, initChartViewToggle, syncChartViewToggle } from './charts.js';
 import { renderTable, registerTableRenderCallback, initColumnMenu, resetTableDisplayLimit } from './table.js';
 import {
@@ -36,9 +36,10 @@ export function render() {
   const expenses = rows.filter(r => r.type === 'expense').reduce((s, r) => s + r.amount, 0);
   const income = rows.filter(r => r.type === 'income').reduce((s, r) => s + r.amount, 0);
   const transfers = rows.filter(r => r.type === 'transfer').reduce((s, r) => s + r.amount, 0);
-  const prior = priorExpense();
   const chartType = state.type === 'transfer' ? 'transfer' : state.type === 'income' ? 'income' : 'expense';
   const chartTotal = chartType === 'transfer' ? transfers : chartType === 'income' ? income : expenses;
+  const priorRange = getPriorPeriodBounds();
+  const prior = priorExpense(chartType === 'income' ? 'income' : 'expense');
 
   // Header period labels
   if ($('period-label')) $('period-label').textContent = range.label;
@@ -75,19 +76,32 @@ export function render() {
   if ($('net-copy')) {
     $('net-copy').textContent = 'Income − expenses';
   }
-  if ($('spent-compare')) {
+  const compareEl = $('spent-compare');
+  const tooltipEl = $('spent-tooltip');
+  if (compareEl) {
     if (chartType === 'transfer') {
       const txLen = rows.filter(r => r.type === 'transfer').length;
-      $('spent-compare').textContent = `${txLen} transfer${txLen === 1 ? '' : 's'}`;
-      $('spent-compare').title = `${txLen} transfer${txLen === 1 ? '' : 's'} recorded`;
-    } else if (prior === null || prior === 0) {
-      $('spent-compare').textContent = 'No prior period';
-      $('spent-compare').title = 'No prior period to compare against';
+      compareEl.textContent = `${txLen} transfer${txLen === 1 ? '' : 's'}`;
+      compareEl.title = `${txLen} transfer${txLen === 1 ? '' : 's'} recorded`;
+      if (tooltipEl) tooltipEl.textContent = `${txLen} transfer${txLen === 1 ? '' : 's'} recorded in this period`;
+    } else if (!priorRange || prior === null || prior === 0) {
+      compareEl.textContent = 'No prior period';
+      const msg = !priorRange ? 'No prior period to compare against' : `No prior activity recorded (${priorRange.label})`;
+      compareEl.title = msg;
+      if (tooltipEl) tooltipEl.textContent = msg;
     } else {
-      const pct = Math.abs((expenses - prior) / prior * 100).toFixed(0);
-      const sign = expenses >= prior ? '+' : '-';
-      $('spent-compare').textContent = `${sign}${pct}%`;
-      $('spent-compare').title = `${Math.abs((expenses - prior) / prior * 100).toFixed(1)}% ${expenses >= prior ? 'more' : 'less'} compared to prior period (${money(prior)})`;
+      const targetVal = chartType === 'income' ? income : expenses;
+      const pct = Math.abs((targetVal - prior) / prior * 100).toFixed(0);
+      const sign = targetVal >= prior ? '+' : '-';
+      compareEl.textContent = `${sign}${pct}% vs prior`;
+
+      const directionWord = targetVal >= prior ? 'more' : 'less';
+      const typeWord = chartType === 'income' ? 'earned' : 'spent';
+      const pctDetailed = Math.abs((targetVal - prior) / prior * 100).toFixed(1);
+      const fullDetail = `${pctDetailed}% ${directionWord} ${typeWord} compared to ${priorRange.label} (${money(prior)})`;
+
+      compareEl.title = fullDetail;
+      if (tooltipEl) tooltipEl.textContent = fullDetail;
     }
   }
 
@@ -250,6 +264,19 @@ function initEventListeners() {
       }
     };
   });
+
+  // Prior Period Comparison Tooltip / Tap Handler
+  const compareEl = $('spent-compare');
+  if (compareEl && !compareEl.dataset.tooltipBound) {
+    compareEl.dataset.tooltipBound = 'true';
+    compareEl.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const text = compareEl.title || $('spent-tooltip')?.textContent;
+      if (text && text !== 'No prior period') {
+        toast(text);
+      }
+    });
+  }
 }
 
 // ── Application Initialization ──

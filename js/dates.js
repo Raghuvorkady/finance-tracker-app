@@ -85,16 +85,67 @@ export function movePeriod(direction) {
   state.anchor = a;
 }
 
-export function priorExpense() {
-  const { start, end } = bounds();
+export function getPriorPeriodBounds() {
+  const anchor = state.anchor || new Date();
   if (state.period === 'all' || state.period === 'custom') return null;
-  const ms = end - start + 86400000;
-  const prevStart = new Date(start - ms);
-  const prevEnd = new Date(start - 1);
+
+  if (state.period === 'monthly') {
+    const prevMonthDate = new Date(anchor.getFullYear(), anchor.getMonth() - 1, 15);
+    const start = new Date(prevMonthDate.getFullYear(), prevMonthDate.getMonth(), 1, 0, 0, 0, 0);
+    const end = new Date(prevMonthDate.getFullYear(), prevMonthDate.getMonth() + 1, 0, 23, 59, 59, 999);
+    const label = prevMonthDate.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+    return { start, end, label };
+  }
+
+  if (state.period === 'weekly') {
+    const day = (anchor.getDay() + 6) % 7;
+    const curStart = new Date(anchor.getFullYear(), anchor.getMonth(), anchor.getDate() - day, 0, 0, 0, 0);
+    const start = new Date(curStart.getFullYear(), curStart.getMonth(), curStart.getDate() - 7, 0, 0, 0, 0);
+    const end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 6, 23, 59, 59, 999);
+    return { start, end, label: `${shortDate(start)} – ${shortDate(end)}` };
+  }
+
+  if (state.period === 'quarterly') {
+    const q = Math.floor(anchor.getMonth() / 3);
+    const prevQ = (q - 1 + 4) % 4;
+    const prevYear = q === 0 ? anchor.getFullYear() - 1 : anchor.getFullYear();
+    const start = new Date(prevYear, prevQ * 3, 1, 0, 0, 0, 0);
+    const end = new Date(prevYear, prevQ * 3 + 3, 0, 23, 59, 59, 999);
+    return { start, end, label: `Q${prevQ + 1} ${prevYear}` };
+  }
+
+  if (state.period === 'yearly') {
+    const prevYear = anchor.getFullYear() - 1;
+    const start = new Date(prevYear, 0, 1, 0, 0, 0, 0);
+    const end = new Date(prevYear, 11, 31, 23, 59, 59, 999);
+    return { start, end, label: String(prevYear) };
+  }
+
+  if (state.period === 'financial') {
+    const fy = anchor.getMonth() < 3 ? anchor.getFullYear() - 1 : anchor.getFullYear();
+    const prevFy = fy - 1;
+    const start = new Date(prevFy, 3, 1, 0, 0, 0, 0);
+    const end = new Date(prevFy + 1, 2, 31, 23, 59, 59, 999);
+    return { start, end, label: `FY ${prevFy}–${String(prevFy + 1).slice(2)}` };
+  }
+
+  return null;
+}
+
+export function priorExpense(type = 'expense') {
+  const prior = getPriorPeriodBounds();
+  if (!prior) return null;
+
+  const { start, end } = prior;
+  const lower = state.search ? state.search.toLowerCase() : '';
+
   return state.data.filter(r =>
-    r.date >= prevStart && r.date <= prevEnd &&
-    r.type === 'expense' &&
+    r.date >= start && r.date <= end &&
+    r.type === type &&
     (state.selectedCategories.size === 0 || state.selectedCategories.has(r.category)) &&
-    (state.selectedAccounts.size === 0 || state.selectedAccounts.has(r.account))
+    (state.category === 'all' || r.category === state.category) &&
+    (state.selectedAccounts.size === 0 || state.selectedAccounts.has(r.account)) &&
+    (state.account === 'all' || r.account === state.account) &&
+    (!lower || [r.category, r.note, r.description, r.account].join(' ').toLowerCase().includes(lower))
   ).reduce((sum, r) => sum + r.amount, 0);
 }

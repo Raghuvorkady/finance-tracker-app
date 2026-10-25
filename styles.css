@@ -1006,6 +1006,96 @@ select{
 .metric-card strong.amount-neutral{color:var(--ink)}
 .metric-card p{margin:0;font-size:calc(12px * var(--font-scale, 1));color:var(--muted);line-height:1.4}
 
+/* ── Metric Card Comparison Tooltip ── */
+.metric-compare-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+}
+.spent-compare {
+  margin: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 4px;
+  padding: 1px 4px;
+  margin-left: -4px;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+.spent-compare:hover,
+.spent-compare:focus-visible {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--ink);
+  outline: none;
+}
+[data-theme="notion"] .spent-compare:hover,
+[data-theme="notion"] .spent-compare:focus-visible {
+  background: rgba(55, 53, 47, 0.08);
+  color: #37352f;
+}
+
+.metric-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  transform: translateY(4px);
+  background: var(--card, #ffffff);
+  color: var(--ink, #1e293b);
+  border: 1px solid var(--line, #e2e8f0);
+  border-radius: 8px;
+  padding: 7px 11px;
+  font-size: calc(11px * var(--font-scale, 1));
+  font-weight: 500;
+  line-height: 1.35;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.06);
+  white-space: normal;
+  width: max-content;
+  max-width: 250px;
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s ease;
+  z-index: 100;
+}
+[data-theme="notion"] .metric-tooltip {
+  background: #ffffff;
+  color: #37352f;
+  border-color: #edece9;
+  box-shadow: 0 4px 16px rgba(15, 15, 15, 0.12);
+}
+.metric-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 16px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: var(--card, #ffffff) transparent transparent transparent;
+}
+.metric-tooltip::before {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 15px;
+  border-width: 6px;
+  border-style: solid;
+  border-color: var(--line, #e2e8f0) transparent transparent transparent;
+}
+[data-theme="notion"] .metric-tooltip::before {
+  border-color: #edece9 transparent transparent transparent;
+}
+
+.metric-compare-wrap:hover .metric-tooltip,
+.metric-compare-wrap:focus-within .metric-tooltip {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
 /* ── Visual Grid (Breakdown) ── */
 .visual-grid{
   display:block;
