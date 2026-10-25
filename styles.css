@@ -72,6 +72,18 @@ body{
   gap:6px;
   flex-wrap:nowrap;
 }
+.topbar-divider{
+  width:1px;
+  height:18px;
+  background:var(--line, #edece9);
+  margin:0 4px;
+  flex-shrink:0;
+}
+@media(max-width:768px){
+  .topbar-divider{
+    display:none !important;
+  }
+}
 .topbar-btn{
   display:inline-flex;
   align-items:center;
