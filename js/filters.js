@@ -6,7 +6,7 @@ import { $, escapeHtml, toast, showLoading, hideLoading } from './utils.js';
 import { state, COLUMN_DEFINITIONS } from './state.js';
 import { bounds } from './dates.js';
 import { categoryColor, formatCategory } from './categories.js';
-import { hasCustomColumns, resetColumns, moveColumn, toggleColumn, getVisibleColumns, resetTableDisplayLimit } from './table.js';
+import { hasCustomColumns, resetColumns, moveColumn, toggleColumn, getVisibleColumns, reorderColumnTo, saveColumns, resetTableDisplayLimit } from './table.js';
 
 let onRender = () => {};
 export function registerRenderCallback(fn) {
@@ -237,76 +237,127 @@ export function syncFilterPills() {
   if ($('account-filter')) $('account-filter').value = state.account;
 }
 
+// SVG icons for the property visibility panel
+const SVG_EYE_OPEN = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" fill="currentColor"/></svg>`;
+const SVG_EYE_SLASH = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46A11.804 11.804 0 001 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z" fill="currentColor"/></svg>`;
+const DRAG_HANDLE = `<span class="cols-drag-handle" aria-hidden="true">⠿</span>`;
+
+function makeColItemHtml(colId, isHidden, searchQ) {
+  const def = COLUMN_DEFINITIONS[colId] || { id: colId, label: colId, icon: '' };
+  if (searchQ && !def.label.toLowerCase().includes(searchQ)) return '';
+  const iconHtml = def.icon ? `<span class="notion-col-item-icon">${def.icon}</span>` : `<span class="notion-col-item-icon cols-icon-text">Aa</span>`;
+  const eyeHtml = isHidden ? SVG_EYE_SLASH : SVG_EYE_OPEN;
+  return `<div class="notion-col-item" data-col="${colId}" draggable="true">
+    ${DRAG_HANDLE}
+    <div class="notion-col-item-left">
+      ${iconHtml}
+      <span class="notion-col-item-name">${def.label}</span>
+    </div>
+    <button type="button" class="cols-eye-btn btn-col-toggle ${isHidden ? 'hidden-col' : 'visible-col'}" data-col="${colId}" title="${isHidden ? 'Show in view' : 'Hide in view'}" aria-label="${isHidden ? 'Show' : 'Hide'} ${def.label}">
+      ${eyeHtml}
+    </button>
+  </div>`;
+}
+
+function bindColsListDragReorder(listEl, isHiddenList) {
+  let dragSrc = null;
+  listEl.querySelectorAll('.notion-col-item[draggable]').forEach(item => {
+    item.ondragstart = (e) => {
+      dragSrc = item.dataset.col;
+      item.classList.add('cols-item-dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    };
+    item.ondragend = () => {
+      item.classList.remove('cols-item-dragging');
+      listEl.querySelectorAll('.cols-drag-over').forEach(el => el.classList.remove('cols-drag-over'));
+    };
+    item.ondragover = (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      listEl.querySelectorAll('.cols-drag-over').forEach(el => el.classList.remove('cols-drag-over'));
+      item.classList.add('cols-drag-over');
+    };
+    item.ondragleave = () => item.classList.remove('cols-drag-over');
+    item.ondrop = (e) => {
+      e.preventDefault();
+      item.classList.remove('cols-drag-over');
+      const targetCol = item.dataset.col;
+      if (dragSrc && dragSrc !== targetCol) {
+        if (reorderColumnTo(dragSrc, targetCol, 'before')) {
+          populateColsList();
+          syncFilterPills();
+          onRender();
+        }
+      }
+    };
+  });
+}
+
 export function populateColsList() {
-  const listEl = $('cols-list');
-  if (!listEl) return;
+  const visibleListEl = $('cols-visible-list');
+  const hiddenListEl = $('cols-hidden-list');
+  const shownSection = $('cols-shown-section');
+  const hiddenSection = $('cols-hidden-section');
 
-  const visible = getVisibleColumns();
-  const itemsHtml = state.columnOrder.map((colId) => {
-    const def = COLUMN_DEFINITIONS[colId] || { id: colId, label: colId, icon: '' };
-    const isHidden = state.hiddenColumns.has(colId);
-    const visIdx = visible.indexOf(colId);
-    const canMoveLeft = !isHidden && visIdx > 0;
-    const canMoveRight = !isHidden && visIdx >= 0 && visIdx < visible.length - 1;
-    const iconHtml = def.icon ? `<span class="notion-col-item-icon">${def.icon}</span>` : '';
+  // Fallback for legacy #cols-list if new elements not present
+  const legacyListEl = $('cols-list');
 
-    return `<div class="notion-col-item ${isHidden ? 'is-hidden' : ''}" data-col="${colId}">
-      <div class="notion-col-item-left">
-        ${iconHtml}
-        <span class="notion-col-item-name">${def.label}</span>
-      </div>
-      <div class="notion-col-item-actions">
-        <button type="button" class="notion-col-action-btn btn-col-left ${canMoveLeft ? '' : 'disabled'}" data-col="${colId}" title="Move left" ${canMoveLeft ? '' : 'disabled'}>←</button>
-        <button type="button" class="notion-col-action-btn btn-col-right ${canMoveRight ? '' : 'disabled'}" data-col="${colId}" title="Move right" ${canMoveRight ? '' : 'disabled'}>→</button>
-        <button type="button" class="notion-col-action-btn btn-col-toggle ${isHidden ? 'hidden-col' : 'visible-col'}" data-col="${colId}" title="${isHidden ? 'Show in view' : 'Hide in view'}">
-          ${isHidden ? '👁‍🗨' : '👁️'}
-        </button>
-      </div>
-    </div>`;
-  }).join('');
+  if (!visibleListEl && !legacyListEl) return;
 
-  listEl.innerHTML = itemsHtml;
+  const searchQ = ($('cols-search-input') || {}).value ? $('cols-search-input').value.toLowerCase().trim() : '';
 
-  listEl.querySelectorAll('.btn-col-left').forEach(btn => {
-    btn.onclick = (e) => {
-      e.stopPropagation();
-      const col = btn.dataset.col;
-      if (moveColumn(col, 'left')) {
-        populateColsList();
-        syncFilterPills();
-        onRender();
-        toast('Column moved left');
-      }
-    };
-  });
+  const visibleCols = getVisibleColumns();
+  const hiddenCols = state.columnOrder.filter(c => state.hiddenColumns.has(c));
 
-  listEl.querySelectorAll('.btn-col-right').forEach(btn => {
-    btn.onclick = (e) => {
-      e.stopPropagation();
-      const col = btn.dataset.col;
-      if (moveColumn(col, 'right')) {
-        populateColsList();
-        syncFilterPills();
-        onRender();
-        toast('Column moved right');
-      }
-    };
-  });
+  if (visibleListEl && hiddenListEl) {
+    // New Notion-style two-section panel
+    const shownHtml = visibleCols.map(colId => makeColItemHtml(colId, false, searchQ)).join('');
+    const hiddenHtml = hiddenCols.map(colId => makeColItemHtml(colId, true, searchQ)).join('');
 
-  listEl.querySelectorAll('.btn-col-toggle').forEach(btn => {
-    btn.onclick = (e) => {
-      e.stopPropagation();
-      const col = btn.dataset.col;
-      const def = COLUMN_DEFINITIONS[col];
-      const wasHidden = state.hiddenColumns.has(col);
-      if (toggleColumn(col)) {
-        populateColsList();
-        syncFilterPills();
-        onRender();
-        toast(wasHidden ? `"${def ? def.label : col}" visible` : `"${def ? def.label : col}" hidden`);
-      }
-    };
-  });
+    visibleListEl.innerHTML = shownHtml || '<span class="cols-empty-msg">No visible properties</span>';
+    hiddenListEl.innerHTML = hiddenHtml || '';
+
+    if (shownSection) shownSection.style.display = '';
+    if (hiddenSection) hiddenSection.style.display = hiddenCols.length === 0 && !searchQ ? 'none' : '';
+
+    // Bind eye toggles
+    [visibleListEl, hiddenListEl].forEach(listEl => {
+      listEl.querySelectorAll('.btn-col-toggle').forEach(btn => {
+        btn.onclick = (e) => {
+          e.stopPropagation();
+          const col = btn.dataset.col;
+          const def = COLUMN_DEFINITIONS[col];
+          const wasHidden = state.hiddenColumns.has(col);
+          if (toggleColumn(col)) {
+            populateColsList();
+            syncFilterPills();
+            onRender();
+            toast(wasHidden ? `"${def ? def.label : col}" visible` : `"${def ? def.label : col}" hidden`);
+          }
+        };
+      });
+    });
+
+    // Bind drag-reorder only on visible list
+    bindColsListDragReorder(visibleListEl, false);
+  } else if (legacyListEl) {
+    // Legacy fallback rendering
+    const itemsHtml = state.columnOrder.map((colId) => {
+      const def = COLUMN_DEFINITIONS[colId] || { id: colId, label: colId, icon: '' };
+      const isHidden = state.hiddenColumns.has(colId);
+      return makeColItemHtml(colId, isHidden, searchQ);
+    }).join('');
+    legacyListEl.innerHTML = itemsHtml;
+    legacyListEl.querySelectorAll('.btn-col-toggle').forEach(btn => {
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        const col = btn.dataset.col;
+        const def = COLUMN_DEFINITIONS[col];
+        const wasHidden = state.hiddenColumns.has(col);
+        if (toggleColumn(col)) { populateColsList(); syncFilterPills(); onRender(); }
+      };
+    });
+  }
 }
 
 export function populateCategories() {
@@ -620,16 +671,64 @@ export function initFilterListeners() {
       if (opening) {
         pop.classList.remove('hidden');
         $('cols-pill').setAttribute('aria-expanded', 'true');
+        if ($('cols-search-input')) $('cols-search-input').value = '';
         populateColsList();
+        // Focus search after render
+        requestAnimationFrame(() => { if ($('cols-search-input')) $('cols-search-input').focus(); });
       }
     };
   }
 
-  // Columns Reset Button
+  // Columns Panel Close Button
+  if ($('cols-panel-close')) {
+    $('cols-panel-close').onclick = (e) => {
+      e.stopPropagation();
+      const pop = $('cols-popover');
+      if (pop) pop.classList.add('hidden');
+      if ($('cols-pill')) $('cols-pill').setAttribute('aria-expanded', 'false');
+    };
+  }
+
+  // Columns Search Input
+  if ($('cols-search-input')) {
+    $('cols-search-input').onclick = (e) => e.stopPropagation();
+    $('cols-search-input').oninput = () => populateColsList();
+  }
+
+  // Hide All visible columns button
+  if ($('cols-hide-all-btn')) {
+    $('cols-hide-all-btn').onclick = (e) => {
+      e.stopPropagation();
+      const visible = getVisibleColumns();
+      // Keep at least 1 visible
+      visible.slice(1).forEach(c => state.hiddenColumns.add(c));
+      saveColumns();
+      populateColsList();
+      syncFilterPills();
+      onRender();
+      toast('Columns hidden');
+    };
+  }
+
+  // Show All hidden columns button
+  if ($('cols-show-all-btn')) {
+    $('cols-show-all-btn').onclick = (e) => {
+      e.stopPropagation();
+      state.hiddenColumns.clear();
+      saveColumns();
+      populateColsList();
+      syncFilterPills();
+      onRender();
+      toast('All columns visible');
+    };
+  }
+
+  // Columns Reset Button (icon button)
   if ($('cols-reset-btn')) {
     $('cols-reset-btn').onclick = (e) => {
       e.stopPropagation();
       resetColumns();
+      if ($('cols-search-input')) $('cols-search-input').value = '';
       populateColsList();
       syncFilterPills();
       onRender();

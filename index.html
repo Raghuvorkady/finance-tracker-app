@@ -7,8 +7,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=10" />
-    <link rel="stylesheet" href="enhancements.css?v=10" />
+    <link rel="stylesheet" href="styles.css?v=11" />
+    <link rel="stylesheet" href="enhancements.css?v=11" />
   </head>
   <body>
     <main class="app-shell">
@@ -235,12 +235,41 @@
                         <span class="pill-dot hidden" id="cols-active-dot"></span>
                         <span class="pill-chevron">∨</span>
                       </button>
-                      <div class="notion-popover notion-cols-popover hidden" id="cols-popover" role="dialog" aria-label="Customize columns">
-                        <div class="notion-popover-header">
-                          <span class="notion-cols-popover-title">Columns in view</span>
-                          <button type="button" class="notion-cols-reset-btn" id="cols-reset-btn" title="Reset column order and visibility">Reset</button>
+                      <div class="notion-popover notion-cols-popover hidden" id="cols-popover" role="dialog" aria-label="Property visibility">
+                        <!-- Panel Header -->
+                        <div class="cols-panel-header">
+                          <span class="cols-panel-title">Property visibility</span>
+                          <div class="cols-panel-header-actions">
+                            <button type="button" class="cols-reset-icon-btn" id="cols-reset-btn" title="Reset column order and visibility" aria-label="Reset columns">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" fill="currentColor"/>
+                              </svg>
+                            </button>
+                            <button type="button" class="cols-panel-close-btn" id="cols-panel-close" aria-label="Close">✕</button>
+                          </div>
                         </div>
-                        <div class="notion-cols-list" id="cols-list"></div>
+                        <!-- Property Search -->
+                        <div class="cols-search-wrap">
+                          <input type="text" class="cols-search-input" id="cols-search-input" placeholder="Search for a property..." autocomplete="off" spellcheck="false" />
+                        </div>
+                        <!-- Shown in table -->
+                        <div class="cols-section" id="cols-shown-section">
+                          <div class="cols-section-header">
+                            <span class="cols-section-label">Shown in table</span>
+                            <button type="button" class="cols-section-action" id="cols-hide-all-btn">Hide all</button>
+                          </div>
+                          <div class="notion-cols-list" id="cols-visible-list"></div>
+                        </div>
+                        <!-- Hidden in table -->
+                        <div class="cols-section" id="cols-hidden-section">
+                          <div class="cols-section-header">
+                            <span class="cols-section-label">Hidden in table</span>
+                            <button type="button" class="cols-section-action" id="cols-show-all-btn">Show all</button>
+                          </div>
+                          <div class="notion-cols-list" id="cols-hidden-list"></div>
+                        </div>
+                        <!-- Legacy list (hidden, kept for backward compat) -->
+                        <div class="notion-cols-list hidden" id="cols-list"></div>
                       </div>
                     </div>
                   </div>
