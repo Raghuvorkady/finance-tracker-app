@@ -369,38 +369,10 @@ export function renderTable(rows) {
     }
   }
 
-  // Footer Calculation Row
+  // Footer Calculation Row (Removed "Total Out" and "Count")
   const foot = $('transaction-foot');
   if (foot) {
-    if (isNotion) {
-      const expenses = rows.filter(r => r.type === 'expense').reduce((s, r) => s + r.amount, 0);
-      const cells = visibleCols.map((colId, index) => {
-        if (index === 0) {
-          return `<td class="notion-calc-cell"><span class="notion-calc-label">Count</span> <span class="notion-calc-val">${rows.length}</span></td>`;
-        }
-        if (colId === 'amount') {
-          return `<td class="notion-calc-cell align-right"><span class="notion-calc-label">Total Out</span> <span class="notion-calc-val">${money(expenses)}</span></td>`;
-        }
-        return `<td class="notion-calc-cell"></td>`;
-      }).join('');
-      foot.innerHTML = `<tr class="notion-calc-row">${cells}</tr>`;
-    } else if (rows.length) {
-      const sum = rows.reduce((s, r) => s + (r.type === 'expense' ? r.amount : -r.amount), 0);
-      const hasAmount = visibleCols.includes('amount');
-      if (hasAmount) {
-        const colSpan = Math.max(1, visibleCols.length - 1);
-        foot.innerHTML = `<tr>
-          <td colspan="${colSpan}" class="align-right" style="font-weight:500;font-size:11px;color:var(--muted)">SUM</td>
-          <td class="align-right" style="font-weight:500;font-size:12px">${money(Math.abs(sum))}</td>
-        </tr>`;
-      } else {
-        foot.innerHTML = `<tr>
-          <td colspan="${visibleCols.length}" class="align-right" style="font-weight:500;font-size:12px;color:var(--muted)">Count: ${rows.length}</td>
-        </tr>`;
-      }
-    } else {
-      foot.innerHTML = '';
-    }
+    foot.innerHTML = '';
   }
 
   // Mobile List View rendering
