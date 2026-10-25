@@ -1103,8 +1103,8 @@ select{
 }
 .chart-layout{
   display:grid;
-  grid-template-columns:220px 1fr;
-  gap:36px;
+  grid-template-columns:260px 1fr;
+  gap:40px;
   align-items:center;
   margin:16px 0 8px;
 }
@@ -1114,8 +1114,8 @@ select{
   width:100%;
 }
 .donut{
-  width:180px;
-  height:180px;
+  width:220px;
+  height:220px;
   border-radius:50%;
   position:relative;
   transition:background .2s;
@@ -1128,8 +1128,8 @@ select{
   z-index:1;
   inset:0;
   margin:auto;
-  width:120px;
-  height:120px;
+  width:148px;
+  height:148px;
   border-radius:50%;
   display:flex;
   flex-direction:column;
@@ -1137,15 +1137,15 @@ select{
   justify-content:center;
   text-align:center;
   pointer-events:none;
-  padding:4px 8px;
+  padding:6px 10px;
   box-sizing:border-box;
 }
 .donut-center strong{
-  font-size:calc(17px * var(--font-scale, 1));
+  font-size:calc(22px * var(--font-scale, 1));
   font-weight:700;
-  letter-spacing:-0.4px;
-  line-height:1.15;
-  max-width:110px;
+  letter-spacing:-0.5px;
+  line-height:1.2;
+  max-width:140px;
   overflow:hidden;
   text-overflow:ellipsis;
   white-space:nowrap;
@@ -1161,33 +1161,36 @@ select{
 [data-theme="notion"] .donut-center strong.amount-neutral{ color:#37352f; }
 .donut-center span{
   color:var(--muted);
-  font-size:calc(11px * var(--font-scale, 1));
+  font-size:calc(13px * var(--font-scale, 1));
   font-weight:500;
-  margin-top:2px;
+  margin-top:3px;
   line-height:1.2;
-  max-width:110px;
+  max-width:140px;
   display:flex;
   flex-direction:column;
   align-items:center;
   text-align:center;
 }
 .donut-cat-name{
-  max-width:110px;
+  max-width:135px;
   overflow:hidden;
   text-overflow:ellipsis;
   white-space:nowrap;
   display:block;
+  font-size:calc(13.5px * var(--font-scale, 1));
+  font-weight:600;
 }
 .donut-cat-pct{
-  font-size:calc(10.5px * var(--font-scale, 1));
-  font-weight:600;
+  font-size:calc(13.5px * var(--font-scale, 1));
+  font-weight:700;
   color:var(--ink);
   opacity:0.85;
-  line-height:1.1;
-  margin-top:1px;
+  line-height:1.15;
+  margin-top:2px;
 }
 [data-theme="notion"] .donut-cat-pct{
-  color:#37352f;
+  font-size:calc(13.5px * var(--font-scale, 1));
+  color:#787774;
 }
 /* ── Spending Breakdown Legend (Column Aligned) ── */
 .legend{
@@ -3077,7 +3080,7 @@ td.account-cell{color:var(--muted);font-size:calc(12px * var(--font-scale, 1))}
   font-weight:400;
 }
 [data-theme="notion"] .donut-cat-pct{
-  font-size:calc(12px * var(--font-scale, 1));
+  font-size:calc(13.5px * var(--font-scale, 1));
   color:#787774;
 }
 [data-theme="notion"] .tx-type-pills{
@@ -3667,30 +3670,31 @@ td.account-cell{color:var(--muted);font-size:calc(12px * var(--font-scale, 1))}
     margin:8px 0 6px;
   }
   .donut{
-    width:155px;
-    height:155px;
+    width:190px;
+    height:190px;
   }
   .donut:after{display:none}
   .donut-center{
-    width:104px;
-    height:104px;
+    width:128px;
+    height:128px;
   }
   .donut-center strong{
-    font-size:calc(15px * var(--font-scale, 1));
-    max-width:96px;
+    font-size:calc(19px * var(--font-scale, 1));
+    max-width:120px;
     overflow:hidden;
     text-overflow:ellipsis;
     white-space:nowrap;
   }
   .donut-center span{
-    font-size:calc(10px * var(--font-scale, 1));
-    max-width:96px;
+    font-size:calc(12px * var(--font-scale, 1));
+    max-width:120px;
   }
   .donut-cat-name{
-    max-width:96px;
+    font-size:calc(12.5px * var(--font-scale, 1));
+    max-width:120px;
   }
   .donut-cat-pct{
-    font-size:calc(9.5px * var(--font-scale, 1));
+    font-size:calc(12px * var(--font-scale, 1));
   }
   .legend{
     width:100%;
