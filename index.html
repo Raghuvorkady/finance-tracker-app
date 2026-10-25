@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=20" />
+    <link rel="stylesheet" href="styles.css?v=21" />
     <link rel="stylesheet" href="enhancements.css?v=15" />
   </head>
   <body>
@@ -110,9 +110,15 @@
         <div id="dashboard" class="dashboard hidden">
           <section class="control-row">
             <div class="period-control">
-              <button class="chevron" id="prev-period" aria-label="Previous period">‹</button>
-              <div><span id="period-mode-label">Monthly</span><button id="period-label" class="period-label">—</button></div>
-              <button class="chevron" id="next-period" aria-label="Next period">›</button>
+              <button class="chevron" id="prev-period" aria-label="Previous period" title="Previous period">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+              </button>
+              <div class="period-label-wrap">
+                <button id="period-label" class="period-label">—</button>
+              </div>
+              <button class="chevron" id="next-period" aria-label="Next period" title="Next period">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
             </div>
             <div class="segmented" id="period-tabs" role="tablist">
               <button data-period="weekly">Week</button><button data-period="monthly" class="selected">Month</button><button data-period="quarterly">Quarter</button><button data-period="yearly">Year</button><button data-period="financial">FY</button><button data-period="custom">Custom</button><button data-period="all">All time</button>

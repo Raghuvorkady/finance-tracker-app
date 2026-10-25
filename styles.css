@@ -861,43 +861,62 @@ body{
   margin-bottom:18px;
 }
 .period-control{
-  display:flex;
-  gap:12px;
+  display:inline-flex;
+  gap:8px;
   align-items:center;
 }
 .chevron{
-  border:1px solid var(--line);
-  background:var(--card);
-  width:38px;
-  height:38px;
-  border-radius:8px;
-  font-size:18px;
-  line-height:20px;
-  color:var(--ink);
+  border:0;
+  background:transparent;
+  width:28px;
+  height:28px;
+  border-radius:6px;
+  color:var(--muted, #787774);
   cursor:pointer;
-  display:grid;
-  place-items:center;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
   flex-shrink:0;
+  padding:0;
+  transition:all 0.15s ease;
 }
-.period-control>div{min-width:140px}
-.period-control span{
-  display:block;
-  color:var(--muted);
-  font-weight:500;
-  font-size:calc(11px * var(--font-scale, 1));
-  letter-spacing:1.2px;
-  margin-bottom:3px;
-  text-transform:uppercase;
+.chevron:hover{
+  background:rgba(55, 53, 47, 0.08);
+  color:var(--ink, #37352f);
+}
+.chevron:focus-visible{
+  outline:none;
+  box-shadow:inset 0 0 0 2px var(--accent, #0077d4);
+}
+[data-theme="notion"] .chevron:hover{
+  background:#efeeeb;
+  color:#37352f;
+}
+.period-label-wrap{
+  display:inline-flex;
+  align-items:center;
+  min-width:0;
 }
 .period-label{
   border:0;
   background:transparent;
-  padding:0;
-  font-weight:500;
-  font-size:calc(16.5px * var(--font-scale, 1));
-  color:var(--ink);
+  padding:2px 4px;
+  font-weight:600;
+  font-size:calc(18px * var(--font-scale, 1));
+  font-family:'Inter',ui-sans-serif,sans-serif;
+  color:var(--ink, #37352f);
   cursor:pointer;
-  letter-spacing:-0.3px;
+  letter-spacing:-0.4px;
+  line-height:1.2;
+  white-space:nowrap;
+  border-radius:6px;
+  transition:all 0.15s ease;
+}
+.period-label:hover{
+  background:rgba(55, 53, 47, 0.05);
+}
+[data-theme="notion"] .period-label:hover{
+  background:#efeeeb;
 }
 .segmented{
   background:var(--line);
@@ -3574,24 +3593,22 @@ td.account-cell{color:var(--muted);font-size:calc(12px * var(--font-scale, 1))}
   .period-control{
     width:100%;
     justify-content:space-between;
+    align-items:center;
   }
   .chevron{
-    width:38px;
-    height:38px;
-    font-size:18px;
+    width:32px;
+    height:32px;
   }
-  .period-control span{
-    font-size:calc(11px * var(--font-scale, 1));
-    font-weight:500;
-  }
-  .period-control>div{
+  .period-label-wrap{
     flex:1;
-    text-align:center;
+    display:flex;
+    justify-content:center;
+    align-items:center;
     min-width:0;
   }
   .period-label{
-    font-size:calc(15px * var(--font-scale, 1));
-    font-weight:500;
+    font-size:calc(16.5px * var(--font-scale, 1));
+    font-weight:600;
     white-space:nowrap;
     overflow:hidden;
     text-overflow:ellipsis;
