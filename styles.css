@@ -1265,6 +1265,19 @@ select{
   width:100%;
   gap:12px;
 }
+#transactions-heading{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  margin:0;
+  font-size:calc(16.5px * var(--font-scale, 1));
+  font-weight:700;
+  letter-spacing:-0.4px;
+  color:var(--ink);
+}
+#transactions-heading .view-tab-icon{
+  display:none;
+}
 .tx-legend-dot{
   width:7px;
   height:7px;
@@ -2774,31 +2787,35 @@ td.account-cell{color:var(--muted);font-size:calc(12px * var(--font-scale, 1))}
   overflow:visible;
 }
 [data-theme="notion"] .transactions-panel .panel-heading{
-  padding:12px 14px 10px 14px;
+  padding:14px 18px 12px 18px;
   border-bottom:1px solid #edece9;
   margin-bottom:0;
 }
 [data-theme="notion"] #transactions-heading{
   display:inline-flex;
   align-items:center;
-  gap:6px;
-  font-size:14px;
-  font-weight:500;
+  gap:8px;
+  font-family:'Inter',ui-sans-serif,sans-serif;
+  font-size:18px;
+  font-weight:600;
+  letter-spacing:-0.3px;
   color:#37352f;
-  padding:3px 8px;
-  border-radius:4px;
-  background:rgba(55,53,47,0.06);
+  background:transparent;
+  padding:0;
+  border-radius:0;
+  margin:0;
 }
 [data-theme="notion"] #transactions-heading .view-tab-icon{
-  font-size:13px;
-  opacity:0.75;
+  display:none;
 }
 [data-theme="notion"] #transactions-heading .count-badge{
-  background:transparent;
+  background:rgba(55,53,47,0.08);
   color:#787774;
   font-size:12px;
-  font-weight:400;
-  padding:0 2px;
+  font-weight:500;
+  padding:1px 7px;
+  border-radius:10px;
+  vertical-align:middle;
 }
 [data-theme="notion"] .table-wrap{
   overflow-x:auto;
