@@ -229,7 +229,7 @@ export function syncFilterPills() {
                     Boolean(state.search && state.search.trim()) ||
                     state.sort !== 'date-desc' ||
                     isCustomCols;
-  if ($('notion-reset-filters')) $('notion-reset-filters').classList.toggle('hidden', !hasFilter);
+
   if ($('clear-category')) $('clear-category').classList.toggle('hidden', state.selectedCategories.size === 0);
 
   // Sync hidden legacy selects if present
@@ -733,27 +733,6 @@ export function initFilterListeners() {
       syncFilterPills();
       onRender();
       toast('Columns reset to default');
-    };
-  }
-
-  // Reset Filter Button (resets filters, search, sort, AND column order/visibility)
-  if ($('notion-reset-filters')) {
-    $('notion-reset-filters').onclick = () => {
-      state.selectedCategories.clear();
-      state.selectedAccounts.clear();
-      state.category = 'all';
-      state.account = 'all';
-      state.search = '';
-      if ($('search')) $('search').value = '';
-      state.sort = 'date-desc';
-      resetColumns();
-      resetTableDisplayLimit();
-      closeAllPopovers();
-      syncSortPill();
-      syncFilterPills();
-      populateColsList();
-      onRender();
-      toast('Filters and columns reset');
     };
   }
 
