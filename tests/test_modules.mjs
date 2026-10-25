@@ -462,6 +462,22 @@ state.type = 'all';
 state.search = '';
 state.selectedCategories.clear();
 state.category = 'all';
+
+// Test Comparison text does not include "vs prior"
+state.data.push({
+  date: new Date('2026-09-15T12:00:00'),
+  category: 'Food',
+  subcategory: '',
+  amount: 2000,
+  type: 'expense',
+  account: 'HDFC Bank',
+  note: 'Prior month food',
+  description: 'Prior'
+});
 render();
+const compareText = document.getElementById('spent-compare').textContent;
+console.log('✓ Comparison text formatted:', compareText, '(expected no "vs prior")');
+if (compareText.includes('vs prior')) throw new Error(`Expected comparison text not to contain 'vs prior' but got ${compareText}`);
+if (!compareText.includes('%')) throw new Error(`Expected comparison text to contain percentage but got ${compareText}`);
 
 console.log('\nAll refactored module tests PASSED successfully!');

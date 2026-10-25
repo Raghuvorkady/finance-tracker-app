@@ -93,7 +93,7 @@ export function render() {
       const targetVal = chartType === 'income' ? income : expenses;
       const pct = Math.abs((targetVal - prior) / prior * 100).toFixed(0);
       const sign = targetVal >= prior ? '+' : '-';
-      compareEl.textContent = `${sign}${pct}% vs prior`;
+      compareEl.textContent = `${sign}${pct}%`;
 
       const directionWord = targetVal >= prior ? 'more' : 'less';
       const typeWord = chartType === 'income' ? 'earned' : 'spent';
