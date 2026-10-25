@@ -7,8 +7,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=12" />
-    <link rel="stylesheet" href="enhancements.css?v=12" />
+    <link rel="stylesheet" href="styles.css?v=15" />
+    <link rel="stylesheet" href="enhancements.css?v=15" />
   </head>
   <body>
     <main class="app-shell">
@@ -40,8 +40,7 @@
               <div class="display-menu-divider"></div>
               <div class="display-menu-row">
                 <div class="display-segmented" role="group" aria-label="Theme" id="theme-options">
-                  <button data-theme="ledgerly">Ledgerly</button>
-                  <button data-theme="mobile">Mobile</button>
+                  <button data-theme="ledgerly">Default</button>
                   <button data-theme="notion">Notion</button>
                 </div>
               </div>
@@ -53,8 +52,20 @@
                   <button data-view-mode="c">Tabbed</button>
                 </div>
               </div>
+              <div class="display-menu-divider"></div>
+              <div class="display-menu-row">
+                <div class="display-segmented" role="group" aria-label="Action layout mode" id="action-layout-options">
+                  <button data-action-mode="existing" class="selected" title="Baseline: 3 topbar buttons">Default</button>
+                  <button data-action-mode="p1" title="Proposal 1: Mobile Hamburger Sheet">Prop 1</button>
+                  <button data-action-mode="p2" title="Proposal 2: Table Export">Prop 2</button>
+                  <button data-action-mode="p3" title="Proposal 3: Bottom Nav More Tab">Prop 3</button>
+                </div>
+              </div>
             </div>
           </div>
+          <button type="button" class="topbar-btn topbar-btn-ghost hamburger-btn" id="mobile-hamburger-btn" aria-label="Open menu" title="Menu">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+          </button>
           <label class="topbar-btn topbar-btn-primary" for="file-input" title="Import Money Manager Excel file">
             <svg class="topbar-svg-icon" width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 2v12M2 8h12"/></svg>
             <span class="topbar-btn-text">Import</span>
@@ -126,16 +137,16 @@
           </div>
 
           <section class="metric-grid">
-            <article class="metric-card accent-red"><div class="metric-top"><span id="spent-title">Total spent</span><span class="metric-icon">↓</span></div><strong id="spent-value">₹0</strong><p id="spent-compare">No prior period to compare</p></article>
-            <article class="metric-card accent-green"><div class="metric-top"><span>Money in</span><span class="metric-icon">↑</span></div><strong id="income-value">₹0</strong><p id="income-count">0 income transactions</p></article>
-            <article class="metric-card accent-violet"><div class="metric-top"><span>Net flow</span><span class="metric-icon">≋</span></div><strong id="net-value">₹0</strong><p id="net-copy">Income minus expenses</p></article>
-            <article class="metric-card accent-amber"><div class="metric-top"><span>Daily average</span><span class="metric-icon">◌</span></div><strong id="daily-value">₹0</strong><p id="records-copy">0 recorded expenses</p></article>
+            <article class="metric-card accent-red"><div class="metric-top"><span id="spent-title">Total spent</span><span class="metric-icon">↓</span></div><strong id="spent-value">₹0</strong><p id="spent-compare" title="Compared to prior period">No prior period</p></article>
+            <article class="metric-card accent-green"><div class="metric-top"><span>Income</span><span class="metric-icon">↑</span></div><strong id="income-value">₹0</strong><p id="income-count">0 transactions</p></article>
+            <article class="metric-card accent-violet"><div class="metric-top"><span>Net flow</span><span class="metric-icon">≋</span></div><strong id="net-value">₹0</strong><p id="net-copy">Income − expenses</p></article>
+            <article class="metric-card accent-amber"><div class="metric-top"><span>Daily average</span><span class="metric-icon">◌</span></div><strong id="daily-value">₹0</strong><p id="records-copy">0 expenses</p></article>
           </section>
 
           <!-- Option C Tab Bar (Active only when Option C is selected) -->
           <div class="option-c-subtabs" id="option-c-subtabs" role="tablist">
             <button class="c-tab-btn active" data-c-tab="transactions"><span class="c-tab-icon">⊞</span> Transactions <span id="c-tab-tx-count" class="count-badge">0</span></button>
-            <button class="c-tab-btn" data-c-tab="breakdown"><span class="c-tab-icon">◐</span> Spending Breakdown</button>
+            <button class="c-tab-btn" data-c-tab="breakdown"><span class="c-tab-icon">◐</span> Breakdown</button>
           </div>
 
           <div class="dashboard-views-container" id="dashboard-views-container">
@@ -162,9 +173,15 @@
                   </div>
                 </div>
 
-                <!-- Line 2: Filter & Sort Pills (Left) + Search & Reset (Right) -->
+                <!-- Line 2: Search (Left of Sort) + Filter & Sort Pills -->
                 <div class="notion-controls-row notion-controls-bottom">
                   <div class="notion-pills-left">
+                    <!-- Search Field (Placed to the left of Sort) -->
+                    <div class="notion-search-wrap">
+                      <span class="notion-search-icon">🔍</span>
+                      <input id="search" type="search" placeholder="Search..." autocomplete="off" spellcheck="false" />
+                    </div>
+
                     <!-- Sort Pill -->
                     <div class="notion-pill-wrap" id="sort-pill-wrap">
                       <button class="notion-pill sort-pill active-sort" id="sort-pill" aria-label="Sort transactions" aria-haspopup="true" aria-expanded="false">
@@ -240,7 +257,7 @@
                         <div class="cols-panel-header">
                           <span class="cols-panel-title">Property visibility</span>
                           <div class="cols-panel-header-actions">
-                            <button type="button" class="cols-reset-icon-btn" id="cols-reset-btn" title="Reset column order and visibility" aria-label="Reset columns">
+                            <button type="button" class="cols-reset-icon-btn hidden" id="cols-reset-btn" title="Reset column order and visibility" aria-label="Reset columns">
                               <svg width="14" height="14" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12.5 8c-2.65 0-5.05 1-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z" fill="currentColor"/></svg>
                             </button>
                             <button type="button" class="cols-panel-close-btn" id="cols-panel-close" aria-label="Close">✕</button>
@@ -270,13 +287,23 @@
                         <div class="notion-cols-list hidden" id="cols-list"></div>
                       </div>
                     </div>
-                  </div>
 
-                  <!-- Right: Search Field & Reset Button (Aligned with Sort & Filters) -->
-                  <div class="notion-pills-right">
-                    <div class="notion-search-wrap">
-                      <span class="notion-search-icon">🔍</span>
-                      <input id="search" type="search" placeholder="Search..." autocomplete="off" spellcheck="false" />
+                    <!-- Table Export Pill (Active in Proposal 2) -->
+                    <div class="notion-pill-wrap table-export-wrap" id="table-export-wrap">
+                      <button class="notion-pill" id="table-export-btn" aria-label="Export transactions" aria-haspopup="true" aria-expanded="false">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        <span class="pill-label">Export</span>
+                        <span class="pill-chevron"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                      </button>
+                      <div class="notion-popover hidden" id="table-export-popover" role="menu">
+                        <div class="notion-popover-header">Export CSV</div>
+                        <div class="notion-popover-list">
+                          <button class="notion-menu-item" id="table-export-filtered"><span class="sort-icon">⚡</span> Filtered view</button>
+                          <button class="notion-menu-item" id="table-export-all"><span class="sort-icon">📦</span> All transactions</button>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -304,7 +331,6 @@
               <div class="notion-col-menu-header">
                 <span class="col-menu-icon" id="col-menu-icon">📅</span>
                 <span class="col-menu-title" id="col-menu-title">Date</span>
-                <span class="col-menu-badge">Property</span>
               </div>
               <div class="notion-col-menu-divider"></div>
               <div class="notion-col-menu-actions">
@@ -327,6 +353,7 @@
         <button class="bottom-nav-item active" data-nav="overview"><span>▦</span>Overview</button>
         <button class="bottom-nav-item" data-nav="spending"><span>↗</span>Spending</button>
         <button class="bottom-nav-item" data-nav="transactions"><span>◫</span>Txns</button>
+        <button class="bottom-nav-item bottom-nav-more" id="bottom-nav-more" data-nav="more"><span>⋯</span>More</button>
       </nav>
     </main>
     <div id="toast" class="toast" role="status"></div>
@@ -334,6 +361,77 @@
     <div id="loading-indicator" class="loading-indicator hidden" role="status" aria-live="polite">
       <div class="loading-spinner"></div>
       <span id="loading-text" class="loading-text">Loading...</span>
+    </div>
+
+    <!-- Mobile Bottom Sheet (Proposals 1 & 3) -->
+    <div class="bottom-sheet-backdrop hidden" id="bottom-sheet-backdrop">
+      <div class="bottom-sheet" id="action-bottom-sheet" role="dialog" aria-modal="true" aria-label="Menu and settings">
+        <div class="sheet-handle-bar"></div>
+        <div class="sheet-header">
+          <span class="sheet-title">Menu & Settings</span>
+          <button type="button" class="sheet-close-btn" id="sheet-close-btn" aria-label="Close">✕</button>
+        </div>
+        <div class="sheet-body">
+          <div class="sheet-section">
+            <span class="sheet-section-title">Data Actions</span>
+            <div class="sheet-actions-grid">
+              <button type="button" class="sheet-action-card" id="sheet-import-trigger">
+                <span class="sheet-card-icon">📂</span>
+                <div class="sheet-card-text">
+                  <strong>Import Excel File</strong>
+                  <span>Money Manager workbook (.xlsx, .xls)</span>
+                </div>
+              </button>
+              <button type="button" class="sheet-action-card" id="sheet-export-filtered">
+                <span class="sheet-card-icon">⚡</span>
+                <div class="sheet-card-text">
+                  <strong>Export Filtered Data</strong>
+                  <span>Download current view as CSV</span>
+                </div>
+              </button>
+              <button type="button" class="sheet-action-card" id="sheet-export-all">
+                <span class="sheet-card-icon">📦</span>
+                <div class="sheet-card-text">
+                  <strong>Export All Data</strong>
+                  <span>Download entire dataset as CSV</span>
+                </div>
+              </button>
+            </div>
+          </div>
+          <div class="sheet-section">
+            <span class="sheet-section-title">Theme</span>
+            <div class="display-segmented" id="sheet-theme-options">
+              <button data-theme="ledgerly">Default</button>
+              <button data-theme="notion">Notion</button>
+            </div>
+          </div>
+          <div class="sheet-section">
+            <span class="sheet-section-title">Font Size</span>
+            <div class="font-stepper" style="justify-content:center;">
+              <button id="sheet-font-dec" class="stepper-btn" aria-label="Decrease font">A−</button>
+              <span id="sheet-font-scale" class="scale-readout">100%</span>
+              <button id="sheet-font-inc" class="stepper-btn" aria-label="Increase font">A+</button>
+            </div>
+          </div>
+          <div class="sheet-section">
+            <span class="sheet-section-title">Layout View</span>
+            <div class="display-segmented" id="sheet-layout-options">
+              <button data-view-mode="a">Stacked</button>
+              <button data-view-mode="b">Split</button>
+              <button data-view-mode="c">Tabbed</button>
+            </div>
+          </div>
+          <div class="sheet-section">
+            <span class="sheet-section-title">Action Style (Testing Proposals)</span>
+            <div class="display-segmented" id="sheet-action-options">
+              <button data-action-mode="existing">Default</button>
+              <button data-action-mode="p1">Prop 1</button>
+              <button data-action-mode="p2">Prop 2</button>
+              <button data-action-mode="p3">Prop 3</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script type="module" src="js/app.js"></script>

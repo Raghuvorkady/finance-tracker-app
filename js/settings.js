@@ -5,6 +5,7 @@
 import { $, getStorage, setStorage } from './utils.js';
 import { state, DEFAULT_SCALE } from './state.js';
 import { closeAllPopovers } from './filters.js';
+import { downloadCsv } from './export.js';
 
 let onSettingsChange = () => {};
 export function registerSettingsCallback(fn) {
@@ -21,6 +22,8 @@ export function setFontScale(scale) {
   if (readout) readout.textContent = pct;
   const pill = $('font-scale-pill');
   if (pill) pill.textContent = pct;
+  const sheetPill = $('sheet-font-scale');
+  if (sheetPill) sheetPill.textContent = pct;
 }
 
 export function adjustFontScale(delta) {
@@ -60,15 +63,38 @@ export function setTheme(theme) {
   onSettingsChange();
 }
 
+export function setActionLayout(mode) {
+  const valid = ['existing', 'p1', 'p2', 'p3'].includes(mode) ? mode : 'existing';
+  document.documentElement.setAttribute('data-action-layout', valid);
+  setStorage('ledgerly-action-layout', valid);
+  document.querySelectorAll('[data-action-mode]').forEach(btn => {
+    btn.classList.toggle('selected', btn.dataset.actionMode === valid);
+  });
+  onSettingsChange();
+}
+
+export function openBottomSheet() {
+  closeAllPopovers();
+  const sheet = $('bottom-sheet-backdrop');
+  if (sheet) sheet.classList.remove('hidden');
+}
+
+export function closeBottomSheet() {
+  const sheet = $('bottom-sheet-backdrop');
+  if (sheet) sheet.classList.add('hidden');
+}
+
 export function initSettings() {
   const savedTheme = getStorage('ledgerly-theme', 'ledgerly');
-  setTheme(savedTheme);
+  setTheme(savedTheme === 'mobile' ? 'ledgerly' : savedTheme);
   const savedScale = getStorage('ledgerly-font-scale', DEFAULT_SCALE);
   setFontScale(savedScale);
   const savedLayout = getStorage('ledgerly-layout-view', 'a');
   setLayoutView(savedLayout);
   const savedTab = getStorage('ledgerly-active-c-tab', 'transactions');
   setOptionCTab(savedTab);
+  const savedActionLayout = getStorage('ledgerly-action-layout', 'existing');
+  setActionLayout(savedActionLayout);
 }
 
 export function initSettingsListeners() {
@@ -94,13 +120,105 @@ export function initSettingsListeners() {
   if ($('font-dec')) $('font-dec').onclick = () => adjustFontScale(-0.1);
   if ($('font-inc')) $('font-inc').onclick = () => adjustFontScale(+0.1);
   if ($('font-reset')) $('font-reset').onclick = () => setFontScale(DEFAULT_SCALE);
-  document.querySelectorAll('#theme-options [data-theme]').forEach(button => {
+  document.querySelectorAll('[data-theme]').forEach(button => {
     button.onclick = () => setTheme(button.dataset.theme);
   });
-  document.querySelectorAll('#display-layout-options [data-view-mode]').forEach(btn => {
+  document.querySelectorAll('#display-layout-options [data-view-mode], #sheet-layout-options [data-view-mode]').forEach(btn => {
     btn.onclick = () => setLayoutView(btn.dataset.viewMode);
   });
   document.querySelectorAll('#option-c-subtabs [data-c-tab]').forEach(btn => {
     btn.onclick = () => setOptionCTab(btn.dataset.cTab);
   });
+  document.querySelectorAll('[data-action-mode]').forEach(btn => {
+    btn.onclick = () => setActionLayout(btn.dataset.actionMode);
+  });
+
+  // Mobile Hamburger button (Proposal 1)
+  const hamburgerBtn = $('mobile-hamburger-btn');
+  if (hamburgerBtn) {
+    hamburgerBtn.onclick = (e) => {
+      e.stopPropagation();
+      openBottomSheet();
+    };
+  }
+
+  // Mobile Bottom Nav More Tab (Proposal 3)
+  const bottomNavMore = $('bottom-nav-more');
+  if (bottomNavMore) {
+    bottomNavMore.onclick = (e) => {
+      e.stopPropagation();
+      openBottomSheet();
+    };
+  }
+
+  // Bottom Sheet backdrop & close button
+  const sheetClose = $('sheet-close-btn');
+  if (sheetClose) sheetClose.onclick = () => closeBottomSheet();
+  const sheetBackdrop = $('bottom-sheet-backdrop');
+  if (sheetBackdrop) {
+    sheetBackdrop.onclick = (e) => {
+      if (e.target === sheetBackdrop) closeBottomSheet();
+    };
+  }
+
+  // Sheet file import trigger
+  const sheetImportTrigger = $('sheet-import-trigger');
+  if (sheetImportTrigger) {
+    sheetImportTrigger.onclick = () => {
+      closeBottomSheet();
+      const fileInput = $('file-input');
+      if (fileInput) fileInput.click();
+    };
+  }
+
+  // Sheet export buttons
+  const sheetExpFiltered = $('sheet-export-filtered');
+  if (sheetExpFiltered) {
+    sheetExpFiltered.onclick = () => {
+      closeBottomSheet();
+      downloadCsv(false);
+    };
+  }
+  const sheetExpAll = $('sheet-export-all');
+  if (sheetExpAll) {
+    sheetExpAll.onclick = () => {
+      closeBottomSheet();
+      downloadCsv(true);
+    };
+  }
+
+  // Sheet font stepper
+  if ($('sheet-font-dec')) $('sheet-font-dec').onclick = () => adjustFontScale(-0.1);
+  if ($('sheet-font-inc')) $('sheet-font-inc').onclick = () => adjustFontScale(+0.1);
+
+  // Proposal 2 Table Export Pill
+  const tableExpBtn = $('table-export-btn');
+  const tableExpPopover = $('table-export-popover');
+  if (tableExpBtn && tableExpPopover) {
+    tableExpBtn.onclick = (e) => {
+      e.stopPropagation();
+      const opening = tableExpPopover.classList.contains('hidden');
+      closeAllPopovers();
+      if (opening) {
+        tableExpPopover.classList.remove('hidden');
+        tableExpBtn.setAttribute('aria-expanded', 'true');
+      }
+    };
+  }
+  const tableExpFiltered = $('table-export-filtered');
+  if (tableExpFiltered) {
+    tableExpFiltered.onclick = (e) => {
+      e.stopPropagation();
+      closeAllPopovers();
+      downloadCsv(false);
+    };
+  }
+  const tableExpAll = $('table-export-all');
+  if (tableExpAll) {
+    tableExpAll.onclick = (e) => {
+      e.stopPropagation();
+      closeAllPopovers();
+      downloadCsv(true);
+    };
+  }
 }

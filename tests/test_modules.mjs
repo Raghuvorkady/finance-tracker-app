@@ -88,7 +88,7 @@ global.requestAnimationFrame = (fn) => fn();
 const { state } = await import('../js/state.js');
 const { normalizeRows } = await import('../js/parser.js');
 const { bounds } = await import('../js/dates.js');
-const { filtered, setTypeFilter, setSort } = await import('../js/filters.js');
+const { filtered, setTypeFilter, setSort, syncFilterPills } = await import('../js/filters.js');
 const { render } = await import('../js/app.js');
 const {
   renderTable,
@@ -100,7 +100,7 @@ const {
   hasCustomColumns,
   getVisibleColumns
 } = await import('../js/table.js');
-const { setLayoutView } = await import('../js/settings.js');
+const { setLayoutView, setActionLayout } = await import('../js/settings.js');
 
 console.log('✓ ES Modules successfully loaded!');
 
@@ -124,12 +124,18 @@ console.log('✓ normalizeRows normalized count:', state.data.length, '(expected
 render();
 console.log('✓ render() executed without error');
 console.log('✓ Donut contains macro slices:', document.getElementById('donut').innerHTML.includes('data-type-key="income"'));
-console.log('✓ Breakdown title for all:', document.getElementById('breakdown-title').textContent, '(expected Cashflow Breakdown)');
+console.log('✓ Breakdown title for all:', document.getElementById('breakdown-title').textContent, '(expected Breakdown)');
+if (document.getElementById('breakdown-title').textContent !== 'Breakdown') throw new Error('Expected Breakdown title');
 
 // Test Expense Filter
 setTypeFilter('expense');
 console.log('✓ setTypeFilter("expense") state.type:', state.type);
-console.log('✓ Breakdown title for expense:', document.getElementById('breakdown-title').textContent, '(expected Expense Breakdown)');
+console.log('✓ Breakdown title for expense:', document.getElementById('breakdown-title').textContent, '(expected Breakdown)');
+if (document.getElementById('breakdown-title').textContent !== 'Breakdown') throw new Error('Expected Breakdown title');
+console.log('✓ Net copy minimal:', document.getElementById('net-copy').textContent, '(expected Income − expenses)');
+if (document.getElementById('net-copy').textContent !== 'Income − expenses') throw new Error('Expected Income − expenses');
+console.log('✓ Income count minimal:', document.getElementById('income-count').textContent);
+console.log('✓ Records copy minimal:', document.getElementById('records-copy').textContent);
 
 // Test Sort
 setSort('amount-desc');
@@ -145,15 +151,23 @@ console.log('✓ Multi-select categories match:', f.map(r => r.category).sort().
 // Test Column Ordering, Hiding, and Resetting
 console.log('\n--- Column Feature Tests ---');
 resetColumns();
+syncFilterPills();
 console.log('✓ Initial columns:', getVisibleColumns().join(', '), '(hasCustomColumns:', hasCustomColumns(), 'expected false)');
+if ($('cols-reset-btn').classList.contains('hidden') !== true) {
+  throw new Error('Expected cols-reset-btn to be hidden initially');
+}
 
 // 1. Move column left — move 'category' left (index 2 → 1)
 const movedLeft = moveColumn('category', 'left');
+syncFilterPills();
 console.log('✓ moveColumn("category", "left"):', movedLeft, '| Order:', state.columnOrder.join(', '));
 if (state.columnOrder[1] !== 'category' || state.columnOrder[2] !== 'note') {
   throw new Error('moveColumn left failed: expected category at index 1, note at index 2');
 }
 console.log('✓ hasCustomColumns after move:', hasCustomColumns(), '(expected true)');
+if ($('cols-reset-btn').classList.contains('hidden') === true) {
+  throw new Error('Expected cols-reset-btn to be visible after column modification');
+}
 
 // 2. Move column right — move 'date' right (index 0 → 1)
 const movedRight = moveColumn('date', 'right');
@@ -178,9 +192,13 @@ if (!getVisibleColumns().includes('category')) {
 
 // 5. Reset columns
 resetColumns();
+syncFilterPills();
 console.log('✓ resetColumns() -> Order:', state.columnOrder.join(', '), '| Hidden size:', state.hiddenColumns.size);
 if (hasCustomColumns()) {
   throw new Error('resetColumns failed: hasCustomColumns should be false');
+}
+if ($('cols-reset-btn').classList.contains('hidden') !== true) {
+  throw new Error('Expected cols-reset-btn to be hidden after reset');
 }
 
 // 6. Test renderTable with customized columns
@@ -194,5 +212,13 @@ resetColumns();
 setLayoutView('b');
 console.log('✓ setLayoutView("b") state.layoutView:', state.layoutView, '(expected b)');
 if (state.layoutView !== 'b') throw new Error('Expected layoutView to be b');
+
+// 8. Test Action layout modes (Proposals)
+setActionLayout('p1');
+console.log('✓ setActionLayout("p1") applied');
+setActionLayout('p2');
+console.log('✓ setActionLayout("p2") applied');
+setActionLayout('existing');
+console.log('✓ setActionLayout("existing") applied');
 
 console.log('\nAll refactored module tests PASSED successfully!');

@@ -57,7 +57,7 @@ export function render() {
 
   // Top metric cards
   if ($('spent-title')) {
-    $('spent-title').textContent = chartType === 'transfer' ? 'Money moved' : chartType === 'income' ? 'Money received' : 'Total spent';
+    $('spent-title').textContent = chartType === 'transfer' ? 'Transfers' : chartType === 'income' ? 'Income' : 'Total spent';
   }
   if ($('spent-value')) {
     $('spent-value').textContent = money(chartType === 'transfer' ? transfers : chartType === 'income' ? income : expenses);
@@ -78,30 +78,34 @@ export function render() {
   }
   if ($('income-count')) {
     const incLen = rows.filter(r => r.type === 'income').length;
-    $('income-count').textContent = `${incLen} income transaction${incLen === 1 ? '' : 's'}`;
+    $('income-count').textContent = `${incLen} transaction${incLen === 1 ? '' : 's'}`;
   }
   if ($('records-copy')) {
-    $('records-copy').textContent = `${rows.filter(r => r.type === 'expense').length} recorded expenses`;
+    const expLen = rows.filter(r => r.type === 'expense').length;
+    $('records-copy').textContent = `${expLen} expense${expLen === 1 ? '' : 's'}`;
+  }
+  if ($('net-copy')) {
+    $('net-copy').textContent = 'Income − expenses';
   }
   if ($('spent-compare')) {
-    $('spent-compare').textContent = chartType === 'transfer'
-      ? `${rows.filter(r => r.type === 'transfer').length} transfer record${rows.filter(r => r.type === 'transfer').length === 1 ? '' : 's'} in this view`
-      : prior === null || prior === 0
-        ? 'No prior period to compare'
-        : `${Math.abs((expenses - prior) / prior * 100).toFixed(0)}% ${expenses > prior ? 'more' : 'less'} than prior period`;
+    if (chartType === 'transfer') {
+      const txLen = rows.filter(r => r.type === 'transfer').length;
+      $('spent-compare').textContent = `${txLen} transfer${txLen === 1 ? '' : 's'}`;
+      $('spent-compare').title = `${txLen} transfer${txLen === 1 ? '' : 's'} recorded`;
+    } else if (prior === null || prior === 0) {
+      $('spent-compare').textContent = 'No prior period';
+      $('spent-compare').title = 'No prior period to compare against';
+    } else {
+      const pct = Math.abs((expenses - prior) / prior * 100).toFixed(0);
+      const sign = expenses >= prior ? '+' : '-';
+      $('spent-compare').textContent = `${sign}${pct}%`;
+      $('spent-compare').title = `${Math.abs((expenses - prior) / prior * 100).toFixed(1)}% ${expenses >= prior ? 'more' : 'less'} compared to prior period (₹${money(prior)})`;
+    }
   }
 
   // Panel title
   if ($('breakdown-title')) {
-    if (state.type === 'all' && state.selectedCategories.size === 0) {
-      $('breakdown-title').textContent = 'Cashflow Breakdown';
-    } else if (state.type === 'income') {
-      $('breakdown-title').textContent = 'Income Breakdown';
-    } else if (state.type === 'transfer') {
-      $('breakdown-title').textContent = 'Transfers Breakdown';
-    } else {
-      $('breakdown-title').textContent = 'Expense Breakdown';
-    }
+    $('breakdown-title').textContent = 'Breakdown';
   }
 
   // Clear drilldown button in spending panel

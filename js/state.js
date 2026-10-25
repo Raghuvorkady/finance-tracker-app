@@ -71,6 +71,14 @@ export const state = {
 export const DEFAULT_SCALE = 1.0;
 
 export const PALETTE = [
-  '#708f46', '#e88a68', '#8372c7', '#d5ae51', '#4d9f92',
-  '#a56f92', '#6a9ccc', '#b5a85a', '#bf7b60', '#6f9c76'
+  '#3b82f6', // Vivid Blue (Tailwind blue-500)
+  '#f97316', // Bright Tangerine / Orange (Tailwind orange-500)
+  '#10b981', // Fresh Emerald Green (Tailwind emerald-500)
+  '#8b5cf6', // Rich Violet / Purple (Tailwind violet-500)
+  '#f59e0b', // Warm Amber / Gold (Tailwind amber-500)
+  '#06b6d4', // Crisp Cyan / Teal (Tailwind cyan-500)
+  '#f43f5e', // Vibrant Rose / Coral (Tailwind rose-500)
+  '#84cc16', // Fresh Lime Green (Tailwind lime-500)
+  '#d946ef', // Bright Fuchsia / Magenta (Tailwind fuchsia-500)
+  '#6366f1'  // Indigo Blue (Tailwind indigo-500)
 ];

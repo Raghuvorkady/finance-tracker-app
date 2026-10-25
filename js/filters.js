@@ -219,6 +219,10 @@ export function syncFilterPills() {
     colsDot.classList.toggle('hidden', !isCustomCols);
     colsPill.classList.toggle('has-filter', isCustomCols);
   }
+  const colsResetBtn = $('cols-reset-btn');
+  if (colsResetBtn) {
+    colsResetBtn.classList.toggle('hidden', !isCustomCols);
+  }
 
   renderCategoryChips();
   renderAccountChips();
@@ -310,6 +314,12 @@ export function populateColsList() {
   const hiddenCols = state.columnOrder.filter(c => state.hiddenColumns.has(c));
 
   if (visibleListEl && hiddenListEl) {
+    // Sync reset button visibility
+    const resetBtn = $('cols-reset-btn');
+    if (resetBtn) {
+      resetBtn.classList.toggle('hidden', !hasCustomColumns());
+    }
+
     // New Notion-style two-section panel
     const shownHtml = visibleCols.map(colId => makeColItemHtml(colId, false, searchQ)).join('');
     const hiddenHtml = hiddenCols.map(colId => makeColItemHtml(colId, true, searchQ)).join('');

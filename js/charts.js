@@ -158,7 +158,8 @@ export function renderDonut(totals, expenses, analysisType = 'expense') {
   let position = 0;
   const slices = visible.map(([name, value], i) => {
     const percent = expenses > 0 ? (value / expenses) * 100 : 0;
-    const item = { name, value, percent, start: position, color: PALETTE[i % PALETTE.length], index: i };
+    const color = name.toLowerCase() === 'other' ? '#94a3b8' : PALETTE[i % PALETTE.length];
+    const item = { name, value, percent, start: position, color, index: i };
     position += percent;
     return item;
   });
