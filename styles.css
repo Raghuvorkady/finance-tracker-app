@@ -970,11 +970,15 @@ select{
   padding:16px 14px 12px;
   min-height:auto;
   position:relative;
-  overflow:hidden;
+  overflow:visible;
   display:flex;
   flex-direction:column;
   justify-content:space-between;
   transition:border-color 0.15s ease;
+}
+.metric-card:hover,
+.metric-card:focus-within {
+  z-index: 10;
 }
 .metric-card.accent-red{ border-color:rgba(235, 87, 87, 0.22); }
 .metric-card.accent-green{ border-color:rgba(15, 123, 108, 0.22); }

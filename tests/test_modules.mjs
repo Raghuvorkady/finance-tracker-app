@@ -407,6 +407,54 @@ if (janPrior.start.getFullYear() !== 2025 || janPrior.end.getFullYear() !== 2025
   throw new Error('Expected year boundary transition to 2025');
 }
 
+// ── 14. Test Period Navigator Rollover & 31st Day Boundary Handling ──
+const { movePeriod } = await import('../js/dates.js');
+
+// Case 1: Upload on Oct 31, navigate right -> November 2026 (NOT December)
+state.period = 'monthly';
+state.anchor = new Date(2026, 9, 31);
+movePeriod(1);
+const case1Label = bounds().label;
+console.log('✓ Case 1 movePeriod(+1) from Oct 31:', case1Label, '(expected November 2026)');
+if (case1Label !== 'November 2026') throw new Error(`Expected November 2026 but got ${case1Label}`);
+
+// Case 2: Upload on Oct 31, navigate left -> September 2026 on single click (NOT October)
+state.anchor = new Date(2026, 9, 31);
+movePeriod(-1);
+const case2Label = bounds().label;
+console.log('✓ Case 2 movePeriod(-1) from Oct 31:', case2Label, '(expected September 2026)');
+if (case2Label !== 'September 2026') throw new Error(`Expected September 2026 but got ${case2Label}`);
+
+// Additional boundary: Jan 31 -> right -> February 2026
+state.anchor = new Date(2026, 0, 31);
+movePeriod(1);
+const janToFebLabel = bounds().label;
+console.log('✓ Boundary Jan 31 + 1:', janToFebLabel, '(expected February 2026)');
+if (janToFebLabel !== 'February 2026') throw new Error(`Expected February 2026 but got ${janToFebLabel}`);
+
+// Additional boundary: Mar 31 -> left -> February 2026
+state.anchor = new Date(2026, 2, 31);
+movePeriod(-1);
+const marToFebLabel = bounds().label;
+console.log('✓ Boundary Mar 31 - 1:', marToFebLabel, '(expected February 2026)');
+if (marToFebLabel !== 'February 2026') throw new Error(`Expected February 2026 but got ${marToFebLabel}`);
+
+// Quarterly navigation from end of month
+state.period = 'quarterly';
+state.anchor = new Date(2026, 9, 31); // Oct 31 (Q4)
+movePeriod(-1);
+const qPriorLabel = bounds().label;
+console.log('✓ Quarterly navigation Q4 - 1:', qPriorLabel, '(expected Q3 2026)');
+if (qPriorLabel !== 'Q3 2026') throw new Error(`Expected Q3 2026 but got ${qPriorLabel}`);
+
+// Yearly leap-year boundary: Feb 29 2024 -> +1 year -> 2025
+state.period = 'yearly';
+state.anchor = new Date(2024, 1, 29);
+movePeriod(1);
+const leapYearLabel = bounds().label;
+console.log('✓ Yearly leap boundary 2024 + 1:', leapYearLabel, '(expected 2025)');
+if (leapYearLabel !== '2025') throw new Error(`Expected 2025 but got ${leapYearLabel}`);
+
 // Reset state for clean conclusion
 state.anchor = new Date('2026-10-15T12:00:00');
 state.period = 'monthly';

@@ -78,10 +78,18 @@ export function bounds() {
 export function movePeriod(direction) {
   if (state.period === 'all' || state.period === 'custom') return;
   const a = new Date(state.anchor || new Date());
-  if (state.period === 'weekly') a.setDate(a.getDate() + direction * 7);
-  else if (state.period === 'monthly') a.setMonth(a.getMonth() + direction);
-  else if (state.period === 'quarterly') a.setMonth(a.getMonth() + direction * 3);
-  else if (state.period === 'yearly' || state.period === 'financial') a.setFullYear(a.getFullYear() + direction);
+  if (state.period === 'weekly') {
+    a.setDate(a.getDate() + direction * 7);
+  } else if (state.period === 'monthly') {
+    a.setDate(1);
+    a.setMonth(a.getMonth() + direction);
+  } else if (state.period === 'quarterly') {
+    a.setDate(1);
+    a.setMonth(a.getMonth() + direction * 3);
+  } else if (state.period === 'yearly' || state.period === 'financial') {
+    a.setDate(1);
+    a.setFullYear(a.getFullYear() + direction);
+  }
   state.anchor = a;
 }
 
