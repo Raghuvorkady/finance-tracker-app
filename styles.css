@@ -1,20 +1,7 @@
-/* ── Ledgerly theme (default) ── */
-:root {
-  --font-scale: 1;
-}
-:root,[data-theme="ledgerly"] {
-  --ink:#17221c; --muted:#778078; --line:#e8ebe7; --paper:#f8f9f6; --card:#ffffff;
-  --sage:#d8e8c7; --lime:#84cc16; --red:#f43f5e; --green:#10b981; --transfer:#787774; --violet:#8b5cf6; --amber:#f59e0b;
-  --accent:#497433; --accent-light:#d9edc4; --body-font:Manrope,Arial,sans-serif;
-}
-/* ── Mobile theme (Money Manager inspired) ── */
-[data-theme="mobile"] {
-  --ink:#1c1c1e; --muted:#8e8e93; --line:#e5e5ea; --paper:#f2f2f7; --card:#ffffff;
-  --sage:#fff4e0; --lime:#34c759; --red:#ff3b30; --green:#34c759; --violet:#af52de; --amber:#ff9500;
-  --accent:#ff9500; --accent-light:#fff4e0; --body-font:-apple-system,BlinkMacSystemFont,"SF Pro Text",Manrope,sans-serif;
-}
-/* ── Notion theme (Directly matched to Notion template) ── */
+/* ── Notion theme (Default) ── */
+:root,
 [data-theme="notion"] {
+  --font-scale: 1;
   --ink:#37352f; --muted:#787774; --line:#edece9; --paper:#ffffff; --card:#ffffff;
   --sage:#f1f1ef; --lime:#dbeddb; --red:#f43f5e; --green:#10b981; --transfer:#787774; --violet:#8b5cf6; --amber:#f59e0b;
   --accent:#37352f; --accent-light:#f7f7f5; --body-font:'Inter',ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
@@ -173,23 +160,13 @@ body{
   color:#ffffff;
 }
 
-/* Theme overrides for Primary Button */
-[data-theme="ledgerly"] .topbar-btn-primary{
-  background:#24292e;
-  border-color:#24292e;
-  color:#ffffff;
-  box-shadow:0 1px 2px rgba(0,0,0,0.12);
-}
-[data-theme="ledgerly"] .topbar-btn-primary:hover{
-  background:#000000;
-  border-color:#000000;
-}
-[data-theme="notion"] .topbar-btn-primary{
+/* Primary Button (Notion style default) */
+.topbar-btn-primary{
   background:#2383e2;
   border-color:#2383e2;
   color:#ffffff;
 }
-[data-theme="notion"] .topbar-btn-primary:hover{
+.topbar-btn-primary:hover{
   background:#0070df;
   border-color:#0070df;
 }
@@ -645,21 +622,9 @@ body{
   transform:translateX(3px);
 }
 
-/* Theme overrides for CTA Button */
-[data-theme="ledgerly"] .primary-button,
-[data-theme="ledgerly"] .cta-button{
-  background:var(--accent, #2e604a);
-  border-color:var(--accent, #2e604a);
-  box-shadow:0 4px 16px rgba(46, 96, 74, 0.35), 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-[data-theme="ledgerly"] .primary-button:hover,
-[data-theme="ledgerly"] .cta-button:hover{
-  background:#244d3b;
-  border-color:#244d3b;
-  box-shadow:0 6px 22px rgba(46, 96, 74, 0.45);
-}
-[data-theme="notion"] .primary-button,
-[data-theme="notion"] .cta-button{
+/* CTA / Primary Button */
+.primary-button,
+.cta-button{
   background:#2383e2;
   border-color:#2383e2;
   box-shadow:0 4px 16px rgba(35, 131, 226, 0.35);
@@ -3466,26 +3431,7 @@ td.account-cell{color:var(--muted);font-size:calc(12px * var(--font-scale, 1))}
   border-bottom:1px solid var(--line);
 }
 
-/* ══════════════════════════════════════════════════════
-   MOBILE THEME: iOS Money Manager Style
-   ══════════════════════════════════════════════════════ */
-[data-theme="mobile"] .metric-card{
-  border-radius:16px;
-  border:none;
-  box-shadow:0 1px 3px rgba(0,0,0,.08);
-}
-[data-theme="mobile"] .panel{
-  border-radius:16px;
-  border:none;
-  box-shadow:0 1px 3px rgba(0,0,0,.08);
-}
-[data-theme="mobile"] .segmented{
-  background:#e5e5ea;
-  border-radius:10px;
-}
-[data-theme="mobile"] .segmented button.selected{
-  border-radius:8px;
-}
+
 
 /* ══════════════════════════════════════════════════════
    MOBILE OVERLAPPING FIXES (Screens <= 768px)

@@ -54,11 +54,11 @@ export function setOptionCTab(tabName) {
   });
 }
 
-export function setTheme(theme) {
-  document.documentElement.setAttribute('data-theme', theme);
-  setStorage('ledgerly-theme', theme);
+export function setTheme(theme = 'notion') {
+  document.documentElement.setAttribute('data-theme', 'notion');
+  setStorage('ledgerly-theme', 'notion');
   document.querySelectorAll('[data-theme]').forEach(btn => {
-    if (btn.tagName === 'BUTTON') btn.classList.toggle('selected', btn.dataset.theme === theme);
+    if (btn.tagName === 'BUTTON') btn.classList.toggle('selected', btn.dataset.theme === 'notion');
   });
   onSettingsChange();
 }
@@ -85,8 +85,7 @@ export function closeBottomSheet() {
 }
 
 export function initSettings() {
-  const savedTheme = getStorage('ledgerly-theme', 'ledgerly');
-  setTheme(savedTheme === 'mobile' ? 'ledgerly' : savedTheme);
+  setTheme('notion');
   const savedScale = getStorage('ledgerly-font-scale', DEFAULT_SCALE);
   setFontScale(savedScale);
   const savedLayout = getStorage('ledgerly-layout-view', 'a');
@@ -120,7 +119,7 @@ export function initSettingsListeners() {
   if ($('font-dec')) $('font-dec').onclick = () => adjustFontScale(-0.1);
   if ($('font-inc')) $('font-inc').onclick = () => adjustFontScale(+0.1);
   if ($('font-reset')) $('font-reset').onclick = () => setFontScale(DEFAULT_SCALE);
-  document.querySelectorAll('[data-theme]').forEach(button => {
+  document.querySelectorAll('button[data-theme]').forEach(button => {
     button.onclick = () => setTheme(button.dataset.theme);
   });
   document.querySelectorAll('#display-layout-options [data-view-mode], #sheet-layout-options [data-view-mode]').forEach(btn => {
