@@ -147,19 +147,19 @@ console.log('\n--- Column Feature Tests ---');
 resetColumns();
 console.log('✓ Initial columns:', getVisibleColumns().join(', '), '(hasCustomColumns:', hasCustomColumns(), 'expected false)');
 
-// 1. Move column left
-const movedLeft = moveColumn('note', 'left');
-console.log('✓ moveColumn("note", "left"):', movedLeft, '| Order:', state.columnOrder.join(', '));
-if (state.columnOrder[1] !== 'note' || state.columnOrder[2] !== 'category') {
-  throw new Error('moveColumn left failed: expected note at index 1, category at index 2');
+// 1. Move column left — move 'category' left (index 2 → 1)
+const movedLeft = moveColumn('category', 'left');
+console.log('✓ moveColumn("category", "left"):', movedLeft, '| Order:', state.columnOrder.join(', '));
+if (state.columnOrder[1] !== 'category' || state.columnOrder[2] !== 'note') {
+  throw new Error('moveColumn left failed: expected category at index 1, note at index 2');
 }
 console.log('✓ hasCustomColumns after move:', hasCustomColumns(), '(expected true)');
 
-// 2. Move column right
+// 2. Move column right — move 'date' right (index 0 → 1)
 const movedRight = moveColumn('date', 'right');
 console.log('✓ moveColumn("date", "right"):', movedRight, '| Order:', state.columnOrder.join(', '));
-if (state.columnOrder[0] !== 'note' || state.columnOrder[1] !== 'date') {
-  throw new Error('moveColumn right failed: expected note at index 0, date at index 1');
+if (state.columnOrder[0] !== 'category' || state.columnOrder[1] !== 'date') {
+  throw new Error('moveColumn right failed: expected category at index 0, date at index 1');
 }
 
 // 3. Hide column
