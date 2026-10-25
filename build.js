@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Optional build script to bundle js/*.js modules into a single app.js
+ * Optional build script to bundle js/*.js modules into a single dist/app.bundle.js
  * Run with: node build.js
  */
 
@@ -40,5 +40,10 @@ for (const mod of moduleOrder) {
 
 bundle += '})();\n';
 
-fs.writeFileSync(path.join(__dirname, 'app.js'), bundle, 'utf8');
-console.log('✓ Successfully bundled js/*.js modules into app.js');
+const distDir = path.join(__dirname, 'dist');
+if (!fs.existsSync(distDir)) {
+  fs.mkdirSync(distDir, { recursive: true });
+}
+const outPath = path.join(distDir, 'app.bundle.js');
+fs.writeFileSync(outPath, bundle, 'utf8');
+console.log(`✓ Successfully bundled js/*.js modules into ${outPath}`);
