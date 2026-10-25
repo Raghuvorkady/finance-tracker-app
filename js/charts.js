@@ -97,7 +97,7 @@ export function renderMacroDonut(expenses, income, transfers, net) {
       totalEl.className = item.typeKey === 'income' ? 'amount-income' : (item.typeKey === 'expense' ? 'amount-expense' : 'amount-neutral');
     }
     const capEl = $('donut-caption');
-    if (capEl) capEl.innerHTML = `${item.emoji} ${item.name} · ${Math.round(item.percent)}%`;
+    if (capEl) capEl.innerHTML = `<span class="donut-cat-name">${item.emoji} ${escapeHtml(item.name)}</span><span class="donut-cat-pct">${Math.round(item.percent)}%</span>`;
   };
 
   const clearHover = () => {
@@ -193,7 +193,7 @@ export function renderDonut(totals, expenses, analysisType = 'expense') {
       t.textContent = money(item.value, true);
     }
     const c = $('donut-caption');
-    if (c) c.innerHTML = `${emoji} ${escapeHtml(text)} · ${Math.round(item.percent)}%`;
+    if (c) c.innerHTML = `<span class="donut-cat-name">${emoji} ${escapeHtml(text)}</span><span class="donut-cat-pct">${Math.round(item.percent)}%</span>`;
   };
 
   const clearHover = () => {

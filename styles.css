@@ -106,6 +106,7 @@ body{
   display:flex;
   align-items:center;
   gap:6px;
+  flex-wrap:nowrap;
 }
 .topbar-btn{
   display:inline-flex;
@@ -244,7 +245,9 @@ body{
   border-radius:8px;
   box-shadow:0 8px 24px rgba(15, 15, 15, 0.12), 0 2px 6px rgba(15, 15, 15, 0.05);
   padding:8px;
-  min-width:220px;
+  min-width:230px;
+  width:max-content;
+  max-width:calc(100vw - 24px);
   display:flex;
   flex-direction:column;
   gap:6px;
@@ -256,10 +259,12 @@ body{
   display:flex;
   align-items:center;
   width:100%;
+  flex-wrap:nowrap;
 }
 .display-menu-row.font-row{
   justify-content:space-between;
   gap:8px;
+  flex-wrap:nowrap;
 }
 .display-menu-divider{
   height:1px;
@@ -270,6 +275,7 @@ body{
 .display-segmented{
   width:100%;
   display:flex;
+  flex-wrap:nowrap;
   gap:2px;
   background:var(--paper);
   border:1px solid var(--line);
@@ -277,9 +283,10 @@ body{
   padding:2px;
 }
 .display-segmented button{
-  flex:1;
+  flex:1 1 0;
+  min-width:0;
   text-align:center;
-  padding:6px 4px;
+  padding:6px 6px;
   font-size:calc(12px * var(--font-scale, 1));
   font-weight:500;
   border-radius:4px;
@@ -318,6 +325,7 @@ body{
   border-radius:6px;
   overflow:hidden;
   flex:1;
+  flex-wrap:nowrap;
 }
 .stepper-btn{
   border:0;
@@ -332,6 +340,7 @@ body{
   place-items:center;
   transition:background .15s ease;
   flex:1;
+  white-space:nowrap;
 }
 .stepper-btn:hover{
   background:var(--sage);
@@ -345,6 +354,7 @@ body{
   text-align:center;
   font-variant-numeric:tabular-nums;
   flex:1;
+  white-space:nowrap;
 }
 .font-reset-btn{
   border:1px solid var(--line);
@@ -362,6 +372,7 @@ body{
   justify-content:center;
   transition:all .15s ease;
   white-space:nowrap;
+  flex-shrink:0;
 }
 .font-reset-btn:hover{
   background:var(--sage);
@@ -398,7 +409,7 @@ body{
   padding:3px;
   display:flex;
   gap:2px;
-  flex-wrap:wrap;
+  flex-wrap:nowrap;
 }
 .size-options button{
   border:0;
@@ -407,9 +418,12 @@ body{
   color:var(--muted);
   font-size:calc(12px * var(--font-scale, 1));
   font-weight:500;
-  padding:7px 11px;
+  padding:6px 6px;
   cursor:pointer;
   transition:all .15s ease;
+  white-space:nowrap;
+  flex:1 1 0;
+  min-width:0;
 }
 .size-options button.selected{
   background:var(--accent-light);
@@ -938,33 +952,36 @@ select{
 .reset-focus-btn{
   display:inline-flex;
   align-items:center;
-  gap:5px;
-  padding:3px 9px;
+  justify-content:center;
+  width:22px;
+  height:22px;
+  padding:0;
   border-radius:4px;
-  font-size:calc(12px * var(--font-scale, 1));
-  font-weight:500;
+  font-size:calc(11px * var(--font-scale, 1));
+  font-weight:600;
   font-family:inherit;
   color:var(--muted);
   background:rgba(0, 0, 0, 0.05);
   border:1px solid transparent;
   cursor:pointer;
   transition:all 0.15s ease;
-  line-height:1.3;
+  line-height:1;
   user-select:none;
+  flex-shrink:0;
 }
 .reset-focus-btn:hover{
-  background:rgba(235, 87, 87, 0.09);
+  background:rgba(235, 87, 87, 0.12);
   color:#eb5757;
   border-color:rgba(235, 87, 87, 0.2);
 }
 .reset-focus-btn:focus,
 .reset-focus-btn:focus-visible{
   outline:none;
-  box-shadow:none;
+  box-shadow:0 0 0 2px rgba(235, 87, 87, 0.25);
 }
 .reset-focus-btn .reset-icon{
-  font-size:10px;
-  opacity:0.75;
+  font-size:11px;
+  opacity:0.85;
 }
 [data-theme="notion"] .reset-focus-btn{
   background:#f1f0ef;
@@ -987,31 +1004,42 @@ select{
   width:100%;
 }
 .donut{
-  width:165px;
-  height:165px;
+  width:180px;
+  height:180px;
   border-radius:50%;
   position:relative;
   transition:background .2s;
 }
 .donut:after{
-  content:'';
-  position:absolute;
-  background:var(--card);
-  border-radius:50%;
-  inset:30px;
+  display:none;
 }
 .donut-center{
   position:absolute;
   z-index:1;
   inset:0;
-  display:grid;
-  place-content:center;
+  margin:auto;
+  width:120px;
+  height:120px;
+  border-radius:50%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
   text-align:center;
+  pointer-events:none;
+  padding:4px 8px;
+  box-sizing:border-box;
 }
 .donut-center strong{
-  font-size:calc(18px * var(--font-scale, 1));
-  letter-spacing:-0.7px;
-  line-height:1;
+  font-size:calc(17px * var(--font-scale, 1));
+  font-weight:700;
+  letter-spacing:-0.4px;
+  line-height:1.15;
+  max-width:110px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  display:block;
 }
 .donut-center strong.amount-expense{ color:var(--red, #eb5757); }
 .donut-center strong.amount-income{ color:var(--green, #0f7b6c); }
@@ -1022,9 +1050,32 @@ select{
 .donut-center span{
   color:var(--muted);
   font-size:calc(11px * var(--font-scale, 1));
-  margin-top:3px;
-  letter-spacing:0.5px;
-  text-transform:uppercase;
+  font-weight:500;
+  margin-top:2px;
+  line-height:1.2;
+  max-width:110px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  text-align:center;
+}
+.donut-cat-name{
+  max-width:110px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  display:block;
+}
+.donut-cat-pct{
+  font-size:calc(10.5px * var(--font-scale, 1));
+  font-weight:600;
+  color:var(--ink);
+  opacity:0.85;
+  line-height:1.1;
+  margin-top:1px;
+}
+[data-theme="notion"] .donut-cat-pct{
+  color:#37352f;
 }
 /* ── Spending Breakdown Legend (Column Aligned) ── */
 .legend{
@@ -2622,6 +2673,7 @@ td.account-cell{color:var(--muted);font-size:calc(12px * var(--font-scale, 1))}
     right:0;
     max-width:calc(100vw - 24px);
     min-width:210px;
+    width:max-content;
   }
 
   .topbar{
@@ -2800,19 +2852,30 @@ td.account-cell{color:var(--muted);font-size:calc(12px * var(--font-scale, 1))}
     margin:12px 0 6px;
   }
   .donut{
-    width:145px;
-    height:145px;
+    width:155px;
+    height:155px;
   }
-  .donut:after{inset:27px}
+  .donut:after{display:none}
+  .donut-center{
+    width:104px;
+    height:104px;
+  }
   .donut-center strong{
-    font-size:calc(16px * var(--font-scale, 1));
-    max-width:95px;
+    font-size:calc(15px * var(--font-scale, 1));
+    max-width:96px;
     overflow:hidden;
     text-overflow:ellipsis;
     white-space:nowrap;
   }
   .donut-center span{
-    font-size:calc(11px * var(--font-scale, 1));
+    font-size:calc(10px * var(--font-scale, 1));
+    max-width:96px;
+  }
+  .donut-cat-name{
+    max-width:96px;
+  }
+  .donut-cat-pct{
+    font-size:calc(9.5px * var(--font-scale, 1));
   }
   .legend{
     width:100%;
