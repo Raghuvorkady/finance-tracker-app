@@ -481,4 +481,21 @@ console.log('✓ Comparison text formatted:', compareText, '(expected no "vs pri
 if (compareText.includes('vs prior')) throw new Error(`Expected comparison text not to contain 'vs prior' but got ${compareText}`);
 if (!compareText.includes('%')) throw new Error(`Expected comparison text to contain percentage but got ${compareText}`);
 
+// ── 15. Test Period Navigation Chevron Enabled/Disabled States ──
+state.period = 'all';
+render();
+const prevPeriodBtn = document.getElementById('prev-period');
+const nextPeriodBtn = document.getElementById('next-period');
+console.log('✓ Period chevrons disabled for All-Time:', prevPeriodBtn.disabled && nextPeriodBtn.disabled);
+if (!prevPeriodBtn.disabled || !nextPeriodBtn.disabled) {
+  throw new Error('Expected chevron navigation to be disabled when period is "all"');
+}
+
+state.period = 'monthly';
+render();
+console.log('✓ Period chevrons re-enabled for Monthly:', !prevPeriodBtn.disabled && !nextPeriodBtn.disabled);
+if (prevPeriodBtn.disabled || nextPeriodBtn.disabled) {
+  throw new Error('Expected chevron navigation to be enabled when period is "monthly"');
+}
+
 console.log('\nAll refactored module tests PASSED successfully!');

@@ -846,6 +846,12 @@ body{
   background:#efeeeb;
   color:#37352f;
 }
+.chevron:disabled,
+.chevron.disabled{
+  opacity:0.3;
+  cursor:not-allowed;
+  pointer-events:none;
+}
 .period-label-wrap{
   display:inline-flex;
   align-items:center;

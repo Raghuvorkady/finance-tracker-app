@@ -41,8 +41,21 @@ export function render() {
   const priorRange = getPriorPeriodBounds();
   const prior = priorExpense(chartType === 'income' ? 'income' : 'expense');
 
-  // Header period labels
+  // Header period labels & navigation controls
   if ($('period-label')) $('period-label').textContent = range.label;
+  const isNavigable = state.period !== 'all' && state.period !== 'custom';
+  if ($('prev-period')) {
+    $('prev-period').disabled = !isNavigable;
+    if (typeof $('prev-period').classList?.toggle === 'function') {
+      $('prev-period').classList.toggle('disabled', !isNavigable);
+    }
+  }
+  if ($('next-period')) {
+    $('next-period').disabled = !isNavigable;
+    if (typeof $('next-period').classList?.toggle === 'function') {
+      $('next-period').classList.toggle('disabled', !isNavigable);
+    }
+  }
 
   // Top metric cards
   if ($('spent-title')) {
@@ -200,6 +213,7 @@ function initEventListeners() {
   // Prev / Next Period
   if ($('prev-period')) {
     $('prev-period').onclick = () => {
+      if (state.period === 'all' || state.period === 'custom') return;
       showLoading('Updating period...');
       requestAnimationFrame(() => {
         setTimeout(() => {
@@ -213,6 +227,7 @@ function initEventListeners() {
   }
   if ($('next-period')) {
     $('next-period').onclick = () => {
+      if (state.period === 'all' || state.period === 'custom') return;
       showLoading('Updating period...');
       requestAnimationFrame(() => {
         setTimeout(() => {
