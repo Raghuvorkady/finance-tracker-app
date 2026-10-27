@@ -3,23 +3,24 @@
  */
 
 import { cleanText } from './utils.js';
+import { Transaction, TransactionType } from './types.js';
 
-export function findColumn(headers, choices) {
-  const clean = headers.map(h => String(h).trim().toLowerCase());
+export function findColumn(headers: unknown[], choices: string[]): string | undefined {
+  const clean = headers.map(h => String(h ?? '').trim().toLowerCase());
   const exactIdx = clean.findIndex(h => choices.includes(h));
-  if (exactIdx !== -1) return headers[exactIdx];
+  if (exactIdx !== -1) return String(headers[exactIdx]);
   const subIdx = clean.findIndex(h => choices.some(c => h.includes(c)));
-  return subIdx !== -1 ? headers[subIdx] : undefined;
+  return subIdx !== -1 ? String(headers[subIdx]) : undefined;
 }
 
-export function normalizeType(value) {
+export function normalizeType(value: unknown): TransactionType {
   const type = cleanText(value).toLowerCase();
   if (type.includes('transfer')) return 'transfer';
   if (type.includes('income')) return 'income';
   return 'expense';
 }
 
-export function parseAmount(value) {
+export function parseAmount(value: unknown): number {
   if (typeof value === 'number') return Number.isFinite(value) ? Math.abs(value) : 0;
   if (!value) return 0;
   const cleaned = String(value).replace(/[^0-9.-]+/g, '');
@@ -27,14 +28,14 @@ export function parseAmount(value) {
   return Number.isFinite(num) ? Math.abs(num) : 0;
 }
 
-export function parseDate(value) {
+export function parseDate(value: unknown): Date | null {
   if (!value) return null;
   if (value instanceof Date) {
-    return isNaN(value) ? null : new Date(value.getFullYear(), value.getMonth(), value.getDate(), 0, 0, 0, 0);
+    return isNaN(value.getTime()) ? null : new Date(value.getFullYear(), value.getMonth(), value.getDate(), 0, 0, 0, 0);
   }
   if (typeof value === 'number') {
     const d = new Date(Math.round((value - 25569) * 86400 * 1000));
-    return isNaN(d) ? null : new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
+    return isNaN(d.getTime()) ? null : new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
   }
   if (typeof value === 'string') {
     const s = value.trim();
@@ -55,14 +56,15 @@ export function parseDate(value) {
       }
     }
     const d = new Date(s);
-    if (!isNaN(d)) {
+    if (!isNaN(d.getTime())) {
       return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
     }
   }
   return null;
 }
 
-export function normalizeRows(rows) {
+export function normalizeRows(rows: unknown[][]): Transaction[] {
+  if (!rows || rows.length === 0) return [];
   const headers = rows[0].map(cleanText);
   const dateCol = findColumn(headers, ['period', 'date', 'transaction date', 'time']);
   const categoryCol = findColumn(headers, ['category', 'category name']);
@@ -72,7 +74,7 @@ export function normalizeRows(rows) {
   const accountCol = findColumn(headers, ['accounts', 'account', 'wallet', 'bank']);
   const noteCol = findColumn(headers, ['note', 'notes', 'memo']);
   const descriptionCol = headers.find((h) => {
-    const text = String(h).trim().toLowerCase();
+    const text = String(h ?? '').trim().toLowerCase();
     return (text.includes('description') || text.includes('payee') || text.includes('narrative') ||
             text.includes('particulars') || text.includes('desc') || text.includes('remark') ||
             text.includes('details')) && h !== noteCol;
@@ -82,11 +84,15 @@ export function normalizeRows(rows) {
     throw new Error('Expected Period/Date, Category, and Amount or INR columns.');
   }
 
-  const col = (name) => name ? headers.indexOf(name) : -1;
+  const col = (name?: string) => name ? headers.indexOf(name) : -1;
 
-  return rows.slice(1).map((row, i) => {
+  const validTransactions: Transaction[] = [];
+
+  rows.slice(1).forEach((row, i) => {
     const date = parseDate(row[col(dateCol)]);
     const amount = parseAmount(row[col(amountCol)]);
+    if (!date || amount <= 0) return;
+
     const cat = cleanText(row[col(categoryCol)]);
     const sub = subcategoryCol ? cleanText(row[col(subcategoryCol)]) : '';
     const category = cat || sub || 'Uncategorized';
@@ -97,15 +103,17 @@ export function normalizeRows(rows) {
     const finalNote = note || (description ? description : '—');
     const finalDesc = description && description !== finalNote ? description : '';
 
-    return {
+    validTransactions.push({
       id: i,
       date,
       category,
       type: normalizeType(typeCol ? row[col(typeCol)] : 'Expense'),
       amount,
-      account: accountCol ? cleanText(row[col(accountCol)]) : '—',
+      account: accountCol ? (cleanText(row[col(accountCol)]) || '—') : '—',
       note: finalNote,
       description: finalDesc
-    };
-  }).filter(r => r.date && r.amount > 0);
+    });
+  });
+
+  return validTransactions;
 }

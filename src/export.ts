@@ -7,9 +7,10 @@ import { state } from './state.js';
 import { filtered, closeAllPopovers } from './filters.js';
 import { bounds } from './dates.js';
 import { renderTable, getTableDisplayLimit, setTableDisplayLimit } from './table.js';
+import { Transaction, PeriodBounds } from './types.js';
 
-export function downloadCsv(all = false) {
-  const rows = all ? [...state.data].sort((a, b) => b.date - a.date) : filtered();
+export function downloadCsv(all = false): void {
+  const rows: Transaction[] = all ? [...state.data].sort((a, b) => b.date.getTime() - a.date.getTime()) : filtered();
   if (!rows.length) {
     toast('No transactions to export.');
     return;
@@ -35,7 +36,7 @@ export function downloadCsv(all = false) {
   toast(`Exported ${rows.length.toLocaleString('en-IN')} transactions (${all ? 'All data' : 'Filtered data'})`);
 }
 
-export function updatePrintHeader(range = bounds(), rows = filtered()) {
+export function updatePrintHeader(range: PeriodBounds = bounds(), rows: Transaction[] = filtered()): void {
   const printPeriod = $('print-period-label');
   if (printPeriod) printPeriod.textContent = range?.label || 'All activity';
 
@@ -53,7 +54,7 @@ export function updatePrintHeader(range = bounds(), rows = filtered()) {
 
   const printFilters = $('print-filter-summary');
   if (printFilters) {
-    const filterParts = [];
+    const filterParts: string[] = [];
     if (state.type && state.type !== 'all') {
       filterParts.push(`Type: ${state.type.charAt(0).toUpperCase() + state.type.slice(1)}`);
     }
@@ -103,7 +104,7 @@ export function updatePrintHeader(range = bounds(), rows = filtered()) {
   }
 }
 
-export function exportPdf() {
+export function exportPdf(): void {
   closeAllPopovers();
 
   const rows = filtered();
@@ -134,7 +135,6 @@ export function exportPdf() {
   };
 
   if (typeof window !== 'undefined' && typeof window.print === 'function') {
-    // Slight delay to allow DOM painting before dialog freezes rendering thread
     setTimeout(() => {
       try {
         window.print();
@@ -147,9 +147,10 @@ export function exportPdf() {
   }
 }
 
-export function initExportListeners() {
-  if ($('export-toggle-btn')) {
-    $('export-toggle-btn').onclick = (e) => {
+export function initExportListeners(): void {
+  const exportToggleBtn = $('export-toggle-btn');
+  if (exportToggleBtn) {
+    exportToggleBtn.onclick = (e) => {
       e.stopPropagation();
       const menu = $('export-menu');
       if (!menu) return;
@@ -157,37 +158,43 @@ export function initExportListeners() {
       closeAllPopovers();
       if (opening) {
         menu.classList.remove('hidden');
-        $('export-toggle-btn').setAttribute('aria-expanded', 'true');
+        exportToggleBtn.setAttribute('aria-expanded', 'true');
         const filteredCount = filtered().length;
         const allCount = state.data.length;
-        if ($('export-filtered-count')) $('export-filtered-count').textContent = `${filteredCount.toLocaleString('en-IN')} transaction${filteredCount === 1 ? '' : 's'}`;
-        if ($('export-all-count')) $('export-all-count').textContent = `${allCount.toLocaleString('en-IN')} transaction${allCount === 1 ? '' : 's'}`;
+        const fCountEl = $('export-filtered-count');
+        if (fCountEl) fCountEl.textContent = `${filteredCount.toLocaleString('en-IN')} transaction${filteredCount === 1 ? '' : 's'}`;
+        const allCountEl = $('export-all-count');
+        if (allCountEl) allCountEl.textContent = `${allCount.toLocaleString('en-IN')} transaction${allCount === 1 ? '' : 's'}`;
       }
     };
   }
-  if ($('export-filtered-btn')) {
-    $('export-filtered-btn').onclick = (e) => {
+  const exportFilteredBtn = $('export-filtered-btn');
+  if (exportFilteredBtn) {
+    exportFilteredBtn.onclick = (e) => {
       e.stopPropagation();
       closeAllPopovers();
       downloadCsv(false);
     };
   }
-  if ($('export-all-btn')) {
-    $('export-all-btn').onclick = (e) => {
+  const exportAllBtn = $('export-all-btn');
+  if (exportAllBtn) {
+    exportAllBtn.onclick = (e) => {
       e.stopPropagation();
       closeAllPopovers();
       downloadCsv(true);
     };
   }
-  if ($('export-pdf-btn')) {
-    $('export-pdf-btn').onclick = (e) => {
+  const exportPdfBtn = $('export-pdf-btn');
+  if (exportPdfBtn) {
+    exportPdfBtn.onclick = (e) => {
       e.stopPropagation();
       closeAllPopovers();
       exportPdf();
     };
   }
-  if ($('sheet-export-pdf')) {
-    $('sheet-export-pdf').onclick = (e) => {
+  const sheetExportPdf = $('sheet-export-pdf');
+  if (sheetExportPdf) {
+    sheetExportPdf.onclick = (e) => {
       e.stopPropagation();
       closeAllPopovers();
       const sheet = $('action-bottom-sheet');

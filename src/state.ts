@@ -2,9 +2,16 @@
  * Ledgerly State & Core Constants
  */
 
-export const DEFAULT_COLUMN_ORDER = ['date', 'note', 'category', 'account', 'amount'];
+import {
+  ColumnId,
+  ColumnDefinition,
+  AppState,
+  ChartViewMode
+} from './types.js';
 
-export const COLUMN_DEFINITIONS = {
+export const DEFAULT_COLUMN_ORDER: ColumnId[] = ['date', 'note', 'category', 'account', 'amount'];
+
+export const COLUMN_DEFINITIONS: Record<ColumnId, ColumnDefinition> = {
   date: { id: 'date', label: 'Date', icon: '📅', nonNotionLabel: 'Date', minWidth: '110px', align: 'left' },
   category: { id: 'category', label: 'Category', icon: '', nonNotionLabel: 'Category', minWidth: '110px', align: 'left' },
   note: { id: 'note', label: 'Note', icon: 'Aa', nonNotionLabel: 'Expense / Note', minWidth: '180px', align: 'left' },
@@ -12,14 +19,14 @@ export const COLUMN_DEFINITIONS = {
   amount: { id: 'amount', label: 'Amount', icon: '', nonNotionLabel: 'Amount', minWidth: '110px', align: 'right' }
 };
 
-function loadSavedColumnOrder() {
+function loadSavedColumnOrder(): ColumnId[] {
   try {
     if (typeof localStorage !== 'undefined') {
       const raw = localStorage.getItem('ledgerly_column_order');
       if (raw) {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          const valid = parsed.filter(id => DEFAULT_COLUMN_ORDER.includes(id));
+          const valid = parsed.filter((id): id is ColumnId => DEFAULT_COLUMN_ORDER.includes(id as ColumnId));
           DEFAULT_COLUMN_ORDER.forEach(id => {
             if (!valid.includes(id)) valid.push(id);
           });
@@ -31,25 +38,25 @@ function loadSavedColumnOrder() {
   return [...DEFAULT_COLUMN_ORDER];
 }
 
-function loadSavedHiddenColumns() {
+function loadSavedHiddenColumns(): Set<ColumnId> {
   try {
     if (typeof localStorage !== 'undefined') {
       const raw = localStorage.getItem('ledgerly_hidden_columns');
       if (raw) {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed)) {
-          const valid = parsed.filter(id => DEFAULT_COLUMN_ORDER.includes(id));
+          const valid = parsed.filter((id): id is ColumnId => DEFAULT_COLUMN_ORDER.includes(id as ColumnId));
           if (valid.length < DEFAULT_COLUMN_ORDER.length) {
-            return new Set(valid);
+            return new Set<ColumnId>(valid);
           }
         }
       }
     }
   } catch (e) {}
-  return new Set();
+  return new Set<ColumnId>();
 }
 
-function loadSavedChartView() {
+function loadSavedChartView(): ChartViewMode {
   try {
     if (typeof localStorage !== 'undefined') {
       const saved = localStorage.getItem('ledgerly_chart_view');
@@ -59,20 +66,20 @@ function loadSavedChartView() {
   return 'donut';
 }
 
-export const state = {
+export const state: AppState = {
   data: [],
   period: 'monthly',
   anchor: null,
   category: 'all',
-  categoryFilterMode: 'include', // 'include' (Is) | 'exclude' (Is not)
-  categoryOperator: 'is', // 'is' | 'is-not'
-  selectedCategories: new Set(),
-  excludedCategories: new Set(),
+  categoryFilterMode: 'include',
+  categoryOperator: 'is',
+  selectedCategories: new Set<string>(),
+  excludedCategories: new Set<string>(),
   account: 'all',
-  accountFilterMode: 'include', // 'include' (Is) | 'exclude' (Is not)
-  accountOperator: 'is', // 'is' | 'is-not'
-  selectedAccounts: new Set(),
-  excludedAccounts: new Set(),
+  accountFilterMode: 'include',
+  accountOperator: 'is',
+  selectedAccounts: new Set<string>(),
+  excludedAccounts: new Set<string>(),
   type: 'all',
   search: '',
   sort: 'date-desc',
@@ -85,7 +92,7 @@ export const state = {
   hiddenColumns: loadSavedHiddenColumns()
 };
 
-export function setChartView(view) {
+export function setChartView(view: string): void {
   if (view !== 'donut' && view !== 'trend') return;
   state.chartView = view;
   try {
@@ -97,7 +104,7 @@ export function setChartView(view) {
 
 export const DEFAULT_SCALE = 1.0;
 
-export const EXPENSE_PALETTE = [
+export const EXPENSE_PALETTE: string[] = [
   '#3b82f6', // Vivid Blue (Tailwind blue-500)
   '#f97316', // Bright Tangerine / Orange (Tailwind orange-500)
   '#10b981', // Fresh Emerald Green (Tailwind emerald-500)
@@ -110,7 +117,7 @@ export const EXPENSE_PALETTE = [
   '#6366f1'  // Indigo Blue (Tailwind indigo-500)
 ];
 
-export const INCOME_PALETTE = [
+export const INCOME_PALETTE: string[] = [
   '#10b981', // Fresh Emerald Green (Tailwind emerald-500)
   '#06b6d4', // Crisp Cyan / Teal (Tailwind cyan-500)
   '#3b82f6', // Vivid Blue (Tailwind blue-500)
@@ -123,7 +130,7 @@ export const INCOME_PALETTE = [
   '#059669'  // Forest Emerald (Tailwind emerald-600)
 ];
 
-export const TRANSFER_PALETTE = [
+export const TRANSFER_PALETTE: string[] = [
   '#6366f1', // Indigo (Tailwind indigo-500)
   '#f59e0b', // Warm Amber / Gold (Tailwind amber-500)
   '#0ea5e9', // Sky Blue (Tailwind sky-500)
@@ -136,10 +143,10 @@ export const TRANSFER_PALETTE = [
   '#3b82f6'  // Electric Blue (Tailwind blue-500)
 ];
 
-export const MACRO_COLORS = {
+export const MACRO_COLORS: Record<string, string> = {
   income: '#10b981',   // Vibrant Emerald Green
   expense: '#f43f5e',  // Vibrant Rose / Coral Red
   transfer: '#787774'  // Neutral / Grey
 };
 
-export const PALETTE = EXPENSE_PALETTE;
+export const PALETTE: string[] = EXPENSE_PALETTE;

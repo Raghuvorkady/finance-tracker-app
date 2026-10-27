@@ -4,12 +4,13 @@
 
 import { state } from './state.js';
 import { shortDate } from './utils.js';
+import { PeriodBounds, FilterTransactionType, PeriodType } from './types.js';
 
-let cachedDataRef = null;
-let cachedMinDate = null;
-let cachedMaxDate = null;
+let cachedDataRef: unknown = null;
+let cachedMinDate: Date | null = null;
+let cachedMaxDate: Date | null = null;
 
-export function getDataDateRange() {
+export function getDataDateRange(): { min: Date; max: Date } {
   if (cachedDataRef === state.data && cachedMinDate && cachedMaxDate) {
     return { min: cachedMinDate, max: cachedMaxDate };
   }
@@ -32,19 +33,26 @@ export function getDataDateRange() {
   return { min: cachedMinDate, max: cachedMaxDate };
 }
 
-export function getCalendarWeek(d) {
+export function getCalendarWeek(d: Date): number {
   const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
   const dayNum = date.getUTCDay() || 7;
   date.setUTCDate(date.getUTCDate() + 4 - dayNum);
   const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
-  return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+  return Math.ceil((((date.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
 }
 
-export function getPeriodsDataPresence() {
-  const years = new Set();
-  const yearMonths = new Map(); // year -> Map(monthIndex -> count)
-  const yearQuarters = new Map(); // year -> Map(qIndex -> count)
-  const financialYears = new Map(); // fyStartYear -> count
+export interface PeriodsDataPresence {
+  years: Set<number>;
+  yearMonths: Map<number, Map<number, number>>;
+  yearQuarters: Map<number, Map<number, number>>;
+  financialYears: Map<number, number>;
+}
+
+export function getPeriodsDataPresence(): PeriodsDataPresence {
+  const years = new Set<number>();
+  const yearMonths = new Map<number, Map<number, number>>();
+  const yearQuarters = new Map<number, Map<number, number>>();
+  const financialYears = new Map<number, number>();
 
   for (let i = 0; i < state.data.length; i++) {
     const d = state.data[i].date;
@@ -56,12 +64,12 @@ export function getPeriodsDataPresence() {
 
     years.add(y);
 
-    if (!yearMonths.has(y)) yearMonths.set(y, new Map());
-    const ym = yearMonths.get(y);
+    if (!yearMonths.has(y)) yearMonths.set(y, new Map<number, number>());
+    const ym = yearMonths.get(y)!;
     ym.set(m, (ym.get(m) || 0) + 1);
 
-    if (!yearQuarters.has(y)) yearQuarters.set(y, new Map());
-    const yq = yearQuarters.get(y);
+    if (!yearQuarters.has(y)) yearQuarters.set(y, new Map<number, number>());
+    const yq = yearQuarters.get(y)!;
     yq.set(q, (yq.get(q) || 0) + 1);
 
     financialYears.set(fy, (financialYears.get(fy) || 0) + 1);
@@ -70,10 +78,10 @@ export function getPeriodsDataPresence() {
   return { years, yearMonths, yearQuarters, financialYears };
 }
 
-export function getAvailableYears(padBefore = 2, padAfter = 2) {
+export function getAvailableYears(padBefore = 2, padAfter = 2): number[] {
   const anchorYear = (state.anchor || new Date()).getFullYear();
   if (!state.data.length) {
-    const years = [];
+    const years: number[] = [];
     for (let y = anchorYear - padBefore; y <= anchorYear + padAfter; y++) {
       years.push(y);
     }
@@ -84,14 +92,14 @@ export function getAvailableYears(padBefore = 2, padAfter = 2) {
   const maxYear = Math.max(max.getFullYear(), anchorYear);
   const start = minYear - padBefore;
   const end = maxYear + padAfter;
-  const years = [];
+  const years: number[] = [];
   for (let y = start; y <= end; y++) {
     years.push(y);
   }
   return years;
 }
 
-export function bounds() {
+export function bounds(): PeriodBounds {
   const anchor = state.anchor || new Date();
   if (state.period === 'all') {
     if (!state.data.length) return { start: new Date(), end: new Date(), label: 'All activity' };
@@ -134,7 +142,7 @@ export function bounds() {
   return { start, end, label: `FY ${fy}–${String(fy + 1).slice(2)}` };
 }
 
-export function periodBoundsForAnchor(anchor, period = state.period) {
+export function periodBoundsForAnchor(anchor: Date, period: PeriodType = state.period): { start: Date; end: Date } | null {
   if (period === 'weekly') {
     const day = (anchor.getDay() + 6) % 7;
     const start = new Date(anchor.getFullYear(), anchor.getMonth(), anchor.getDate() - day, 0, 0, 0, 0);
@@ -166,7 +174,7 @@ export function periodBoundsForAnchor(anchor, period = state.period) {
   return null;
 }
 
-export function hasPeriodData(anchor, period = state.period) {
+export function hasPeriodData(anchor: Date, period: PeriodType = state.period): boolean {
   if (!state.data.length) return false;
   const b = periodBoundsForAnchor(anchor, period);
   if (!b) return false;
@@ -177,7 +185,7 @@ export function hasPeriodData(anchor, period = state.period) {
   return false;
 }
 
-export function canMovePeriod(direction) {
+export function canMovePeriod(direction: number): boolean {
   if (state.period === 'all' || state.period === 'custom' || !state.data.length) return false;
   const cur = bounds();
   if (direction < 0) {
@@ -193,7 +201,7 @@ export function canMovePeriod(direction) {
   }
 }
 
-export function getShiftedAnchor(direction, customAnchor = state.anchor, customPeriod = state.period) {
+export function getShiftedAnchor(direction: number, customAnchor: Date | null = state.anchor, customPeriod: PeriodType = state.period): Date {
   const a = new Date(customAnchor || new Date());
   if (customPeriod === 'weekly') {
     a.setDate(a.getDate() + direction * 7);
@@ -210,7 +218,7 @@ export function getShiftedAnchor(direction, customAnchor = state.anchor, customP
   return a;
 }
 
-export function findNearestPeriodAnchorWithData(direction) {
+export function findNearestPeriodAnchorWithData(direction: number): Date | null {
   if (!canMovePeriod(direction)) return null;
   let next = getShiftedAnchor(direction);
   let count = 0;
@@ -221,12 +229,12 @@ export function findNearestPeriodAnchorWithData(direction) {
   return hasPeriodData(next) ? next : null;
 }
 
-export function movePeriod(direction) {
+export function movePeriod(direction: number): void {
   if (state.period === 'all' || state.period === 'custom') return;
   state.anchor = getShiftedAnchor(direction);
 }
 
-export function getPriorPeriodBounds() {
+export function getPriorPeriodBounds(): PeriodBounds | null {
   const anchor = state.anchor || new Date();
   if (state.period === 'all' || state.period === 'custom') return null;
 
@@ -273,7 +281,7 @@ export function getPriorPeriodBounds() {
   return null;
 }
 
-export function priorExpense(type = 'expense') {
+export function priorExpense(type: FilterTransactionType = 'expense'): number | null {
   const prior = getPriorPeriodBounds();
   if (!prior) return null;
 

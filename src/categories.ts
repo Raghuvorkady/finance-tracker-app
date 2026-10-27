@@ -2,7 +2,9 @@
  * Category Styling, Palettes, Notion Icons & Category Formatting
  */
 
-export const NOTION_NAMED_COLORS = {
+import { NotionColor } from './types.js';
+
+export const NOTION_NAMED_COLORS: Record<string, NotionColor> = {
   school: { bg: '#e3e2e0', fg: '#32302c' },
   education: { bg: '#e3e2e0', fg: '#32302c' },
   books: { bg: '#e3e2e0', fg: '#32302c' },
@@ -57,7 +59,7 @@ export const NOTION_NAMED_COLORS = {
   investment: { bg: '#f5e0e9', fg: '#692943' }
 };
 
-export const NOTION_PALETTE = [
+export const NOTION_PALETTE: NotionColor[] = [
   { bg: '#faeccd', fg: '#89632a' },
   { bg: '#ffe2dd', fg: '#933835' },
   { bg: '#d3e5ef', fg: '#183347' },
@@ -68,7 +70,7 @@ export const NOTION_PALETTE = [
   { bg: '#fdecc8', fg: '#402c1b' }
 ];
 
-export function categoryColor(name) {
+export function categoryColor(name: string): NotionColor {
   const clean = String(name || '').toLowerCase().trim();
   for (const [key, val] of Object.entries(NOTION_NAMED_COLORS)) {
     if (clean.includes(key)) return val;
@@ -80,13 +82,13 @@ export function categoryColor(name) {
   return NOTION_PALETTE[Math.abs(hash) % NOTION_PALETTE.length];
 }
 
-export function formatCategory(name) {
+export function formatCategory(name: string): string {
   if (!name) return 'Uncategorized';
   const s = String(name).trim();
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-export const NOTION_KEYWORD_ICONS = [
+export const NOTION_KEYWORD_ICONS: Array<{ key: string; icon: string }> = [
   { key: 'swiggy', icon: '🍲' }, { key: 'zomato', icon: '🍲' }, { key: 'blinkit', icon: '🥦' },
   { key: 'zepto', icon: '🥦' }, { key: 'instamart', icon: '🥦' }, { key: 'amazon', icon: '📦' },
   { key: 'flipkart', icon: '🛍' }, { key: 'uber', icon: '🚗' }, { key: 'ola', icon: '🚕' },
@@ -109,7 +111,7 @@ export const NOTION_KEYWORD_ICONS = [
   { key: 'zerodha', icon: '📊' }, { key: 'groww', icon: '📊' }
 ];
 
-export function getNotionIcon(title, category) {
+export function getNotionIcon(title: string, category: string): string {
   const t = String(title || '').toLowerCase();
   const c = String(category || '').toLowerCase();
   for (const pair of NOTION_KEYWORD_ICONS) {
@@ -130,7 +132,7 @@ export function getNotionIcon(title, category) {
   return '📄';
 }
 
-export function splitCategoryEmoji(rawName) {
+export function splitCategoryEmoji(rawName: string): { emoji: string; text: string } {
   const str = String(rawName || '').trim();
   const emojiRegex = /^(\p{Extended_Pictographic}|\p{Emoji_Presentation}|\uFE0F|\u200D)+/u;
   const match = str.match(emojiRegex);
@@ -144,7 +146,7 @@ export function splitCategoryEmoji(rawName) {
   return { emoji: fallback || '🏷️', text: str };
 }
 
-export function categoryPill(name) {
+export function categoryPill(name: string): string {
   const isNotion = typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme') === 'notion';
   const display = formatCategory(name);
   if (!isNotion) return `<span class="category-cell">${display}</span>`;

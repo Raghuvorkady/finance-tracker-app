@@ -3,11 +3,27 @@
  */
 
 import { $, money, escapeHtml } from './utils.js';
-import { state, PALETTE, EXPENSE_PALETTE, INCOME_PALETTE, TRANSFER_PALETTE, MACRO_COLORS, setChartView } from './state.js';
+import {
+  state,
+  EXPENSE_PALETTE,
+  INCOME_PALETTE,
+  TRANSFER_PALETTE,
+  MACRO_COLORS,
+  setChartView
+} from './state.js';
 import { splitCategoryEmoji } from './categories.js';
-import { setTypeFilter, selectCategory, toggleCategoryInclusion, handleChartCategoryClick } from './filters.js';
+import { setTypeFilter, handleChartCategoryClick } from './filters.js';
+import {
+  Transaction,
+  TransactionType,
+  FilterTransactionType,
+  PeriodBounds,
+  MacroStream,
+  MacroSlice,
+  ChartViewMode
+} from './types.js';
 
-export function renderMacroDonut(expenses, income, transfers, net) {
+export function renderMacroDonut(expenses: number, income: number, transfers: number, net: number): void {
   const donut = $('donut');
   if (!donut) return;
 
@@ -23,7 +39,7 @@ export function renderMacroDonut(expenses, income, transfers, net) {
     return;
   }
 
-  const streams = [];
+  const streams: MacroStream[] = [];
   if (income > 0) {
     streams.push({
       name: 'Income',
@@ -59,9 +75,9 @@ export function renderMacroDonut(expenses, income, transfers, net) {
   streams.sort((a, b) => b.value - a.value);
 
   let position = 0;
-  const slices = streams.map((item, i) => {
+  const slices: MacroSlice[] = streams.map((item, i) => {
     const percent = (item.value / totalVolume) * 100;
-    const slice = { ...item, percent, start: position, index: i };
+    const slice: MacroSlice = { ...item, percent, start: position, index: i };
     position += percent;
     return slice;
   });
@@ -87,9 +103,9 @@ export function renderMacroDonut(expenses, income, transfers, net) {
     }).join('');
   }
 
-  const hover = (item) => {
+  const hover = (item: MacroSlice) => {
     donut.classList.add('has-hover');
-    donut.querySelectorAll('.donut-slice').forEach(slice => slice.classList.toggle('hovered', Number(slice.dataset.index) === item.index));
+    donut.querySelectorAll<HTMLElement>('.donut-slice').forEach(slice => slice.classList.toggle('hovered', Number(slice.dataset.index) === item.index));
     const totalEl = $('donut-total');
     if (totalEl) {
       totalEl.textContent = money(item.value, true);
@@ -101,7 +117,7 @@ export function renderMacroDonut(expenses, income, transfers, net) {
 
   const clearHover = () => {
     donut.classList.remove('has-hover');
-    donut.querySelectorAll('.donut-slice').forEach(slice => slice.classList.remove('hovered'));
+    donut.querySelectorAll<HTMLElement>('.donut-slice').forEach(slice => slice.classList.remove('hovered'));
     const totalEl = $('donut-total');
     if (totalEl) {
       totalEl.textContent = defaultTotalFormatted;
@@ -111,16 +127,18 @@ export function renderMacroDonut(expenses, income, transfers, net) {
     if (capEl) capEl.textContent = netCaption;
   };
 
-  donut.querySelectorAll('.donut-slice').forEach(slice => {
+  donut.querySelectorAll<HTMLElement>('.donut-slice').forEach(slice => {
     const item = slices[Number(slice.dataset.index)];
+    if (!item) return;
     slice.onmouseenter = () => hover(item);
     slice.onmouseleave = clearHover;
     slice.onclick = () => setTypeFilter(item.typeKey);
   });
 
   if (legendEl) {
-    legendEl.querySelectorAll('.legend-item').forEach(button => {
+    legendEl.querySelectorAll<HTMLElement>('.legend-item').forEach(button => {
       const item = slices[Number(button.dataset.index)];
+      if (!item) return;
       button.onmouseenter = () => hover(item);
       button.onmouseleave = clearHover;
       button.onfocus = () => hover(item);
@@ -130,19 +148,18 @@ export function renderMacroDonut(expenses, income, transfers, net) {
   }
 }
 
-export function getSliceColor(index, analysisType = 'expense', isOther = false) {
+export function getSliceColor(index: number, analysisType = 'expense', isOther = false): string {
   if (isOther) return '#94a3b8';
   const palette = analysisType === 'income' ? INCOME_PALETTE : (analysisType === 'transfer' ? TRANSFER_PALETTE : EXPENSE_PALETTE);
   if (index < palette.length) {
     return palette[index];
   }
-  // Fallback for unbounded categories: golden angle (~137.508°) generates non-repeating vibrant hues
   const hue = Math.round((210 + (index - palette.length) * 137.508) % 360);
   return `hsl(${hue}, 75%, 52%)`;
 }
 
-export function renderDonut(totals, expenses, analysisType = 'expense') {
-  const visible = totals.slice(0, 7);
+export function renderDonut(totals: [string, number][], expenses: number, analysisType: TransactionType = 'expense'): void {
+  const visible: [string, number][] = totals.slice(0, 7);
   const tail = totals.slice(7);
   const other = tail.reduce((s, [, v]) => s + v, 0);
   if (other) visible.push(['Other', other]);
@@ -196,7 +213,7 @@ export function renderDonut(totals, expenses, analysisType = 'expense') {
     const color = getSliceColor(i, analysisType, isOther);
     let percent = 0;
     let sliceIndex = -1;
-    let startPos = position;
+    const startPos = position;
 
     if (isActive && expenses > 0) {
       percent = (value / expenses) * 100;
@@ -266,9 +283,9 @@ export function renderDonut(totals, expenses, analysisType = 'expense') {
     }).join('');
   }
 
-  const hover = (item) => {
+  const hover = (item: typeof slices[0]) => {
     donut.classList.add('has-hover');
-    donut.querySelectorAll('.donut-slice').forEach(slice => {
+    donut.querySelectorAll<HTMLElement>('.donut-slice').forEach(slice => {
       slice.classList.toggle('hovered', item.sliceIndex >= 0 && Number(slice.dataset.index) === item.sliceIndex);
     });
     const { emoji, text } = splitCategoryEmoji(item.name);
@@ -291,7 +308,7 @@ export function renderDonut(totals, expenses, analysisType = 'expense') {
 
   const clearHover = () => {
     donut.classList.remove('has-hover');
-    donut.querySelectorAll('.donut-slice').forEach(slice => slice.classList.remove('hovered'));
+    donut.querySelectorAll<HTMLElement>('.donut-slice').forEach(slice => slice.classList.remove('hovered'));
     const t = $('donut-total');
     if (t) {
       t.className = typeColorClass;
@@ -301,7 +318,7 @@ export function renderDonut(totals, expenses, analysisType = 'expense') {
     if (c) c.textContent = caption;
   };
 
-  donut.querySelectorAll('.donut-slice').forEach(slice => {
+  donut.querySelectorAll<HTMLElement>('.donut-slice').forEach(slice => {
     const includedItem = includedSlices[Number(slice.dataset.index)];
     if (includedItem) {
       slice.onmouseenter = () => hover(includedItem);
@@ -311,7 +328,7 @@ export function renderDonut(totals, expenses, analysisType = 'expense') {
   });
 
   if (legendEl) {
-    legendEl.querySelectorAll('.legend-item').forEach(button => {
+    legendEl.querySelectorAll<HTMLElement>('.legend-item').forEach(button => {
       const item = slices[Number(button.dataset.index)];
       if (item) {
         button.onmouseenter = () => hover(item);
@@ -326,7 +343,27 @@ export function renderDonut(totals, expenses, analysisType = 'expense') {
 
 // ── Time-Series Aggregation & SVG Line Chart Engine ──
 
-export function aggregateTimeSeries(rows = [], range = null, period = 'monthly') {
+export interface TimeBucket {
+  index: number;
+  label: string;
+  dateLabel: string;
+  start: Date;
+  end: Date;
+  expense: number;
+  income: number;
+  transfer: number;
+  count: number;
+  categories: Record<string, number>;
+  net: number;
+  topCategory: string | null;
+  topCategoryAmount: number;
+  x: number;
+  yExpense: number;
+  yIncome: number;
+  yTransfer: number;
+}
+
+export function aggregateTimeSeries(rows: Transaction[] = [], range: PeriodBounds | null = null, period = 'monthly'): TimeBucket[] {
   if (!range) {
     const now = new Date();
     range = {
@@ -344,7 +381,27 @@ export function aggregateTimeSeries(rows = [], range = null, period = 'monthly')
     endDate.setTime(temp.getTime());
   }
 
-  const buckets = [];
+  const buckets: TimeBucket[] = [];
+
+  const makeBucket = (index: number, label: string, dateLabel: string, start: Date, end: Date): TimeBucket => ({
+    index,
+    label,
+    dateLabel,
+    start,
+    end,
+    expense: 0,
+    income: 0,
+    transfer: 0,
+    count: 0,
+    categories: {},
+    net: 0,
+    topCategory: null,
+    topCategoryAmount: 0,
+    x: 0,
+    yExpense: 0,
+    yIncome: 0,
+    yTransfer: 0
+  });
 
   if (period === 'weekly') {
     for (let i = 0; i < 7; i++) {
@@ -352,7 +409,7 @@ export function aggregateTimeSeries(rows = [], range = null, period = 'monthly')
       const bEnd = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate() + i, 23, 59, 59, 999);
       const label = bStart.toLocaleDateString('en-IN', { weekday: 'short' });
       const dateLabel = bStart.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
-      buckets.push({ index: i, label, dateLabel, start: bStart, end: bEnd, expense: 0, income: 0, transfer: 0, count: 0, categories: {} });
+      buckets.push(makeBucket(i, label, dateLabel, bStart, bEnd));
     }
   } else if (period === 'monthly') {
     const numDays = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0).getDate();
@@ -361,7 +418,7 @@ export function aggregateTimeSeries(rows = [], range = null, period = 'monthly')
       const bEnd = new Date(startDate.getFullYear(), startDate.getMonth(), day, 23, 59, 59, 999);
       const label = String(day);
       const dateLabel = bStart.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-      buckets.push({ index: day - 1, label, dateLabel, start: bStart, end: bEnd, expense: 0, income: 0, transfer: 0, count: 0, categories: {} });
+      buckets.push(makeBucket(day - 1, label, dateLabel, bStart, bEnd));
     }
   } else if (period === 'quarterly') {
     let cur = new Date(startDate);
@@ -373,7 +430,7 @@ export function aggregateTimeSeries(rows = [], range = null, period = 'monthly')
       if (bEnd > endDate) bEnd.setTime(endDate.getTime());
       const label = bStart.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
       const dateLabel = `Week of ${label}`;
-      buckets.push({ index: idx++, label, dateLabel, start: bStart, end: bEnd, expense: 0, income: 0, transfer: 0, count: 0, categories: {} });
+      buckets.push(makeBucket(idx++, label, dateLabel, bStart, bEnd));
       cur = new Date(cur.getTime() + 7 * 86400000);
     }
   } else if (period === 'yearly') {
@@ -382,7 +439,7 @@ export function aggregateTimeSeries(rows = [], range = null, period = 'monthly')
       const bEnd = new Date(startDate.getFullYear(), m + 1, 0, 23, 59, 59, 999);
       const label = bStart.toLocaleDateString('en-IN', { month: 'short' });
       const dateLabel = bStart.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
-      buckets.push({ index: m, label, dateLabel, start: bStart, end: bEnd, expense: 0, income: 0, transfer: 0, count: 0, categories: {} });
+      buckets.push(makeBucket(m, label, dateLabel, bStart, bEnd));
     }
   } else if (period === 'financial') {
     const fyYear = startDate.getFullYear();
@@ -393,10 +450,9 @@ export function aggregateTimeSeries(rows = [], range = null, period = 'monthly')
       const bEnd = new Date(yr, m + 1, 0, 23, 59, 59, 999);
       const label = bStart.toLocaleDateString('en-IN', { month: 'short' });
       const dateLabel = bStart.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
-      buckets.push({ index: offset, label, dateLabel, start: bStart, end: bEnd, expense: 0, income: 0, transfer: 0, count: 0, categories: {} });
+      buckets.push(makeBucket(offset, label, dateLabel, bStart, bEnd));
     }
   } else {
-    // Custom or All time
     const totalDays = Math.max(1, Math.round((+endDate - +startDate) / 86400000));
     if (totalDays <= 31) {
       for (let i = 0; i < totalDays; i++) {
@@ -404,7 +460,7 @@ export function aggregateTimeSeries(rows = [], range = null, period = 'monthly')
         const bEnd = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate() + i, 23, 59, 59, 999);
         const label = bStart.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
         const dateLabel = bStart.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
-        buckets.push({ index: i, label, dateLabel, start: bStart, end: bEnd, expense: 0, income: 0, transfer: 0, count: 0, categories: {} });
+        buckets.push(makeBucket(i, label, dateLabel, bStart, bEnd));
       }
     } else if (totalDays <= 180) {
       let cur = new Date(startDate);
@@ -416,7 +472,7 @@ export function aggregateTimeSeries(rows = [], range = null, period = 'monthly')
         if (bEnd > endDate) bEnd.setTime(endDate.getTime());
         const label = bStart.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
         const dateLabel = `Week of ${label}`;
-        buckets.push({ index: idx++, label, dateLabel, start: bStart, end: bEnd, expense: 0, income: 0, transfer: 0, count: 0, categories: {} });
+        buckets.push(makeBucket(idx++, label, dateLabel, bStart, bEnd));
         cur = new Date(cur.getTime() + 7 * 86400000);
       }
     } else {
@@ -427,25 +483,14 @@ export function aggregateTimeSeries(rows = [], range = null, period = 'monthly')
         const bEnd = new Date(cur.getFullYear(), cur.getMonth() + 1, 0, 23, 59, 59, 999);
         const label = bStart.toLocaleDateString('en-IN', { month: 'short' });
         const dateLabel = bStart.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
-        buckets.push({ index: idx++, label, dateLabel, start: bStart, end: bEnd, expense: 0, income: 0, transfer: 0, count: 0, categories: {} });
+        buckets.push(makeBucket(idx++, label, dateLabel, bStart, bEnd));
         cur.setMonth(cur.getMonth() + 1);
       }
     }
   }
 
   if (!buckets.length) {
-    buckets.push({
-      index: 0,
-      label: range.label || 'All',
-      dateLabel: range.label || 'All',
-      start: startDate,
-      end: endDate,
-      expense: 0,
-      income: 0,
-      transfer: 0,
-      count: 0,
-      categories: {}
-    });
+    buckets.push(makeBucket(0, range.label || 'All', range.label || 'All', startDate, endDate));
   }
 
   for (let i = 0; i < rows.length; i++) {
@@ -467,7 +512,7 @@ export function aggregateTimeSeries(rows = [], range = null, period = 'monthly')
   for (let i = 0; i < buckets.length; i++) {
     const b = buckets[i];
     b.net = b.income - b.expense;
-    let topCat = null;
+    let topCat: string | null = null;
     let topAmt = 0;
     for (const [cat, amt] of Object.entries(b.categories)) {
       if (amt > topAmt) {
@@ -482,7 +527,7 @@ export function aggregateTimeSeries(rows = [], range = null, period = 'monthly')
   return buckets;
 }
 
-function getNiceMax(val) {
+function getNiceMax(val: number): number {
   if (val <= 0) return 1000;
   if (val <= 50) return 50;
   if (val <= 100) return 100;
@@ -499,7 +544,7 @@ function getNiceMax(val) {
   return mult * base;
 }
 
-function getSplinePath(points) {
+function getSplinePath(points: Array<{ x: number; y: number }>): string {
   if (!points || !points.length) return '';
   if (points.length === 1) return `M ${points[0].x.toFixed(1)},${points[0].y.toFixed(1)} h 2`;
   let d = `M ${points[0].x.toFixed(1)},${points[0].y.toFixed(1)}`;
@@ -517,7 +562,7 @@ function getSplinePath(points) {
   return d;
 }
 
-export function renderLineChart(rows, range, activeType = 'all') {
+export function renderLineChart(rows: Transaction[], range: PeriodBounds | null, activeType: FilterTransactionType = 'all'): void {
   const container = $('trend-chart');
   if (!container) return;
 
@@ -526,7 +571,7 @@ export function renderLineChart(rows, range, activeType = 'all') {
   const totalIncome = buckets.reduce((s, b) => s + b.income, 0);
   const totalTransfer = buckets.reduce((s, b) => s + b.transfer, 0);
   const activeDays = buckets.filter(b => b.count > 0).length;
-  const peakExpenseBucket = buckets.reduce((max, b) => b.expense > (max ? max.expense : -1) ? b : max, null);
+  const peakExpenseBucket = buckets.reduce((max, b) => b.expense > (max ? max.expense : -1) ? b : max, null as TimeBucket | null);
   const avgExpense = buckets.length > 0 ? totalExpenses / buckets.length : 0;
 
   // Render Summary Strip
@@ -538,7 +583,7 @@ export function renderLineChart(rows, range, activeType = 'all') {
     const primaryValue = isTransfer ? money(totalTransfer, true) : (isIncome ? money(totalIncome, true) : money(avgExpense, true));
     const peakTitle = isIncome ? 'Peak Inflow' : 'Peak Outflow';
     const peakVal = isIncome
-      ? buckets.reduce((m, b) => b.income > (m ? m.income : -1) ? b : m, null)
+      ? buckets.reduce((m, b) => b.income > (m ? m.income : -1) ? b : m, null as TimeBucket | null)
       : peakExpenseBucket;
     const peakAmt = peakVal ? (isIncome ? peakVal.income : peakVal.expense) : 0;
 
@@ -614,13 +659,13 @@ export function renderLineChart(rows, range, activeType = 'all') {
   const trfPoints = buckets.map(b => ({ x: b.x, y: b.yTransfer }));
 
   const expLineD = showExpense ? getSplinePath(expPoints) : '';
-  const expAreaD = showExpense ? `${expLineD} L ${expPoints[expPoints.length - 1].x.toFixed(1)},${baselineY.toFixed(1)} L ${expPoints[0].x.toFixed(1)},${baselineY.toFixed(1)} Z` : '';
+  const expAreaD = showExpense && expPoints.length ? `${expLineD} L ${expPoints[expPoints.length - 1].x.toFixed(1)},${baselineY.toFixed(1)} L ${expPoints[0].x.toFixed(1)},${baselineY.toFixed(1)} Z` : '';
 
   const incLineD = showIncome ? getSplinePath(incPoints) : '';
-  const incAreaD = showIncome ? `${incLineD} L ${incPoints[incPoints.length - 1].x.toFixed(1)},${baselineY.toFixed(1)} L ${incPoints[0].x.toFixed(1)},${baselineY.toFixed(1)} Z` : '';
+  const incAreaD = showIncome && incPoints.length ? `${incLineD} L ${incPoints[incPoints.length - 1].x.toFixed(1)},${baselineY.toFixed(1)} L ${incPoints[0].x.toFixed(1)},${baselineY.toFixed(1)} Z` : '';
 
   const trfLineD = showTransfer ? getSplinePath(trfPoints) : '';
-  const trfAreaD = showTransfer ? `${trfLineD} L ${trfPoints[trfPoints.length - 1].x.toFixed(1)},${baselineY.toFixed(1)} L ${trfPoints[0].x.toFixed(1)},${baselineY.toFixed(1)} Z` : '';
+  const trfAreaD = showTransfer && trfPoints.length ? `${trfLineD} L ${trfPoints[trfPoints.length - 1].x.toFixed(1)},${baselineY.toFixed(1)} L ${trfPoints[0].x.toFixed(1)},${baselineY.toFixed(1)} Z` : '';
 
   const dotsHtml = buckets.filter(b => b.count > 0).map(b => {
     let out = '';
@@ -724,12 +769,12 @@ export function renderLineChart(rows, range, activeType = 'all') {
   }
 
   // Interactive Hover Scrubber
-  const overlay = container.querySelector('.trend-overlay');
+  const overlay = container.querySelector<SVGRectElement>('.trend-overlay');
   const tooltip = $('trend-tooltip');
   const wrap = $('trend-chart-wrap');
   if (!overlay || !wrap) return;
 
-  overlay.onpointermove = (e) => {
+  overlay.onpointermove = (e: PointerEvent) => {
     const rect = overlay.getBoundingClientRect();
     const relX = (e.clientX - rect.left) / rect.width;
     const bucketIdx = Math.max(0, Math.min(buckets.length - 1, Math.round(relX * (buckets.length - 1))));
@@ -817,7 +862,7 @@ export function renderLineChart(rows, range, activeType = 'all') {
   };
 }
 
-export function syncChartViewToggle() {
+export function syncChartViewToggle(): void {
   const donutLayout = $('donut-chart-layout');
   const trendLayout = $('trend-chart-layout');
   const title = $('breakdown-title');
@@ -829,20 +874,20 @@ export function syncChartViewToggle() {
 
   const toggleWrap = $('chart-view-toggle');
   if (toggleWrap) {
-    toggleWrap.querySelectorAll('[data-chart-view]').forEach(btn => {
+    toggleWrap.querySelectorAll<HTMLElement>('[data-chart-view]').forEach(btn => {
       btn.classList.toggle('selected', btn.dataset.chartView === state.chartView);
     });
   }
 }
 
-export function initChartViewToggle(onSwitch) {
+export function initChartViewToggle(onSwitch: (view: ChartViewMode) => void): void {
   const toggleWrap = $('chart-view-toggle');
   if (!toggleWrap) return;
 
-  const buttons = toggleWrap.querySelectorAll('[data-chart-view]');
+  const buttons = toggleWrap.querySelectorAll<HTMLElement>('[data-chart-view]');
   buttons.forEach(btn => {
     btn.onclick = () => {
-      const targetView = btn.dataset.chartView;
+      const targetView = btn.dataset.chartView as ChartViewMode;
       if (targetView === state.chartView) return;
       setChartView(targetView);
       syncChartViewToggle();

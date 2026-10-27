@@ -7,6 +7,15 @@ import { $, shortDate } from './utils.js';
 import { getPeriodsDataPresence, getAvailableYears, bounds, getCalendarWeek } from './dates.js';
 import { closeAllPopovers } from './filters.js';
 
+export type PeriodPickerView = 'week' | 'month' | 'year' | 'quarter' | 'financial';
+
+export interface WeekInfo {
+  cw: number;
+  start: Date;
+  end: Date;
+  anchor: Date;
+}
+
 const MONTH_NAMES = [
   'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
@@ -19,38 +28,38 @@ const FULL_MONTH_NAMES = [
 
 let viewYear = new Date().getFullYear();
 let viewMonth = new Date().getMonth();
-let pickerView = 'month'; // 'week' | 'month' | 'year' | 'quarter' | 'financial'
-let onRender = () => {};
+let pickerView: PeriodPickerView = 'month';
+let onRender: () => void = () => {};
 
-export function registerPeriodPickerRenderCallback(fn) {
+export function registerPeriodPickerRenderCallback(fn: () => void): void {
   onRender = fn;
 }
 
-export function getPickerView() {
+export function getPickerView(): PeriodPickerView {
   return pickerView;
 }
 
-export function setPickerView(mode) {
+export function setPickerView(mode: PeriodPickerView): void {
   pickerView = mode;
 }
 
-export function getViewYear() {
+export function getViewYear(): number {
   return viewYear;
 }
 
-export function setViewYear(y) {
+export function setViewYear(y: number): void {
   viewYear = y;
 }
 
-export function getViewMonth() {
+export function getViewMonth(): number {
   return viewMonth;
 }
 
-export function setViewMonth(m) {
+export function setViewMonth(m: number): void {
   viewMonth = m;
 }
 
-export function isAtCurrentPeriod(vYear = null, vMonth = null) {
+export function isAtCurrentPeriod(vYear: number | null = null, vMonth: number | null = null): boolean {
   const now = new Date();
   const anchor = state.anchor || now;
 
@@ -92,8 +101,8 @@ export function isAtCurrentPeriod(vYear = null, vMonth = null) {
   return false;
 }
 
-export function getWeeksForMonth(year, month) {
-  const weeks = [];
+export function getWeeksForMonth(year: number, month: number): WeekInfo[] {
+  const weeks: WeekInfo[] = [];
   const firstDay = new Date(year, month, 1);
   const dayOffset = (firstDay.getDay() + 6) % 7;
   let curMonday = new Date(year, month, 1 - dayOffset, 0, 0, 0, 0);
@@ -114,7 +123,7 @@ export function getWeeksForMonth(year, month) {
   return weeks;
 }
 
-function renderTodayButton(isCurrent) {
+function renderTodayButton(isCurrent: boolean): string {
   const disabledAttr = isCurrent ? 'disabled aria-disabled="true"' : '';
   const disabledClass = isCurrent ? 'disabled' : '';
   const titleAttr = isCurrent ? 'Already at current period' : 'Jump to current period';
@@ -132,7 +141,7 @@ function renderTodayButton(isCurrent) {
   `;
 }
 
-export function renderPeriodPicker() {
+export function renderPeriodPicker(): void {
   const pop = $('period-popover');
   if (!pop) return;
 
@@ -378,9 +387,9 @@ export function renderPeriodPicker() {
   attachPickerEventDelegation(pop);
 }
 
-function attachPickerEventDelegation(pop) {
+function attachPickerEventDelegation(pop: HTMLElement): void {
   // Current Period / Today quick-jump button
-  const todayBtn = pop.querySelector('#picker-today-btn');
+  const todayBtn = pop.querySelector<HTMLButtonElement>('#picker-today-btn');
   if (todayBtn) {
     todayBtn.onclick = (e) => {
       e.stopPropagation();
@@ -391,7 +400,7 @@ function attachPickerEventDelegation(pop) {
   }
 
   // Month previous / next (for week view)
-  const prevMonthBtn = pop.querySelector('#picker-prev-month');
+  const prevMonthBtn = pop.querySelector<HTMLButtonElement>('#picker-prev-month');
   if (prevMonthBtn) {
     prevMonthBtn.onclick = (e) => {
       e.stopPropagation();
@@ -404,7 +413,7 @@ function attachPickerEventDelegation(pop) {
     };
   }
 
-  const nextMonthBtn = pop.querySelector('#picker-next-month');
+  const nextMonthBtn = pop.querySelector<HTMLButtonElement>('#picker-next-month');
   if (nextMonthBtn) {
     nextMonthBtn.onclick = (e) => {
       e.stopPropagation();
@@ -418,7 +427,7 @@ function attachPickerEventDelegation(pop) {
   }
 
   // Switch to month view from week view
-  const monthBtn = pop.querySelector('#picker-month-btn');
+  const monthBtn = pop.querySelector<HTMLButtonElement>('#picker-month-btn');
   if (monthBtn) {
     monthBtn.onclick = (e) => {
       e.stopPropagation();
@@ -428,7 +437,7 @@ function attachPickerEventDelegation(pop) {
   }
 
   // Back to week view from month view
-  const backWeeksBtn = pop.querySelector('#picker-back-weeks');
+  const backWeeksBtn = pop.querySelector<HTMLButtonElement>('#picker-back-weeks');
   if (backWeeksBtn) {
     backWeeksBtn.onclick = (e) => {
       e.stopPropagation();
@@ -438,7 +447,7 @@ function attachPickerEventDelegation(pop) {
   }
 
   // Year previous / next
-  const prevBtn = pop.querySelector('#picker-prev-year');
+  const prevBtn = pop.querySelector<HTMLButtonElement>('#picker-prev-year');
   if (prevBtn) {
     prevBtn.onclick = (e) => {
       e.stopPropagation();
@@ -447,7 +456,7 @@ function attachPickerEventDelegation(pop) {
     };
   }
 
-  const nextBtn = pop.querySelector('#picker-next-year');
+  const nextBtn = pop.querySelector<HTMLButtonElement>('#picker-next-year');
   if (nextBtn) {
     nextBtn.onclick = (e) => {
       e.stopPropagation();
@@ -457,7 +466,7 @@ function attachPickerEventDelegation(pop) {
   }
 
   // Switch to year view from month view
-  const yearBtn = pop.querySelector('#picker-year-btn');
+  const yearBtn = pop.querySelector<HTMLButtonElement>('#picker-year-btn');
   if (yearBtn) {
     yearBtn.onclick = (e) => {
       e.stopPropagation();
@@ -467,7 +476,7 @@ function attachPickerEventDelegation(pop) {
   }
 
   // Back to month view from year view
-  const backMonthsBtn = pop.querySelector('#picker-back-months');
+  const backMonthsBtn = pop.querySelector<HTMLButtonElement>('#picker-back-months');
   if (backMonthsBtn) {
     backMonthsBtn.onclick = (e) => {
       e.stopPropagation();
@@ -477,11 +486,11 @@ function attachPickerEventDelegation(pop) {
   }
 
   // Week selection
-  pop.querySelectorAll('[data-week-time]').forEach(btn => {
+  pop.querySelectorAll<HTMLButtonElement>('[data-week-time]').forEach(btn => {
     btn.onclick = (e) => {
       e.stopPropagation();
       if (btn.disabled || btn.classList.contains('has-no-data')) return;
-      const time = parseInt(btn.dataset.weekTime, 10);
+      const time = parseInt(btn.dataset.weekTime || '0', 10);
       state.anchor = new Date(time);
       closeAllPopovers();
       onRender();
@@ -489,11 +498,11 @@ function attachPickerEventDelegation(pop) {
   });
 
   // Month selection
-  pop.querySelectorAll('[data-month]').forEach(btn => {
+  pop.querySelectorAll<HTMLButtonElement>('[data-month]').forEach(btn => {
     btn.onclick = (e) => {
       e.stopPropagation();
       if (btn.disabled || btn.classList.contains('has-no-data')) return;
-      const monthIndex = parseInt(btn.dataset.month, 10);
+      const monthIndex = parseInt(btn.dataset.month || '0', 10);
       if (state.period === 'weekly') {
         viewMonth = monthIndex;
         pickerView = 'week';
@@ -507,11 +516,11 @@ function attachPickerEventDelegation(pop) {
   });
 
   // Year selection
-  pop.querySelectorAll('[data-year]').forEach(btn => {
+  pop.querySelectorAll<HTMLButtonElement>('[data-year]').forEach(btn => {
     btn.onclick = (e) => {
       e.stopPropagation();
       if (btn.disabled || btn.classList.contains('has-no-data')) return;
-      const y = parseInt(btn.dataset.year, 10);
+      const y = parseInt(btn.dataset.year || '0', 10);
       viewYear = y;
       if (state.period === 'monthly' || state.period === 'weekly') {
         pickerView = 'month';
@@ -525,11 +534,11 @@ function attachPickerEventDelegation(pop) {
   });
 
   // Quarter selection
-  pop.querySelectorAll('[data-quarter]').forEach(btn => {
+  pop.querySelectorAll<HTMLButtonElement>('[data-quarter]').forEach(btn => {
     btn.onclick = (e) => {
       e.stopPropagation();
       if (btn.disabled || btn.classList.contains('has-no-data')) return;
-      const q = parseInt(btn.dataset.quarter, 10);
+      const q = parseInt(btn.dataset.quarter || '0', 10);
       state.anchor = new Date(viewYear, q * 3, 1);
       closeAllPopovers();
       onRender();
@@ -537,11 +546,11 @@ function attachPickerEventDelegation(pop) {
   });
 
   // FY selection
-  pop.querySelectorAll('[data-fy]').forEach(btn => {
+  pop.querySelectorAll<HTMLButtonElement>('[data-fy]').forEach(btn => {
     btn.onclick = (e) => {
       e.stopPropagation();
       if (btn.disabled || btn.classList.contains('has-no-data')) return;
-      const fy = parseInt(btn.dataset.fy, 10);
+      const fy = parseInt(btn.dataset.fy || '0', 10);
       state.anchor = new Date(fy, 3, 1);
       closeAllPopovers();
       onRender();
@@ -549,7 +558,7 @@ function attachPickerEventDelegation(pop) {
   });
 }
 
-export function togglePeriodPicker() {
+export function togglePeriodPicker(): void {
   const pop = $('period-popover');
   const trigger = $('period-label');
   if (!pop || !trigger) return;
@@ -561,7 +570,6 @@ export function togglePeriodPicker() {
   closeAllPopovers();
 
   if (opening) {
-    // Reset viewYear, viewMonth and pickerView according to current state.period and state.anchor
     const anchor = state.anchor || new Date();
     viewYear = anchor.getFullYear();
     viewMonth = anchor.getMonth();
@@ -586,7 +594,7 @@ export function togglePeriodPicker() {
   }
 }
 
-export function initPeriodPickerListeners() {
+export function initPeriodPickerListeners(): void {
   const labelBtn = $('period-label');
   if (labelBtn) {
     labelBtn.onclick = (e) => {

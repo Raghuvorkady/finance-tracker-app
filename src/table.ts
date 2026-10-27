@@ -5,32 +5,33 @@
 import { $, money, escapeHtml, toast, setStorage, showLoading, hideLoading } from './utils.js';
 import { state, DEFAULT_COLUMN_ORDER, COLUMN_DEFINITIONS } from './state.js';
 import { categoryPill, categoryColor, getNotionIcon, formatCategory } from './categories.js';
+import { Transaction, ColumnId } from './types.js';
 
-let tableRerenderCallback = () => {};
-export function registerTableRenderCallback(fn) {
+let tableRerenderCallback: () => void = () => {};
+export function registerTableRenderCallback(fn: () => void): void {
   tableRerenderCallback = fn;
 }
 
 let tableDisplayLimit = 100;
-export function resetTableDisplayLimit() {
+export function resetTableDisplayLimit(): void {
   tableDisplayLimit = 100;
 }
-export function getTableDisplayLimit() {
+export function getTableDisplayLimit(): number {
   return tableDisplayLimit;
 }
-export function setTableDisplayLimit(limit) {
+export function setTableDisplayLimit(limit: number): void {
   tableDisplayLimit = limit;
 }
 
-let activeDragCol = null;
-let activeColMenuId = null;
+let activeDragCol: ColumnId | null = null;
+let activeColMenuId: ColumnId | null = null;
 
-export function getVisibleColumns() {
+export function getVisibleColumns(): ColumnId[] {
   const visible = state.columnOrder.filter(c => !state.hiddenColumns.has(c));
   return visible.length ? visible : [...DEFAULT_COLUMN_ORDER];
 }
 
-export function hasCustomColumns() {
+export function hasCustomColumns(): boolean {
   if (state.hiddenColumns && state.hiddenColumns.size > 0) return true;
   if (!state.columnOrder || state.columnOrder.length !== DEFAULT_COLUMN_ORDER.length) return true;
   for (let i = 0; i < DEFAULT_COLUMN_ORDER.length; i++) {
@@ -39,12 +40,12 @@ export function hasCustomColumns() {
   return false;
 }
 
-export function saveColumns() {
+export function saveColumns(): void {
   setStorage('ledgerly_column_order', JSON.stringify(state.columnOrder));
   setStorage('ledgerly_hidden_columns', JSON.stringify([...state.hiddenColumns]));
 }
 
-export function reorderColumnTo(sourceCol, targetCol, position = 'before') {
+export function reorderColumnTo(sourceCol: ColumnId, targetCol: ColumnId, position: 'before' | 'after' = 'before'): boolean {
   if (sourceCol === targetCol) return false;
   const newOrder = [...state.columnOrder];
   const fromIdx = newOrder.indexOf(sourceCol);
@@ -62,7 +63,7 @@ export function reorderColumnTo(sourceCol, targetCol, position = 'before') {
   return true;
 }
 
-export function moveColumn(colId, direction) {
+export function moveColumn(colId: ColumnId, direction: 'left' | 'right'): boolean {
   const visible = getVisibleColumns();
   const idx = visible.indexOf(colId);
   if (idx === -1) return false;
@@ -72,7 +73,7 @@ export function moveColumn(colId, direction) {
   return reorderColumnTo(colId, targetCol, direction === 'left' ? 'before' : 'after');
 }
 
-export function hideColumn(colId) {
+export function hideColumn(colId: ColumnId): boolean {
   const visible = getVisibleColumns();
   if (visible.length <= 1) {
     toast('At least one column must remain visible');
@@ -83,7 +84,7 @@ export function hideColumn(colId) {
   return true;
 }
 
-export function unhideColumn(colId) {
+export function unhideColumn(colId: ColumnId): boolean {
   if (state.hiddenColumns.has(colId)) {
     state.hiddenColumns.delete(colId);
     saveColumns();
@@ -92,20 +93,20 @@ export function unhideColumn(colId) {
   return false;
 }
 
-export function toggleColumn(colId) {
+export function toggleColumn(colId: ColumnId): boolean {
   if (state.hiddenColumns.has(colId)) {
     return unhideColumn(colId);
   }
   return hideColumn(colId);
 }
 
-export function resetColumns() {
+export function resetColumns(): void {
   state.columnOrder = [...DEFAULT_COLUMN_ORDER];
-  state.hiddenColumns = new Set();
+  state.hiddenColumns = new Set<ColumnId>();
   saveColumns();
 }
 
-export function closeColumnMenu() {
+export function closeColumnMenu(): void {
   const menu = $('notion-col-menu');
   if (menu) {
     menu.classList.add('hidden');
@@ -113,7 +114,7 @@ export function closeColumnMenu() {
   activeColMenuId = null;
 }
 
-export function openColumnMenu(colId, anchorEl) {
+export function openColumnMenu(colId: ColumnId, anchorEl: HTMLElement): void {
   const menu = $('notion-col-menu');
   if (!menu || !anchorEl) return;
 
@@ -130,7 +131,7 @@ export function openColumnMenu(colId, anchorEl) {
   if (titleEl) titleEl.textContent = def.label;
 
   const visible = getVisibleColumns();
-  const hideBtn = $('col-menu-hide');
+  const hideBtn = $<HTMLButtonElement>('col-menu-hide');
   if (hideBtn) {
     const disabled = visible.length <= 1;
     hideBtn.disabled = disabled;
@@ -147,11 +148,10 @@ export function openColumnMenu(colId, anchorEl) {
   const winWidth = typeof window !== 'undefined' ? window.innerWidth : 1024;
   const leftPos = Math.max(10, Math.min(winWidth - menuWidth - 10, rect.left + scrollLeft));
   menu.style.left = `${leftPos}px`;
-
   menu.classList.remove('hidden');
 }
 
-export function initColumnMenu() {
+export function initColumnMenu(): void {
   const hideBtn = $('col-menu-hide');
   if (hideBtn) {
     hideBtn.onclick = (e) => {
@@ -168,33 +168,37 @@ export function initColumnMenu() {
 
   if (typeof document !== 'undefined') {
     document.addEventListener('click', (e) => {
-      if (!e.target.closest('#notion-col-menu') && !e.target.closest('.th-dots-btn') && !e.target.closest('th.notion-th-draggable')) {
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+      if (!target.closest('#notion-col-menu') && !target.closest('.th-dots-btn') && !target.closest('th.notion-th-draggable')) {
         closeColumnMenu();
       }
     });
-    document.addEventListener('keydown', (e) => {
+    document.addEventListener('keydown', (e: KeyboardEvent) => {
       if (e.key === 'Escape') closeColumnMenu();
     });
   }
 }
 
-export function renderTable(rows) {
+export function renderTable(rows: Transaction[]): void {
   const isNotion = typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme') === 'notion';
   const visibleCols = getVisibleColumns();
 
   const sorted = [...rows].sort((a, b) => {
-    if (state.sort === 'date-asc') return a.date - b.date;
+    if (state.sort === 'date-asc') return a.date.getTime() - b.date.getTime();
     if (state.sort === 'amount-desc') return b.amount - a.amount;
     if (state.sort === 'amount-asc') return a.amount - b.amount;
-    return b.date - a.date;
+    return b.date.getTime() - a.date.getTime();
   });
 
   const totalCount = sorted.length;
   const sliced = sorted.slice(0, tableDisplayLimit);
   const hasMore = totalCount > tableDisplayLimit;
 
-  if ($('transaction-count')) $('transaction-count').textContent = rows.length;
-  if ($('c-tab-tx-count')) $('c-tab-tx-count').textContent = rows.length;
+  const txCount = $('transaction-count');
+  if (txCount) txCount.textContent = String(rows.length);
+  const cTabCount = $('c-tab-tx-count');
+  if (cTabCount) cTabCount.textContent = String(rows.length);
 
   const head = $('transaction-head');
   if (head) {
@@ -224,8 +228,8 @@ export function renderTable(rows) {
     head.innerHTML = `<tr>${ths}</tr>`;
 
     // Attach listeners to th elements
-    head.querySelectorAll('th.notion-th-draggable').forEach(th => {
-      const colId = th.dataset.col;
+    head.querySelectorAll<HTMLElement>('th.notion-th-draggable').forEach(th => {
+      const colId = th.dataset.col as ColumnId;
 
       th.onclick = (e) => {
         e.stopPropagation();
@@ -271,7 +275,7 @@ export function renderTable(rows) {
       th.ondrop = (e) => {
         e.preventDefault();
         th.classList.remove('th-drag-over-left', 'th-drag-over-right');
-        const sourceCol = activeDragCol || (e.dataTransfer && e.dataTransfer.getData('text/plain'));
+        const sourceCol = activeDragCol || ((e.dataTransfer && e.dataTransfer.getData('text/plain')) as ColumnId | null);
         const targetCol = colId;
         if (sourceCol && targetCol && sourceCol !== targetCol) {
           const rect = th.getBoundingClientRect();
@@ -368,7 +372,7 @@ export function renderTable(rows) {
     }
   }
 
-  // Footer Calculation Row (Removed "Total Out" and "Count")
+  // Footer Calculation Row
   const foot = $('transaction-foot');
   if (foot) {
     foot.innerHTML = '';
@@ -428,7 +432,7 @@ export function renderTable(rows) {
 
   // Automatic load on scroll
   if (typeof document !== 'undefined' && typeof document.querySelector === 'function') {
-    const tableWrap = document.querySelector('.table-wrap');
+    const tableWrap = document.querySelector('.table-wrap') as (HTMLElement & { _hasScrollListener?: boolean }) | null;
     if (tableWrap && !tableWrap._hasScrollListener) {
       tableWrap._hasScrollListener = true;
       tableWrap.addEventListener('scroll', () => {
