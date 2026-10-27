@@ -58,29 +58,37 @@ export function updatePrintHeader(range = bounds(), rows = filtered()) {
       filterParts.push(`Type: ${state.type.charAt(0).toUpperCase() + state.type.slice(1)}`);
     }
 
-    const catList = state.selectedCategories && state.selectedCategories.size > 0
-      ? Array.from(state.selectedCategories)
-      : (state.category && state.category !== 'all' ? [state.category] : []);
+    const isCatExclude = state.categoryFilterMode === 'exclude' || state.categoryOperator === 'is-not';
+    const catList = isCatExclude
+      ? (state.excludedCategories && state.excludedCategories.size > 0 ? Array.from(state.excludedCategories) : Array.from(state.selectedCategories))
+      : (state.selectedCategories && state.selectedCategories.size > 0
+        ? Array.from(state.selectedCategories)
+        : (state.category && state.category !== 'all' ? [state.category] : []));
 
     if (catList.length > 0) {
+      const prefix = isCatExclude ? 'Categories is not: ' : 'Categories: ';
       if (catList.length <= 3) {
-        filterParts.push(`Categories: ${catList.join(', ')}`);
+        filterParts.push(`${prefix}${catList.join(', ')}`);
       } else {
-        filterParts.push(`Categories: ${catList.slice(0, 2).join(', ')} +${catList.length - 2} more`);
+        filterParts.push(`${prefix}${catList.slice(0, 2).join(', ')} +${catList.length - 2} more`);
       }
     } else {
       filterParts.push('All Categories');
     }
 
-    const acctList = state.selectedAccounts && state.selectedAccounts.size > 0
-      ? Array.from(state.selectedAccounts)
-      : (state.account && state.account !== 'all' ? [state.account] : []);
+    const isAcctExclude = state.accountFilterMode === 'exclude' || state.accountOperator === 'is-not';
+    const acctList = isAcctExclude
+      ? (state.excludedAccounts && state.excludedAccounts.size > 0 ? Array.from(state.excludedAccounts) : Array.from(state.selectedAccounts))
+      : (state.selectedAccounts && state.selectedAccounts.size > 0
+        ? Array.from(state.selectedAccounts)
+        : (state.account && state.account !== 'all' ? [state.account] : []));
 
     if (acctList.length > 0) {
+      const prefix = isAcctExclude ? 'Accounts is not: ' : 'Accounts: ';
       if (acctList.length <= 3) {
-        filterParts.push(`Accounts: ${acctList.join(', ')}`);
+        filterParts.push(`${prefix}${acctList.join(', ')}`);
       } else {
-        filterParts.push(`Accounts: ${acctList.slice(0, 2).join(', ')} +${acctList.length - 2} more`);
+        filterParts.push(`${prefix}${acctList.slice(0, 2).join(', ')} +${acctList.length - 2} more`);
       }
     } else {
       filterParts.push('All Accounts');

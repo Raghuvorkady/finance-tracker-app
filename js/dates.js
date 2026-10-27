@@ -32,6 +32,65 @@ export function getDataDateRange() {
   return { min: cachedMinDate, max: cachedMaxDate };
 }
 
+export function getCalendarWeek(d) {
+  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const dayNum = date.getUTCDay() || 7;
+  date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+  return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+}
+
+export function getPeriodsDataPresence() {
+  const years = new Set();
+  const yearMonths = new Map(); // year -> Map(monthIndex -> count)
+  const yearQuarters = new Map(); // year -> Map(qIndex -> count)
+  const financialYears = new Map(); // fyStartYear -> count
+
+  for (let i = 0; i < state.data.length; i++) {
+    const d = state.data[i].date;
+    if (!d || isNaN(d.getTime())) continue;
+    const y = d.getFullYear();
+    const m = d.getMonth();
+    const q = Math.floor(m / 3);
+    const fy = m < 3 ? y - 1 : y;
+
+    years.add(y);
+
+    if (!yearMonths.has(y)) yearMonths.set(y, new Map());
+    const ym = yearMonths.get(y);
+    ym.set(m, (ym.get(m) || 0) + 1);
+
+    if (!yearQuarters.has(y)) yearQuarters.set(y, new Map());
+    const yq = yearQuarters.get(y);
+    yq.set(q, (yq.get(q) || 0) + 1);
+
+    financialYears.set(fy, (financialYears.get(fy) || 0) + 1);
+  }
+
+  return { years, yearMonths, yearQuarters, financialYears };
+}
+
+export function getAvailableYears(padBefore = 2, padAfter = 2) {
+  const anchorYear = (state.anchor || new Date()).getFullYear();
+  if (!state.data.length) {
+    const years = [];
+    for (let y = anchorYear - padBefore; y <= anchorYear + padAfter; y++) {
+      years.push(y);
+    }
+    return years;
+  }
+  const { min, max } = getDataDateRange();
+  const minYear = Math.min(min.getFullYear(), anchorYear);
+  const maxYear = Math.max(max.getFullYear(), anchorYear);
+  const start = minYear - padBefore;
+  const end = maxYear + padAfter;
+  const years = [];
+  for (let y = start; y <= end; y++) {
+    years.push(y);
+  }
+  return years;
+}
+
 export function bounds() {
   const anchor = state.anchor || new Date();
   if (state.period === 'all') {
@@ -75,22 +134,96 @@ export function bounds() {
   return { start, end, label: `FY ${fy}–${String(fy + 1).slice(2)}` };
 }
 
-export function movePeriod(direction) {
-  if (state.period === 'all' || state.period === 'custom') return;
-  const a = new Date(state.anchor || new Date());
-  if (state.period === 'weekly') {
+export function periodBoundsForAnchor(anchor, period = state.period) {
+  if (period === 'weekly') {
+    const day = (anchor.getDay() + 6) % 7;
+    const start = new Date(anchor.getFullYear(), anchor.getMonth(), anchor.getDate() - day, 0, 0, 0, 0);
+    const end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 6, 23, 59, 59, 999);
+    return { start, end };
+  }
+  if (period === 'monthly') {
+    const start = new Date(anchor.getFullYear(), anchor.getMonth(), 1, 0, 0, 0, 0);
+    const end = new Date(anchor.getFullYear(), anchor.getMonth() + 1, 0, 23, 59, 59, 999);
+    return { start, end };
+  }
+  if (period === 'quarterly') {
+    const q = Math.floor(anchor.getMonth() / 3);
+    const start = new Date(anchor.getFullYear(), q * 3, 1, 0, 0, 0, 0);
+    const end = new Date(anchor.getFullYear(), q * 3 + 3, 0, 23, 59, 59, 999);
+    return { start, end };
+  }
+  if (period === 'yearly') {
+    const start = new Date(anchor.getFullYear(), 0, 1, 0, 0, 0, 0);
+    const end = new Date(anchor.getFullYear(), 11, 31, 23, 59, 59, 999);
+    return { start, end };
+  }
+  if (period === 'financial') {
+    const fy = anchor.getMonth() < 3 ? anchor.getFullYear() - 1 : anchor.getFullYear();
+    const start = new Date(fy, 3, 1, 0, 0, 0, 0);
+    const end = new Date(fy + 1, 2, 31, 23, 59, 59, 999);
+    return { start, end };
+  }
+  return null;
+}
+
+export function hasPeriodData(anchor, period = state.period) {
+  if (!state.data.length) return false;
+  const b = periodBoundsForAnchor(anchor, period);
+  if (!b) return false;
+  for (let i = 0; i < state.data.length; i++) {
+    const d = state.data[i].date;
+    if (d >= b.start && d <= b.end) return true;
+  }
+  return false;
+}
+
+export function canMovePeriod(direction) {
+  if (state.period === 'all' || state.period === 'custom' || !state.data.length) return false;
+  const cur = bounds();
+  if (direction < 0) {
+    for (let i = 0; i < state.data.length; i++) {
+      if (state.data[i].date < cur.start) return true;
+    }
+    return false;
+  } else {
+    for (let i = 0; i < state.data.length; i++) {
+      if (state.data[i].date > cur.end) return true;
+    }
+    return false;
+  }
+}
+
+export function getShiftedAnchor(direction, customAnchor = state.anchor, customPeriod = state.period) {
+  const a = new Date(customAnchor || new Date());
+  if (customPeriod === 'weekly') {
     a.setDate(a.getDate() + direction * 7);
-  } else if (state.period === 'monthly') {
+  } else if (customPeriod === 'monthly') {
     a.setDate(1);
     a.setMonth(a.getMonth() + direction);
-  } else if (state.period === 'quarterly') {
+  } else if (customPeriod === 'quarterly') {
     a.setDate(1);
     a.setMonth(a.getMonth() + direction * 3);
-  } else if (state.period === 'yearly' || state.period === 'financial') {
+  } else if (customPeriod === 'yearly' || customPeriod === 'financial') {
     a.setDate(1);
     a.setFullYear(a.getFullYear() + direction);
   }
-  state.anchor = a;
+  return a;
+}
+
+export function findNearestPeriodAnchorWithData(direction) {
+  if (!canMovePeriod(direction)) return null;
+  let next = getShiftedAnchor(direction);
+  let count = 0;
+  while (!hasPeriodData(next) && count < 120) {
+    next = getShiftedAnchor(direction, next);
+    count++;
+  }
+  return hasPeriodData(next) ? next : null;
+}
+
+export function movePeriod(direction) {
+  if (state.period === 'all' || state.period === 'custom') return;
+  state.anchor = getShiftedAnchor(direction);
 }
 
 export function getPriorPeriodBounds() {
@@ -147,13 +280,30 @@ export function priorExpense(type = 'expense') {
   const { start, end } = prior;
   const lower = state.search ? state.search.toLowerCase() : '';
 
-  return state.data.filter(r =>
-    r.date >= start && r.date <= end &&
-    r.type === type &&
-    (state.selectedCategories.size === 0 || state.selectedCategories.has(r.category)) &&
-    (state.category === 'all' || r.category === state.category) &&
-    (state.selectedAccounts.size === 0 || state.selectedAccounts.has(r.account)) &&
-    (state.account === 'all' || r.account === state.account) &&
-    (!lower || [r.category, r.note, r.description, r.account].join(' ').toLowerCase().includes(lower))
-  ).reduce((sum, r) => sum + r.amount, 0);
+  return state.data.filter(r => {
+    if (r.date < start || r.date > end || r.type !== type) return false;
+    const isAcctExclude = state.accountFilterMode === 'exclude' || state.accountOperator === 'is-not';
+    if (isAcctExclude) {
+      const list = (state.excludedAccounts && state.excludedAccounts.size > 0)
+        ? state.excludedAccounts
+        : state.selectedAccounts;
+      if (list && list.has(r.account)) return false;
+    } else {
+      if (state.selectedAccounts.size > 0 && !state.selectedAccounts.has(r.account)) return false;
+      if (state.account !== 'all' && r.account !== state.account) return false;
+    }
+    if (lower && ![r.category, r.note, r.description, r.account].join(' ').toLowerCase().includes(lower)) return false;
+
+    const isExclude = state.categoryFilterMode === 'exclude' || state.categoryOperator === 'is-not';
+    if (isExclude) {
+      const list = (state.excludedCategories && state.excludedCategories.size > 0)
+        ? state.excludedCategories
+        : state.selectedCategories;
+      if (list && list.has(r.category)) return false;
+    } else {
+      if (state.selectedCategories.size > 0 && !state.selectedCategories.has(r.category)) return false;
+      if (state.category !== 'all' && r.category !== state.category) return false;
+    }
+    return true;
+  }).reduce((sum, r) => sum + r.amount, 0);
 }

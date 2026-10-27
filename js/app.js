@@ -5,19 +5,33 @@
 import { state } from './state.js';
 import { $, money, periodDays, toast, showLoading, hideLoading } from './utils.js';
 import { normalizeRows } from './parser.js';
-import { bounds, movePeriod, priorExpense, getPriorPeriodBounds } from './dates.js';
+import {
+  bounds,
+  movePeriod,
+  priorExpense,
+  getPriorPeriodBounds,
+  canMovePeriod,
+  findNearestPeriodAnchorWithData
+} from './dates.js';
 import { renderDonut, renderMacroDonut, renderLineChart, initChartViewToggle, syncChartViewToggle } from './charts.js';
 import { renderTable, registerTableRenderCallback, initColumnMenu, resetTableDisplayLimit } from './table.js';
 import {
   filtered,
+  baseFiltered,
   categoryTotals,
   syncSortPill,
   syncFilterPills,
   populateCategories,
   populateAccounts,
   initFilterListeners,
-  registerRenderCallback
+  registerRenderCallback,
+  closeAllPopovers
 } from './filters.js';
+import {
+  initPeriodPickerListeners,
+  renderPeriodPicker,
+  registerPeriodPickerRenderCallback
+} from './period-picker.js';
 import { initExportListeners, updatePrintHeader } from './export.js';
 import {
   initSettings,
@@ -44,17 +58,32 @@ export function render() {
   // Header period labels & navigation controls
   if ($('period-label')) $('period-label').textContent = range.label;
   const isNavigable = state.period !== 'all' && state.period !== 'custom';
+  if ($('period-label')) {
+    $('period-label').disabled = !isNavigable;
+    if (typeof $('period-label').classList?.toggle === 'function') {
+      $('period-label').classList.toggle('disabled', !isNavigable);
+    }
+  }
+
+  // Prev / Next chevrons: restricted to periods having data
+  const canPrev = canMovePeriod(-1);
+  const canNext = canMovePeriod(1);
   if ($('prev-period')) {
-    $('prev-period').disabled = !isNavigable;
+    $('prev-period').disabled = !canPrev;
     if (typeof $('prev-period').classList?.toggle === 'function') {
-      $('prev-period').classList.toggle('disabled', !isNavigable);
+      $('prev-period').classList.toggle('disabled', !canPrev);
     }
   }
   if ($('next-period')) {
-    $('next-period').disabled = !isNavigable;
+    $('next-period').disabled = !canNext;
     if (typeof $('next-period').classList?.toggle === 'function') {
-      $('next-period').classList.toggle('disabled', !isNavigable);
+      $('next-period').classList.toggle('disabled', !canNext);
     }
+  }
+
+  const periodPop = $('period-popover');
+  if (periodPop && !periodPop.classList?.contains?.('hidden')) {
+    renderPeriodPicker();
   }
 
   // Top metric cards
@@ -123,17 +152,21 @@ export function render() {
 
   // Clear drilldown button in spending panel
   if ($('clear-category')) {
-    $('clear-category').classList.toggle('hidden', state.selectedCategories.size === 0);
+    const hasCategoryFilter = state.selectedCategories.size > 0 || (state.excludedCategories && state.excludedCategories.size > 0);
+    $('clear-category').classList.toggle('hidden', !hasCategoryFilter);
   }
 
   // Synchronize Breakdown / Trend View Toggle
   syncChartViewToggle();
 
   // Charts
-  if (state.type === 'all' && state.selectedCategories.size === 0) {
+  const baseRows = baseFiltered();
+  const baseTotals = categoryTotals(baseRows, chartType);
+
+  if (state.type === 'all' && state.selectedCategories.size === 0 && (!state.excludedCategories || state.excludedCategories.size === 0)) {
     renderMacroDonut(expenses, income, transfers, net);
   } else {
-    renderDonut(categoryTotals(rows, chartType), chartTotal, chartType);
+    renderDonut(baseTotals, chartTotal, chartType);
   }
   renderLineChart(rows, range, state.type);
 
@@ -195,6 +228,7 @@ function initEventListeners() {
     btn.addEventListener('click', () => {
       const nextPeriod = btn.dataset.period;
       if (state.period === nextPeriod) return;
+      closeAllPopovers();
       state.period = nextPeriod;
       document.querySelectorAll('[data-period]').forEach(b => b.classList.toggle('selected', b === btn));
       $('custom-dates')?.classList.toggle('hidden', state.period !== 'custom');
@@ -210,14 +244,16 @@ function initEventListeners() {
     });
   });
 
-  // Prev / Next Period
+  // Prev / Next Period (restricted to periods with data)
   if ($('prev-period')) {
     $('prev-period').onclick = () => {
-      if (state.period === 'all' || state.period === 'custom') return;
+      if (!canMovePeriod(-1)) return;
       showLoading('Updating period...');
       requestAnimationFrame(() => {
         setTimeout(() => {
-          movePeriod(-1);
+          const target = findNearestPeriodAnchorWithData(-1);
+          if (target) state.anchor = target;
+          else movePeriod(-1);
           resetTableDisplayLimit();
           render();
           hideLoading();
@@ -227,11 +263,13 @@ function initEventListeners() {
   }
   if ($('next-period')) {
     $('next-period').onclick = () => {
-      if (state.period === 'all' || state.period === 'custom') return;
+      if (!canMovePeriod(1)) return;
       showLoading('Updating period...');
       requestAnimationFrame(() => {
         setTimeout(() => {
-          movePeriod(1);
+          const target = findNearestPeriodAnchorWithData(1);
+          if (target) state.anchor = target;
+          else movePeriod(1);
           resetTableDisplayLimit();
           render();
           hideLoading();
@@ -300,6 +338,10 @@ function initEventListeners() {
 // ── Application Initialization ──
 (function bootstrap() {
   registerRenderCallback(render);
+  registerPeriodPickerRenderCallback(() => {
+    resetTableDisplayLimit();
+    render();
+  });
   registerTableRenderCallback(() => {
     if (state.data.length) render();
     else renderTable([]);
@@ -312,6 +354,7 @@ function initEventListeners() {
   initSettings();
   initSettingsListeners();
   initFilterListeners();
+  initPeriodPickerListeners();
   initColumnMenu();
   initExportListeners();
   initChartViewToggle(render);

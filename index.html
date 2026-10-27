@@ -133,7 +133,8 @@
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
               </button>
               <div class="period-label-wrap">
-                <button id="period-label" class="period-label">—</button>
+                <button id="period-label" class="period-label" aria-haspopup="dialog" aria-expanded="false" title="Click to select period">—</button>
+                <div class="notion-popover period-popover hidden" id="period-popover" role="dialog" aria-label="Select period"></div>
               </div>
               <button class="chevron" id="next-period" aria-label="Next period" title="Next period">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
@@ -178,7 +179,17 @@
                 <div class="panel-heading">
                   <div class="panel-heading-left">
                     <h2 id="breakdown-title">Breakdown</h2>
-                    <button class="reset-focus-btn hidden" id="clear-category" aria-label="Reset category drilldown" title="Reset focus">✕</button>
+                    <div class="notion-operator-dropdown-wrap" id="chart-operator-dropdown-wrap">
+                      <button type="button" class="notion-operator-btn" id="chart-operator-btn" aria-haspopup="true" aria-expanded="false" title="Change breakdown operator">
+                        <span id="chart-operator-text">is</span>
+                        <svg class="condition-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                      </button>
+                      <div class="notion-operator-menu hidden" id="chart-operator-menu" role="menu">
+                        <button type="button" class="notion-operator-option selected" id="chart-op-is" data-op="is" role="menuitem">Is</button>
+                        <button type="button" class="notion-operator-option" id="chart-op-is-not" data-op="is-not" role="menuitem">Is not</button>
+                      </div>
+                    </div>
+                    <button class="reset-focus-btn hidden" id="clear-category" aria-label="Reset category filter" title="Reset focus">✕</button>
                   </div>
                   <div class="chart-view-toggle" id="chart-view-toggle" role="group" aria-label="Chart view mode">
                     <button type="button" class="chart-view-btn selected" data-chart-view="donut" title="Category composition">◐ Donut</button>
@@ -258,7 +269,19 @@
                       </button>
                       <div class="notion-popover notion-filter-popover hidden" id="cat-popover" role="dialog" aria-label="Filter by category">
                         <div class="notion-popover-header">
-                          <span class="notion-filter-condition">Category is <span class="condition-chevron">▾</span></span>
+                          <div class="notion-filter-condition-wrap">
+                            <span class="notion-filter-field-label">Category</span>
+                            <div class="notion-operator-dropdown-wrap">
+                              <button type="button" class="notion-operator-btn" id="cat-operator-btn" aria-haspopup="true" aria-expanded="false" title="Change operator">
+                                <span id="cat-operator-text">is</span>
+                                <svg class="condition-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                              </button>
+                              <div class="notion-operator-menu hidden" id="cat-operator-menu" role="menu">
+                                <button type="button" class="notion-operator-option selected" id="cat-op-is" data-op="is" role="menuitem">Is</button>
+                                <button type="button" class="notion-operator-option" id="cat-op-is-not" data-op="is-not" role="menuitem">Is not</button>
+                              </div>
+                            </div>
+                          </div>
                           <div class="notion-popover-header-actions">
                             <button type="button" class="notion-popover-dots" id="cat-clear-btn" title="Clear category filter">Clear</button>
                             <button type="button" class="notion-popover-close-btn" data-close-popover aria-label="Done">Done</button>
@@ -266,7 +289,7 @@
                         </div>
                         <div class="notion-chip-box" id="cat-chip-box">
                           <div class="notion-chips-container" id="cat-chips"></div>
-                          <input type="text" class="notion-chip-input" id="cat-search-input" placeholder="Select one or more options..." autocomplete="off" spellcheck="false" />
+                          <input type="text" class="notion-chip-input" id="cat-search-input" placeholder="Type a category..." autocomplete="off" spellcheck="false" />
                           <button type="button" class="notion-chip-clear-all hidden" id="cat-clear-all-btn" title="Clear all">✕</button>
                         </div>
                         <div class="notion-popover-options" id="cat-options-list"></div>
@@ -283,7 +306,19 @@
                       </button>
                       <div class="notion-popover notion-filter-popover hidden" id="acct-popover" role="dialog" aria-label="Filter by account">
                         <div class="notion-popover-header">
-                          <span class="notion-filter-condition">Account is <span class="condition-chevron">▾</span></span>
+                          <div class="notion-filter-condition-wrap">
+                            <span class="notion-filter-field-label">Account</span>
+                            <div class="notion-operator-dropdown-wrap">
+                              <button type="button" class="notion-operator-btn" id="acct-operator-btn" aria-haspopup="true" aria-expanded="false" title="Change operator">
+                                <span id="acct-operator-text">is</span>
+                                <svg class="condition-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                              </button>
+                              <div class="notion-operator-menu hidden" id="acct-operator-menu" role="menu">
+                                <button type="button" class="notion-operator-option selected" id="acct-op-is" data-op="is" role="menuitem">Is</button>
+                                <button type="button" class="notion-operator-option" id="acct-op-is-not" data-op="is-not" role="menuitem">Is not</button>
+                              </div>
+                            </div>
+                          </div>
                           <div class="notion-popover-header-actions">
                             <button type="button" class="notion-popover-dots" id="acct-clear-btn" title="Clear account filter">Clear</button>
                             <button type="button" class="notion-popover-close-btn" data-close-popover aria-label="Done">Done</button>
@@ -291,7 +326,7 @@
                         </div>
                         <div class="notion-chip-box" id="acct-chip-box">
                           <div class="notion-chips-container" id="acct-chips"></div>
-                          <input type="text" class="notion-chip-input" id="acct-search-input" placeholder="Select one or more options..." autocomplete="off" spellcheck="false" />
+                          <input type="text" class="notion-chip-input" id="acct-search-input" placeholder="Type an account..." autocomplete="off" spellcheck="false" />
                           <button type="button" class="notion-chip-clear-all hidden" id="acct-clear-all-btn" title="Clear all">✕</button>
                         </div>
                         <div class="notion-popover-options" id="acct-options-list"></div>

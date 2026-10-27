@@ -5,7 +5,7 @@
 import { $, money, escapeHtml } from './utils.js';
 import { state, PALETTE, EXPENSE_PALETTE, INCOME_PALETTE, TRANSFER_PALETTE, MACRO_COLORS, setChartView } from './state.js';
 import { splitCategoryEmoji } from './categories.js';
-import { setTypeFilter, selectCategory } from './filters.js';
+import { setTypeFilter, selectCategory, toggleCategoryInclusion, handleChartCategoryClick } from './filters.js';
 
 export function renderMacroDonut(expenses, income, transfers, net) {
   const donut = $('donut');
@@ -143,8 +143,10 @@ export function getSliceColor(index, analysisType = 'expense', isOther = false) 
 
 export function renderDonut(totals, expenses, analysisType = 'expense') {
   const visible = totals.slice(0, 7);
-  const other = totals.slice(7).reduce((s, [, v]) => s + v, 0);
+  const tail = totals.slice(7);
+  const other = tail.reduce((s, [, v]) => s + v, 0);
   if (other) visible.push(['Other', other]);
+  const tailCategories = tail.map(([cat]) => cat);
 
   const donut = $('donut');
   if (!donut) return;
@@ -167,28 +169,96 @@ export function renderDonut(totals, expenses, analysisType = 'expense') {
   }
 
   let position = 0;
+  let nextSliceIndex = 0;
+  const isExcludeMode = state.categoryOperator === 'is-not' || state.categoryFilterMode === 'exclude';
+  const hasWhitelist = !isExcludeMode && state.selectedCategories && state.selectedCategories.size > 0;
+
   const slices = visible.map(([name, value], i) => {
-    const percent = expenses > 0 ? (value / expenses) * 100 : 0;
     const isOther = name.toLowerCase() === 'other';
+
+    let isExcluded = false;
+    let isUnselected = false;
+    let isActive = true;
+
+    if (isExcludeMode) {
+      isExcluded = isOther
+        ? Boolean(state.excludedCategories && (state.excludedCategories.has('Other') || (tailCategories.length > 0 && tailCategories.every(c => state.excludedCategories.has(c)))))
+        : Boolean(state.excludedCategories && state.excludedCategories.has(name));
+      isActive = !isExcluded;
+    } else if (hasWhitelist) {
+      const isSelected = isOther
+        ? Boolean(state.selectedCategories.has('Other') || (tailCategories.length > 0 && tailCategories.some(c => state.selectedCategories.has(c))))
+        : Boolean(state.selectedCategories.has(name));
+      isActive = isSelected;
+      isUnselected = !isSelected;
+    }
+
     const color = getSliceColor(i, analysisType, isOther);
-    const item = { name, value, percent, start: position, color, index: i };
-    position += percent;
-    return item;
+    let percent = 0;
+    let sliceIndex = -1;
+    let startPos = position;
+
+    if (isActive && expenses > 0) {
+      percent = (value / expenses) * 100;
+      sliceIndex = nextSliceIndex++;
+      position += percent;
+    }
+
+    return {
+      name,
+      value,
+      percent,
+      start: startPos,
+      color,
+      index: i,
+      sliceIndex,
+      isExcluded,
+      isUnselected,
+      isActive,
+      isOther
+    };
   });
 
-  donut.innerHTML = `<svg class="donut-svg" viewBox="0 0 100 100" aria-label="${analysisType === 'transfer' ? 'Transfer channels' : analysisType === 'income' ? 'Income categories' : 'Spending categories'}"><circle class="donut-ring" cx="50" cy="50" r="42" pathLength="100"></circle>${slices.map((item) => `<circle class="donut-slice" data-index="${item.index}" cx="50" cy="50" r="42" pathLength="100" stroke="${item.color}" stroke-dasharray="${item.percent} ${100 - item.percent}" stroke-dashoffset="${-item.start}"></circle>`).join('')}</svg><div class="donut-center"><strong id="donut-total" class="${typeColorClass}">${money(expenses, true)}</strong><span id="donut-caption">${caption}</span></div>`;
+  const includedSlices = slices.filter(item => item.isActive && item.percent > 0);
+
+  const slicesSvg = includedSlices.map((item) =>
+    `<circle class="donut-slice" data-index="${item.sliceIndex}" cx="50" cy="50" r="42" pathLength="100" stroke="${item.color}" stroke-dasharray="${item.percent} ${100 - item.percent}" stroke-dashoffset="${-item.start}"></circle>`
+  ).join('');
+
+  donut.innerHTML = `<svg class="donut-svg" viewBox="0 0 100 100" aria-label="${analysisType === 'transfer' ? 'Transfer channels' : analysisType === 'income' ? 'Income categories' : 'Spending categories'}"><circle class="donut-ring" cx="50" cy="50" r="42" pathLength="100"></circle>${slicesSvg}</svg><div class="donut-center"><strong id="donut-total" class="${typeColorClass}">${money(expenses, true)}</strong><span id="donut-caption">${caption}</span></div>`;
 
   if (legendEl) {
     legendEl.innerHTML = slices.map((item) => {
       const { emoji, text } = splitCategoryEmoji(item.name);
-      return `<button class="legend-item ${state.category === item.name ? 'focused' : ''}" data-index="${item.index}" ${item.name === 'Other' ? 'disabled' : ''} title="${escapeHtml(item.name)}">
+      let statusClass = '';
+      let actionTitle = '';
+      let pctText = '';
+
+      if (isExcludeMode) {
+        statusClass = item.isExcluded ? 'is-excluded' : '';
+        pctText = item.isExcluded ? '—' : `${Math.round(item.percent)}%`;
+        actionTitle = item.isExcluded
+          ? `Excluded. Click to include ${escapeHtml(item.name)}`
+          : `Click to exclude ${escapeHtml(item.name)}`;
+      } else if (hasWhitelist) {
+        statusClass = item.isActive ? 'is-selected-focus' : 'is-unselected';
+        pctText = item.isActive ? `${Math.round(item.percent)}%` : '—';
+        actionTitle = item.isActive
+          ? `Selected. Click to deselect ${escapeHtml(item.name)}`
+          : `Click to select ${escapeHtml(item.name)}`;
+      } else {
+        pctText = `${Math.round(item.percent)}%`;
+        actionTitle = `Click to focus on ${escapeHtml(item.name)}`;
+      }
+
+      return `<button type="button" class="legend-item ${statusClass}" data-index="${item.index}" data-name="${escapeHtml(item.name)}" title="${actionTitle}" aria-pressed="${item.isActive}">
         <div class="legend-item-left">
           <i class="legend-dot" style="background:${item.color}"></i>
           <span class="legend-emoji">${emoji}</span>
           <span class="legend-label">${escapeHtml(text)}</span>
         </div>
         <div class="legend-item-right">
-          <span class="legend-pct">${Math.round(item.percent)}%</span>
+          <span class="legend-pct">${pctText}</span>
           <span class="legend-sep">·</span>
           <span class="legend-amt">${money(item.value, true)}</span>
         </div>
@@ -198,7 +268,9 @@ export function renderDonut(totals, expenses, analysisType = 'expense') {
 
   const hover = (item) => {
     donut.classList.add('has-hover');
-    donut.querySelectorAll('.donut-slice').forEach(slice => slice.classList.toggle('hovered', Number(slice.dataset.index) === item.index));
+    donut.querySelectorAll('.donut-slice').forEach(slice => {
+      slice.classList.toggle('hovered', item.sliceIndex >= 0 && Number(slice.dataset.index) === item.sliceIndex);
+    });
     const { emoji, text } = splitCategoryEmoji(item.name);
     const t = $('donut-total');
     if (t) {
@@ -206,7 +278,15 @@ export function renderDonut(totals, expenses, analysisType = 'expense') {
       t.textContent = money(item.value, true);
     }
     const c = $('donut-caption');
-    if (c) c.innerHTML = `<span class="donut-cat-name">${emoji} ${escapeHtml(text)}</span><span class="donut-cat-pct">${Math.round(item.percent)}%</span>`;
+    if (c) {
+      if (item.isExcluded) {
+        c.innerHTML = `<span class="donut-cat-name">${emoji} ${escapeHtml(text)}</span><span class="donut-cat-pct">Excluded</span>`;
+      } else if (item.isUnselected) {
+        c.innerHTML = `<span class="donut-cat-name">${emoji} ${escapeHtml(text)}</span><span class="donut-cat-pct">Unselected</span>`;
+      } else {
+        c.innerHTML = `<span class="donut-cat-name">${emoji} ${escapeHtml(text)}</span><span class="donut-cat-pct">${Math.round(item.percent)}%</span>`;
+      }
+    }
   };
 
   const clearHover = () => {
@@ -222,20 +302,24 @@ export function renderDonut(totals, expenses, analysisType = 'expense') {
   };
 
   donut.querySelectorAll('.donut-slice').forEach(slice => {
-    const item = slices[Number(slice.dataset.index)];
-    slice.onmouseenter = () => hover(item);
-    slice.onmouseleave = clearHover;
-    slice.onclick = () => selectCategory(item.name);
+    const includedItem = includedSlices[Number(slice.dataset.index)];
+    if (includedItem) {
+      slice.onmouseenter = () => hover(includedItem);
+      slice.onmouseleave = clearHover;
+      slice.onclick = () => handleChartCategoryClick(includedItem.name);
+    }
   });
 
   if (legendEl) {
     legendEl.querySelectorAll('.legend-item').forEach(button => {
       const item = slices[Number(button.dataset.index)];
-      button.onmouseenter = () => hover(item);
-      button.onmouseleave = clearHover;
-      button.onfocus = () => hover(item);
-      button.onblur = clearHover;
-      button.onclick = () => selectCategory(item.name);
+      if (item) {
+        button.onmouseenter = () => hover(item);
+        button.onmouseleave = clearHover;
+        button.onfocus = () => hover(item);
+        button.onblur = clearHover;
+        button.onclick = () => handleChartCategoryClick(item.name);
+      }
     });
   }
 }

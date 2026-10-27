@@ -64,9 +64,15 @@ export const state = {
   period: 'monthly',
   anchor: null,
   category: 'all',
+  categoryFilterMode: 'include', // 'include' (Is) | 'exclude' (Is not)
+  categoryOperator: 'is', // 'is' | 'is-not'
   selectedCategories: new Set(),
+  excludedCategories: new Set(),
   account: 'all',
+  accountFilterMode: 'include', // 'include' (Is) | 'exclude' (Is not)
+  accountOperator: 'is', // 'is' | 'is-not'
   selectedAccounts: new Set(),
+  excludedAccounts: new Set(),
   type: 'all',
   search: '',
   sort: 'date-desc',

@@ -15,6 +15,7 @@ const moduleOrder = [
   'categories.js',
   'table.js',
   'filters.js',
+  'period-picker.js',
   'charts.js',
   'export.js',
   'settings.js',

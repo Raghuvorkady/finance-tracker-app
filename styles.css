@@ -853,6 +853,7 @@ body{
   pointer-events:none;
 }
 .period-label-wrap{
+  position:relative;
   display:inline-flex;
   align-items:center;
   min-width:0;
@@ -877,6 +878,274 @@ body{
 }
 [data-theme="notion"] .period-label:hover{
   background:#efeeeb;
+}
+.period-label:disabled,
+.period-label.disabled{
+  cursor:default;
+  pointer-events:none;
+}
+
+/* ── Floating Period Selector Popover ── */
+.period-popover{
+  position:absolute;
+  top:calc(100% + 6px);
+  left:0;
+  width:290px;
+  min-width:280px;
+  background:var(--card, #ffffff);
+  border:1px solid var(--line, #edece9);
+  border-radius:8px;
+  box-shadow:0 10px 28px rgba(15, 15, 15, 0.12), 0 2px 6px rgba(15, 15, 15, 0.04);
+  padding:8px 10px 10px;
+  z-index:1200;
+  box-sizing:border-box;
+}
+.period-popover-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:4px 2px 8px;
+  margin-bottom:8px;
+  border-bottom:1px solid var(--line, #edece9);
+}
+.period-popover-header-actions{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+}
+.period-picker-today-btn{
+  border:0;
+  background:transparent;
+  width:26px;
+  height:26px;
+  border-radius:4px;
+  color:var(--muted, #787774);
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:0;
+  transition:all 0.15s ease;
+}
+.period-picker-today-btn:hover{
+  background:rgba(55, 53, 47, 0.08);
+  color:var(--ink, #37352f);
+}
+[data-theme="notion"] .period-picker-today-btn:hover{
+  background:#efeeeb;
+  color:#37352f;
+}
+.period-picker-today-btn:disabled,
+.period-picker-today-btn.disabled{
+  opacity:0.25 !important;
+  cursor:not-allowed !important;
+  pointer-events:none !important;
+}
+.period-picker-nav{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+}
+.period-picker-nav .chevron{
+  width:24px;
+  height:24px;
+  padding:0;
+  border-radius:4px;
+}
+.period-picker-year-btn{
+  border:0;
+  background:transparent;
+  padding:3px 8px;
+  font-size:calc(19px * var(--font-scale, 1));
+  font-weight:800;
+  color:var(--ink, #37352f);
+  cursor:pointer;
+  border-radius:6px;
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  transition:background 0.15s ease;
+  font-family:inherit;
+  letter-spacing:-0.3px;
+  line-height:1.2;
+}
+.period-picker-year-btn:hover{
+  background:rgba(55, 53, 47, 0.08);
+}
+[data-theme="notion"] .period-picker-year-btn:hover{
+  background:#efeeeb;
+}
+.period-picker-year-static{
+  padding:3px 8px;
+  font-size:calc(19px * var(--font-scale, 1));
+  font-weight:800;
+  color:var(--ink, #37352f);
+  letter-spacing:-0.3px;
+  line-height:1.2;
+}
+.period-picker-title{
+  font-size:calc(16px * var(--font-scale, 1));
+  font-weight:700;
+  color:var(--ink, #37352f);
+  padding:3px 4px;
+  line-height:1.2;
+}
+.period-picker-caret{
+  width:12px;
+  height:12px;
+  opacity:0.65;
+  transition:opacity 0.15s ease;
+}
+.period-picker-year-btn:hover .period-picker-caret{
+  opacity:1;
+}
+.period-picker-back-btn{
+  border:0;
+  background:transparent;
+  font-size:calc(12.5px * var(--font-scale, 1));
+  font-weight:500;
+  color:var(--muted, #787774);
+  cursor:pointer;
+  padding:3px 6px;
+  border-radius:4px;
+  transition:color 0.15s ease, background 0.15s ease;
+  font-family:inherit;
+}
+.period-picker-back-btn:hover{
+  color:var(--ink, #37352f);
+  background:rgba(55, 53, 47, 0.06);
+}
+.period-picker-grid{
+  display:grid;
+  gap:4px;
+}
+.period-grid-months{
+  grid-template-columns:repeat(4, 1fr);
+}
+.period-grid-years{
+  grid-template-columns:repeat(3, 1fr);
+  max-height:240px;
+  overflow-y:auto;
+}
+.period-grid-quarters{
+  grid-template-columns:repeat(2, 1fr);
+  gap:6px;
+}
+.period-grid-fy{
+  grid-template-columns:repeat(2, 1fr);
+  gap:6px;
+}
+.period-grid-weeks{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  max-height:260px;
+  overflow-y:auto;
+}
+.period-week-btn{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:8px 10px;
+  border:1px solid var(--line, #edece9);
+  border-radius:6px;
+  text-align:left;
+  width:100%;
+}
+.period-week-btn:hover:not(:disabled){
+  background:rgba(55, 53, 47, 0.08);
+}
+[data-theme="notion"] .period-week-btn:hover:not(:disabled){
+  background:#efeeeb;
+}
+.period-week-btn.selected{
+  background:var(--accent, #37352f) !important;
+  color:#ffffff !important;
+  border-color:var(--accent, #37352f) !important;
+}
+.period-week-btn.selected .period-week-tag,
+.period-week-btn.selected .period-week-dates{
+  color:#ffffff !important;
+}
+.period-week-tag{
+  font-weight:700;
+  letter-spacing:-0.1px;
+}
+.period-week-dates{
+  font-size:calc(12px * var(--font-scale, 1));
+  color:var(--muted, #787774);
+  font-weight:500;
+}
+.period-week-btn.has-no-data,
+.period-week-btn:disabled{
+  opacity:0.32 !important;
+  color:var(--muted, #787774) !important;
+  cursor:not-allowed !important;
+  pointer-events:none !important;
+  background:transparent !important;
+  border-color:transparent !important;
+}
+.period-picker-btn{
+  border:1px solid transparent;
+  background:transparent;
+  color:var(--ink, #37352f);
+  font-size:calc(12.5px * var(--font-scale, 1));
+  font-weight:500;
+  border-radius:6px;
+  padding:8px 4px;
+  cursor:pointer;
+  text-align:center;
+  transition:all 0.15s ease;
+  font-family:inherit;
+  white-space:nowrap;
+}
+.period-picker-btn:hover:not(:disabled){
+  background:rgba(55, 53, 47, 0.08);
+}
+[data-theme="notion"] .period-picker-btn:hover:not(:disabled){
+  background:#efeeeb;
+}
+.period-picker-btn.selected{
+  background:var(--accent, #37352f) !important;
+  color:#ffffff !important;
+  font-weight:600;
+}
+.period-picker-btn.is-current:not(.selected){
+  border-color:var(--line, #edece9);
+  font-weight:600;
+}
+/* Option B: Greyed out and disabled / unclickable when no data */
+.period-picker-btn.has-no-data,
+.period-picker-btn:disabled{
+  opacity:0.32 !important;
+  color:var(--muted, #787774) !important;
+  cursor:not-allowed !important;
+  pointer-events:none !important;
+  background:transparent !important;
+}
+.period-quarter-btn{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:10px 6px;
+  border:1px solid var(--line, #edece9);
+}
+.period-quarter-btn strong{
+  font-size:calc(13px * var(--font-scale, 1));
+}
+.period-picker-sub{
+  font-size:calc(10.5px * var(--font-scale, 1));
+  color:var(--muted, #787774);
+  margin-top:2px;
+}
+.period-quarter-btn.selected .period-picker-sub{
+  color:rgba(255, 255, 255, 0.85);
+}
+.period-fy-btn{
+  padding:10px 6px;
+  border:1px solid var(--line, #edece9);
+  font-size:calc(12px * var(--font-scale, 1));
 }
 .segmented{
   background:var(--line);
@@ -1052,9 +1321,10 @@ select{
 
 .metric-tooltip {
   position: absolute;
-  bottom: calc(100% + 8px);
+  top: calc(100% + 8px);
+  bottom: auto;
   left: 0;
-  transform: translateY(4px);
+  transform: translateY(-4px);
   background: var(--card, #ffffff);
   color: var(--ink, #1e293b);
   border: 1px solid var(--line, #e2e8f0);
@@ -1082,23 +1352,25 @@ select{
 .metric-tooltip::after {
   content: '';
   position: absolute;
-  top: 100%;
+  bottom: 100%;
+  top: auto;
   left: 16px;
   border-width: 5px;
   border-style: solid;
-  border-color: var(--card, #ffffff) transparent transparent transparent;
+  border-color: transparent transparent var(--card, #ffffff) transparent;
 }
 .metric-tooltip::before {
   content: '';
   position: absolute;
-  top: 100%;
+  bottom: 100%;
+  top: auto;
   left: 15px;
   border-width: 6px;
   border-style: solid;
-  border-color: var(--line, #e2e8f0) transparent transparent transparent;
+  border-color: transparent transparent var(--line, #e2e8f0) transparent;
 }
 [data-theme="notion"] .metric-tooltip::before {
-  border-color: #edece9 transparent transparent transparent;
+  border-color: transparent transparent #edece9 transparent;
 }
 
 .metric-compare-wrap:hover .metric-tooltip,
@@ -1303,6 +1575,54 @@ select{
 }
 [data-theme="notion"] .legend-item.focused{
   background:#e9f3ec;
+}
+.legend-item.is-excluded{
+  opacity:0.42;
+  transition:all 0.15s ease;
+}
+.legend-item.is-excluded:hover{
+  opacity:0.8;
+  background:rgba(0,0,0,0.04);
+}
+[data-theme="notion"] .legend-item.is-excluded:hover{
+  background:#f1f0ef;
+}
+.legend-item.is-excluded .legend-dot{
+  filter:grayscale(100%);
+  opacity:0.4;
+}
+.legend-item.is-excluded .legend-label{
+  text-decoration:line-through;
+  color:var(--muted, #787774);
+}
+.legend-item.is-excluded .legend-pct{
+  color:var(--muted, #787774);
+}
+.legend-item.is-excluded .legend-amt{
+  color:var(--muted, #787774);
+  text-decoration:line-through;
+}
+.legend-item.is-unselected{
+  opacity:0.45;
+  transition:all 0.15s ease;
+}
+.legend-item.is-unselected:hover{
+  opacity:0.85;
+  background:rgba(0,0,0,0.04);
+}
+[data-theme="notion"] .legend-item.is-unselected:hover{
+  background:#f1f0ef;
+}
+.legend-item.is-unselected .legend-label{
+  color:var(--muted, #787774);
+}
+.legend-item.is-selected-focus{
+  background:rgba(35, 131, 226, 0.08);
+  border-radius:6px;
+  font-weight:600;
+}
+[data-theme="notion"] .legend-item.is-selected-focus{
+  background:#eef6fc;
 }
 .legend-item-left{
   display:flex;
@@ -1844,6 +2164,122 @@ select{
   color:#787774;
   font-size:calc(12.5px * var(--font-scale, 1));
   font-weight:400;
+}
+.notion-filter-condition-wrap{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+}
+.notion-filter-field-label{
+  color:var(--ink, #37352f);
+  font-size:calc(13px * var(--font-scale, 1));
+  font-weight:500;
+}
+.notion-operator-dropdown-wrap{
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+}
+.notion-operator-btn{
+  border:0;
+  background:rgba(55, 53, 47, 0.08);
+  padding:2px 7px;
+  font-size:calc(12.5px * var(--font-scale, 1));
+  font-weight:500;
+  border-radius:4px;
+  color:var(--ink, #37352f);
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  font-family:inherit;
+  line-height:1.3;
+  transition:background 0.12s ease, color 0.12s ease;
+}
+.notion-operator-btn:hover{
+  background:rgba(55, 53, 47, 0.14);
+}
+[data-theme="notion"] .notion-operator-btn{
+  background:#efeeeb;
+  color:#37352f;
+}
+[data-theme="notion"] .notion-operator-btn:hover{
+  background:#e3e2de;
+}
+.notion-operator-btn .condition-chevron{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--muted, #787774);
+  transition:transform 0.15s ease;
+}
+.notion-operator-btn[aria-expanded="true"] .condition-chevron{
+  transform:rotate(180deg);
+}
+.notion-operator-menu{
+  position:absolute;
+  top:calc(100% + 4px);
+  left:0;
+  z-index:150;
+  background:var(--card, #ffffff);
+  border-radius:8px;
+  box-shadow:0 4px 16px rgba(0, 0, 0, 0.14), 0 0 0 1px rgba(15, 15, 15, 0.08);
+  padding:4px;
+  min-width:105px;
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  animation:notionMenuPop 0.12s ease-out;
+}
+[data-theme="notion"] .notion-operator-menu{
+  background:#ffffff;
+  box-shadow:0 4px 16px rgba(15, 15, 15, 0.12), 0 0 0 1px #edece9;
+}
+@keyframes notionMenuPop{
+  from{ opacity:0; transform:translateY(-4px); }
+  to{ opacity:1; transform:translateY(0); }
+}
+.notion-operator-option{
+  border:2px solid transparent;
+  background:transparent;
+  padding:5px 9px;
+  font-size:calc(13px * var(--font-scale, 1));
+  font-weight:400;
+  font-family:inherit;
+  color:var(--ink, #37352f);
+  border-radius:6px;
+  cursor:pointer;
+  text-align:left;
+  width:100%;
+  line-height:1.25;
+  transition:background 0.12s ease, border-color 0.12s ease;
+}
+.notion-operator-option:hover:not(.selected){
+  background:rgba(55, 53, 47, 0.06);
+}
+.notion-operator-option.selected{
+  border-color:#2383e2;
+  background:rgba(35, 131, 226, 0.04);
+  color:var(--ink, #37352f);
+  font-weight:500;
+}
+[data-theme="notion"] .notion-operator-option.selected{
+  border-color:#2383e2;
+  background:#ffffff;
+}
+.notion-chip.is-excluded-chip{
+  background:rgba(235, 87, 87, 0.1) !important;
+  color:#eb5757 !important;
+  border-color:rgba(235, 87, 87, 0.25) !important;
+}
+[data-theme="notion"] .notion-chip.is-excluded-chip{
+  background:#fbe4e4 !important;
+  color:#d44c47 !important;
+}
+.notion-custom-check.is-not-check{
+  background:#eb5757;
+  border-color:#eb5757;
+  color:#ffffff;
 }
 .condition-chevron{
   font-size:9px;
@@ -3949,6 +4385,21 @@ td.account-cell{color:var(--muted);font-size:calc(12px * var(--font-scale, 1))}
     padding:12px 14px;
     font-size:14px;
     border-radius:8px;
+  }
+  .period-picker-btn{
+    padding:12px 4px;
+    font-size:14px;
+    min-height:44px;
+  }
+  .period-picker-year-btn,
+  .period-picker-year-static{
+    font-size:19px;
+    font-weight:800;
+    padding:4px 8px;
+  }
+  .period-picker-title{
+    font-size:16px;
+    font-weight:700;
   }
   .notion-chip-box{
     min-height:42px;
