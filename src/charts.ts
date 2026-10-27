@@ -23,6 +23,20 @@ import {
   ChartViewMode
 } from './types.js';
 
+export function describeArc(cx: number, cy: number, r: number, startPct: number, pct: number): string {
+  if (pct >= 99.999) {
+    return `M ${cx} ${cy - r} A ${r} ${r} 0 1 1 ${cx} ${cy + r} A ${r} ${r} 0 1 1 ${cx} ${cy - r}`;
+  }
+  const startAngle = (startPct / 100) * 2 * Math.PI - Math.PI / 2;
+  const endAngle = ((startPct + pct) / 100) * 2 * Math.PI - Math.PI / 2;
+  const x1 = cx + r * Math.cos(startAngle);
+  const y1 = cy + r * Math.sin(startAngle);
+  const x2 = cx + r * Math.cos(endAngle);
+  const y2 = cy + r * Math.sin(endAngle);
+  const largeArcFlag = pct > 50 ? 1 : 0;
+  return `M ${x1.toFixed(3)} ${y1.toFixed(3)} A ${r} ${r} 0 ${largeArcFlag} 1 ${x2.toFixed(3)} ${y2.toFixed(3)}`;
+}
+
 export function renderMacroDonut(expenses: number, income: number, transfers: number, net: number): void {
   const donut = $('donut');
   if (!donut) return;
@@ -82,7 +96,11 @@ export function renderMacroDonut(expenses: number, income: number, transfers: nu
     return slice;
   });
 
-  donut.innerHTML = `<svg class="donut-svg" viewBox="0 0 100 100" aria-label="Cashflow Overview"><circle class="donut-ring" cx="50" cy="50" r="42" pathLength="100"></circle>${slices.map((item) => `<circle class="donut-slice" data-index="${item.index}" data-type-key="${item.typeKey}" cx="50" cy="50" r="42" pathLength="100" stroke="${item.color}" stroke-dasharray="${item.percent} ${100 - item.percent}" stroke-dashoffset="${-item.start}"></circle>`).join('')}</svg><div class="donut-center"><strong id="donut-total" class="${netColorClass}">${defaultTotalFormatted}</strong><span id="donut-caption">${netCaption}</span></div>`;
+  const slicesSvg = slices.map((item) =>
+    `<path class="donut-slice" data-index="${item.index}" data-type-key="${item.typeKey}" d="${describeArc(50, 50, 42, item.start, item.percent)}" stroke="${item.color}"></path>`
+  ).join('');
+
+  donut.innerHTML = `<svg class="donut-svg" viewBox="0 0 100 100" aria-label="Cashflow Overview"><circle class="donut-ring" cx="50" cy="50" r="42"></circle>${slicesSvg}</svg><div class="donut-center"><strong id="donut-total" class="${netColorClass}">${defaultTotalFormatted}</strong><span id="donut-caption">${netCaption}</span></div>`;
 
   const legendEl = $('legend');
   if (legendEl) {
@@ -239,10 +257,10 @@ export function renderDonut(totals: [string, number][], expenses: number, analys
   const includedSlices = slices.filter(item => item.isActive && item.percent > 0);
 
   const slicesSvg = includedSlices.map((item) =>
-    `<circle class="donut-slice" data-index="${item.sliceIndex}" cx="50" cy="50" r="42" pathLength="100" stroke="${item.color}" stroke-dasharray="${item.percent} ${100 - item.percent}" stroke-dashoffset="${-item.start}"></circle>`
+    `<path class="donut-slice" data-index="${item.sliceIndex}" d="${describeArc(50, 50, 42, item.start, item.percent)}" stroke="${item.color}"></path>`
   ).join('');
 
-  donut.innerHTML = `<svg class="donut-svg" viewBox="0 0 100 100" aria-label="${analysisType === 'transfer' ? 'Transfer channels' : analysisType === 'income' ? 'Income categories' : 'Spending categories'}"><circle class="donut-ring" cx="50" cy="50" r="42" pathLength="100"></circle>${slicesSvg}</svg><div class="donut-center"><strong id="donut-total" class="${typeColorClass}">${money(expenses, true)}</strong><span id="donut-caption">${caption}</span></div>`;
+  donut.innerHTML = `<svg class="donut-svg" viewBox="0 0 100 100" aria-label="${analysisType === 'transfer' ? 'Transfer channels' : analysisType === 'income' ? 'Income categories' : 'Spending categories'}"><circle class="donut-ring" cx="50" cy="50" r="42"></circle>${slicesSvg}</svg><div class="donut-center"><strong id="donut-total" class="${typeColorClass}">${money(expenses, true)}</strong><span id="donut-caption">${caption}</span></div>`;
 
   if (legendEl) {
     legendEl.innerHTML = slices.map((item) => {

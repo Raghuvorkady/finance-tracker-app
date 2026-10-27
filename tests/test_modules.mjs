@@ -265,6 +265,27 @@ if (cTransfer0 !== '#6366f1') throw new Error('Expected vibrant indigo for trans
 if (!c15.startsWith('hsl(')) throw new Error('Expected dynamic HSL generation for index >= 10');
 console.log('✓ Color edge case handling verified successfully!');
 
+// ── Donut Chart describeArc SVG Precision Tests ──
+const { describeArc } = await import('../js/charts.js');
+const arc100 = describeArc(50, 50, 42, 0, 100);
+if (!arc100.includes('A 42 42 0 1 1 50 92') || !arc100.includes('A 42 42 0 1 1 50 8')) {
+  throw new Error('Expected 100% slice to render two full semicircles');
+}
+console.log('✓ describeArc 100% full circle verified:', arc100);
+
+const arc1 = describeArc(50, 50, 42, 0, 35);
+const arc2 = describeArc(50, 50, 42, 35, 65);
+const arc1End = arc1.split(' ').slice(-2).join(' ');
+const arc2Start = arc2.split(' ').slice(1, 3).join(' ');
+if (arc1End !== arc2Start) {
+  throw new Error(`Adjacent arc vertices must match: arc1End "${arc1End}" vs arc2Start "${arc2Start}"`);
+}
+console.log('✓ Adjacent arc vertices match seamlessly:', arc1End, '===', arc2Start);
+
+if (!arc1.includes(' 0 1 ')) throw new Error('Expected largeArcFlag 0 for 35% slice');
+if (!arc2.includes(' 1 1 ')) throw new Error('Expected largeArcFlag 1 for 65% slice');
+console.log('✓ largeArcFlag dynamically computed correctly based on percentage');
+
 // 10. Test money formatting (space after ₹ and no signs)
 const { money } = await import('../js/utils.js');
 const mPositive = money(51325.44);

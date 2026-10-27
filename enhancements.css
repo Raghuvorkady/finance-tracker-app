@@ -6,7 +6,7 @@
 .drill-anim{animation:drillPulse .52s cubic-bezier(.2,.8,.25,1)}
 .nav-item.pulse{animation:navPulse .5s ease}
 .donut{background:var(--paper)!important;overflow:visible}
-.donut-svg{width:100%;height:100%;overflow:visible;transform:rotate(-90deg)}
+.donut-svg{width:100%;height:100%;overflow:visible}
 .donut-ring{fill:none;stroke:var(--line);stroke-width:11}
 .donut-slice{fill:none;stroke-width:11;stroke-linecap:butt;cursor:pointer;transition:stroke-width .18s ease,filter .18s ease,opacity .18s ease;transform-origin:50% 50%}
 .donut-slice:hover,.donut-slice.hovered{stroke-width:14;filter:drop-shadow(0 2px 5px rgba(0,0,0,0.12))}
