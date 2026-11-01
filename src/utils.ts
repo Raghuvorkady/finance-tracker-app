@@ -131,8 +131,27 @@ export const money = (n: number | string, compact = false, currencyOverride?: st
 export const dateKey = (date: Date): number =>
   new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
 
-export function shortDate(d: Date): string {
-  return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+export function shortDate(d: Date, includeYear = false): string {
+  return d.toLocaleDateString('en-IN', {
+    day: 'numeric',
+    month: 'short',
+    ...(includeYear ? { year: 'numeric' } : {})
+  });
+}
+
+export function formatDateRange(start: Date, end: Date, alwaysShowBothYears = false): string {
+  const startYear = start.getFullYear();
+  const endYear = end.getFullYear();
+
+  if (startYear === endYear && start.getMonth() === end.getMonth() && start.getDate() === end.getDate()) {
+    return shortDate(start, true);
+  }
+
+  if (startYear !== endYear || alwaysShowBothYears) {
+    return `${shortDate(start, true)} – ${shortDate(end, true)}`;
+  }
+
+  return `${shortDate(start, false)} – ${shortDate(end, true)}`;
 }
 
 export function periodDays({ start, end }: { start: Date; end: Date }): number {

@@ -3,7 +3,7 @@
  */
 
 import { state } from './state.js';
-import { shortDate } from './utils.js';
+import { formatDateRange } from './utils.js';
 import { PeriodBounds, FilterTransactionType, PeriodType } from './types.js';
 
 let cachedDataRef: unknown = null;
@@ -112,13 +112,13 @@ export function bounds(): PeriodBounds {
     start.setHours(0, 0, 0, 0);
     const end = state.customEnd ? new Date(`${state.customEnd}T23:59:59.999`) : new Date(max);
     end.setHours(23, 59, 59, 999);
-    return { start, end, label: `${shortDate(start)} – ${shortDate(end)}` };
+    return { start, end, label: formatDateRange(start, end) };
   }
   if (state.period === 'weekly') {
     const day = (anchor.getDay() + 6) % 7;
     const start = new Date(anchor.getFullYear(), anchor.getMonth(), anchor.getDate() - day, 0, 0, 0, 0);
     const end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 6, 23, 59, 59, 999);
-    return { start, end, label: `${shortDate(start)} – ${shortDate(end)}` };
+    return { start, end, label: formatDateRange(start, end) };
   }
   if (state.period === 'monthly') {
     const start = new Date(anchor.getFullYear(), anchor.getMonth(), 1, 0, 0, 0, 0);
@@ -251,7 +251,7 @@ export function getPriorPeriodBounds(): PeriodBounds | null {
     const curStart = new Date(anchor.getFullYear(), anchor.getMonth(), anchor.getDate() - day, 0, 0, 0, 0);
     const start = new Date(curStart.getFullYear(), curStart.getMonth(), curStart.getDate() - 7, 0, 0, 0, 0);
     const end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 6, 23, 59, 59, 999);
-    return { start, end, label: `${shortDate(start)} – ${shortDate(end)}` };
+    return { start, end, label: formatDateRange(start, end) };
   }
 
   if (state.period === 'quarterly') {

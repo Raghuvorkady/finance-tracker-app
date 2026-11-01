@@ -3,7 +3,7 @@
  */
 
 import { state } from './state.js';
-import { $, shortDate } from './utils.js';
+import { $, formatDateRange } from './utils.js';
 import { getPeriodsDataPresence, getAvailableYears, bounds, getCalendarWeek } from './dates.js';
 import { closeAllPopovers } from './filters.js';
 
@@ -168,7 +168,7 @@ export function renderPeriodPicker(): void {
 
       const disabledAttr = hasData ? '' : 'disabled aria-disabled="true"';
       const cwStr = `CW${String(week.cw).padStart(2, '0')}`;
-      const rangeStr = `${shortDate(week.start)} – ${shortDate(week.end)}`;
+      const rangeStr = formatDateRange(week.start, week.end);
       const titleAttr = hasData
         ? `${cwStr} (${rangeStr})`
         : `No transactions in ${cwStr} (${rangeStr})`;

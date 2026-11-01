@@ -1192,4 +1192,98 @@ setActiveCurrency('INR');
 render();
 console.log('✓ Restored state back to INR cleanly');
 
+// ── Date Picker Year Display Tests ──
+console.log('\n--- Date Picker Year Display Tests ---');
+const { shortDate, formatDateRange } = await import('../js/utils.js');
+
+// 1. Test shortDate
+const d2026 = new Date(2026, 9, 15);
+const shortNoYear = shortDate(d2026, false);
+const shortWithYear = shortDate(d2026, true);
+console.log('✓ shortDate without year:', shortNoYear);
+console.log('✓ shortDate with year:', shortWithYear);
+if (shortNoYear.includes('2026')) throw new Error(`Expected shortDate(false) to not include year, got: ${shortNoYear}`);
+if (!shortWithYear.includes('2026')) throw new Error(`Expected shortDate(true) to include 2026, got: ${shortWithYear}`);
+
+// 2. Test formatDateRange
+const sameYearDiffMonth = formatDateRange(new Date(2026, 9, 27), new Date(2026, 10, 2));
+console.log('✓ formatDateRange same year different months:', sameYearDiffMonth);
+if (!sameYearDiffMonth.endsWith('2026') || sameYearDiffMonth.indexOf('2026') !== sameYearDiffMonth.lastIndexOf('2026')) {
+  throw new Error(`Expected single 2026 at end of same-year range, got: ${sameYearDiffMonth}`);
+}
+
+const sameYearSameMonth = formatDateRange(new Date(2026, 9, 12), new Date(2026, 9, 18));
+console.log('✓ formatDateRange same year same month:', sameYearSameMonth);
+if (!sameYearSameMonth.endsWith('2026')) {
+  throw new Error(`Expected 2026 at end of same-month range, got: ${sameYearSameMonth}`);
+}
+
+const crossYear = formatDateRange(new Date(2025, 11, 29), new Date(2026, 0, 4));
+console.log('✓ formatDateRange cross-year:', crossYear);
+if (!crossYear.includes('2025') || !crossYear.includes('2026')) {
+  throw new Error(`Expected cross-year range to include both 2025 and 2026, got: ${crossYear}`);
+}
+
+const singleDay = formatDateRange(new Date(2026, 9, 15), new Date(2026, 9, 15));
+console.log('✓ formatDateRange single day:', singleDay);
+if (!singleDay.includes('2026') || singleDay.includes('–')) {
+  throw new Error(`Expected single day without dash and with year, got: ${singleDay}`);
+}
+
+// 3. Test Weekly bounds().label and prior bounds
+state.period = 'weekly';
+state.anchor = new Date(2026, 9, 15); // Oct 15, 2026 -> Mon 12 Oct to Sun 18 Oct 2026
+const weekBounds = bounds();
+console.log('✓ Weekly bounds().label includes year:', weekBounds.label);
+if (!weekBounds.label.includes('2026')) {
+  throw new Error(`Expected weekly bounds label to include 2026, got: ${weekBounds.label}`);
+}
+
+const priorWeekBounds = getPriorPeriodBounds();
+console.log('✓ Prior weekly bounds().label includes year:', priorWeekBounds.label);
+if (!priorWeekBounds.label.includes('2026')) {
+  throw new Error(`Expected prior weekly bounds label to include 2026, got: ${priorWeekBounds.label}`);
+}
+
+// 4. Test Weekly Popover Week Buttons contain Year
+pop.classList.add('hidden');
+togglePeriodPicker();
+const weekButtonsHtml = pop.innerHTML;
+console.log('✓ Week picker button text includes year (2026):', weekButtonsHtml.includes('2026'));
+if (!weekButtonsHtml.includes('2026')) {
+  throw new Error('Expected week picker popover buttons to display 4-digit year');
+}
+closeAllPopovers();
+
+// 5. Test Custom bounds().label
+state.period = 'custom';
+state.customStart = '2026-01-01';
+state.customEnd = '2026-12-31';
+const customBounds = bounds();
+console.log('✓ Custom bounds().label includes year:', customBounds.label);
+if (!customBounds.label.includes('2026')) {
+  throw new Error(`Expected custom bounds label to include 2026, got: ${customBounds.label}`);
+}
+
+state.customStart = '2025-06-01';
+state.customEnd = '2026-03-31';
+const customCrossYearBounds = bounds();
+console.log('✓ Custom cross-year bounds().label includes both years:', customCrossYearBounds.label);
+if (!customCrossYearBounds.label.includes('2025') || !customCrossYearBounds.label.includes('2026')) {
+  throw new Error(`Expected custom cross-year bounds label to include both 2025 and 2026, got: ${customCrossYearBounds.label}`);
+}
+
+state.customStart = '2026-10-15';
+state.customEnd = '2026-10-15';
+const customSingleDayBounds = bounds();
+console.log('✓ Custom single day bounds().label format:', customSingleDayBounds.label);
+if (!customSingleDayBounds.label.includes('2026') || customSingleDayBounds.label.includes('–')) {
+  throw new Error(`Expected custom single day label to include year without dash, got: ${customSingleDayBounds.label}`);
+}
+
+// Reset state
+state.period = 'monthly';
+state.anchor = new Date(2026, 9, 15);
+render();
+
 console.log('\nAll refactored module tests PASSED successfully!');

@@ -62,6 +62,12 @@ export function render(): void {
   // Header period labels & navigation controls
   const periodLabel = $<HTMLButtonElement>('period-label');
   if (periodLabel) periodLabel.textContent = range.label;
+  if (state.period === 'custom') {
+    const startEl = $<HTMLInputElement>('custom-start');
+    if (startEl && state.customStart && startEl.value !== state.customStart) startEl.value = state.customStart;
+    const endEl = $<HTMLInputElement>('custom-end');
+    if (endEl && state.customEnd && endEl.value !== state.customEnd) endEl.value = state.customEnd;
+  }
   const isNavigable = state.period !== 'all' && state.period !== 'custom';
   if (periodLabel) {
     periodLabel.disabled = !isNavigable;
@@ -257,6 +263,18 @@ function initEventListeners(): void {
         state.period = nextPeriod;
         document.querySelectorAll<HTMLElement>('[data-period]').forEach(b => b.classList.toggle('selected', b === btn));
         $('custom-dates')?.classList.toggle('hidden', state.period !== 'custom');
+        if (state.period === 'custom') {
+          if (!state.customStart && state.data.length) {
+            state.customStart = state.data.reduce((a, r) => a < r.date ? a : r.date, state.data[0].date).toISOString().slice(0, 10);
+          }
+          if (!state.customEnd && state.data.length) {
+            state.customEnd = (state.anchor || new Date()).toISOString().slice(0, 10);
+          }
+          const startEl = $<HTMLInputElement>('custom-start');
+          if (startEl && state.customStart) startEl.value = state.customStart;
+          const endEl = $<HTMLInputElement>('custom-end');
+          if (endEl && state.customEnd) endEl.value = state.customEnd;
+        }
         
         showLoading(state.period === 'all' ? 'Loading all activity...' : `Loading ${state.period}...`);
         requestAnimationFrame(() => {

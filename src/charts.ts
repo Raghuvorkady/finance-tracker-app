@@ -426,7 +426,7 @@ export function aggregateTimeSeries(rows: Transaction[] = [], range: PeriodBound
       const bStart = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate() + i, 0, 0, 0, 0);
       const bEnd = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate() + i, 23, 59, 59, 999);
       const label = bStart.toLocaleDateString('en-IN', { weekday: 'short' });
-      const dateLabel = bStart.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
+      const dateLabel = bStart.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
       buckets.push(makeBucket(i, label, dateLabel, bStart, bEnd));
     }
   } else if (period === 'monthly') {
@@ -477,7 +477,7 @@ export function aggregateTimeSeries(rows: Transaction[] = [], range: PeriodBound
         const bStart = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate() + i, 0, 0, 0, 0);
         const bEnd = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate() + i, 23, 59, 59, 999);
         const label = bStart.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
-        const dateLabel = bStart.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
+        const dateLabel = bStart.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
         buckets.push(makeBucket(i, label, dateLabel, bStart, bEnd));
       }
     } else if (totalDays <= 180) {
@@ -489,7 +489,7 @@ export function aggregateTimeSeries(rows: Transaction[] = [], range: PeriodBound
         const bEnd = new Date(cur.getTime() + 7 * 86400000 - 1);
         if (bEnd > endDate) bEnd.setTime(endDate.getTime());
         const label = bStart.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
-        const dateLabel = `Week of ${label}`;
+        const dateLabel = `Week of ${bStart.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}`;
         buckets.push(makeBucket(idx++, label, dateLabel, bStart, bEnd));
         cur = new Date(cur.getTime() + 7 * 86400000);
       }
