@@ -2,6 +2,7 @@
  * Ledgerly Finance Tracker - Application Entrypoint & Coordinator
  */
 
+import { inject } from '@vercel/analytics';
 import { state } from './state.js';
 import { $, money, periodDays, toast, showLoading, hideLoading, setActiveCurrency } from './utils.js';
 import { normalizeRows, detectDatasetCurrency } from './parser.js';
@@ -397,6 +398,11 @@ function initEventListeners(): void {
 
 // ── Application Initialization ──
 (function bootstrap() {
+  // Initialize Vercel Web Analytics (only in browser environment)
+  if (typeof document !== 'undefined' && document.head) {
+    inject();
+  }
+  
   registerRenderCallback(render);
   registerPeriodPickerRenderCallback(() => {
     resetTableDisplayLimit();
