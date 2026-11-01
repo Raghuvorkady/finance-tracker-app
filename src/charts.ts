@@ -612,7 +612,7 @@ export function renderLineChart(rows: Transaction[], range: PeriodBounds | null,
       </div>
       <div class="trend-stat-chip">
         <span class="trend-stat-label">${peakTitle}</span>
-        <strong class="trend-stat-value ${isIncome ? 'amount-income' : 'amount-expense'}">${peakAmt > 0 ? money(peakAmt, true) : '₹ 0'}</strong>
+        <strong class="trend-stat-value ${isIncome ? 'amount-income' : 'amount-expense'}">${money(peakAmt, true)}</strong>
         <span class="trend-stat-sub">${peakAmt > 0 && peakVal ? escapeHtml(peakVal.label) : '—'}</span>
       </div>
       <div class="trend-stat-chip">

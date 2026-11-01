@@ -89,7 +89,9 @@ export const state: AppState = {
   activeTab: 'transactions',
   chartView: loadSavedChartView(),
   columnOrder: loadSavedColumnOrder(),
-  hiddenColumns: loadSavedHiddenColumns()
+  hiddenColumns: loadSavedHiddenColumns(),
+  currency: 'INR',
+  currencySymbol: '₹'
 };
 
 export function setChartView(view: string): void {

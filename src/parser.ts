@@ -2,8 +2,8 @@
  * Excel Parsing & Transaction Normalization
  */
 
-import { cleanText } from './utils.js';
-import { Transaction, TransactionType } from './types.js';
+import { cleanText, resolveCurrency } from './utils.js';
+import { Transaction, TransactionType, CurrencyInfo } from './types.js';
 
 export function findColumn(headers: unknown[], choices: string[]): string | undefined {
   const clean = headers.map(h => String(h ?? '').trim().toLowerCase());
@@ -73,6 +73,14 @@ export function normalizeRows(rows: unknown[][]): Transaction[] {
   const amountCol = findColumn(headers, ['amount', 'inr', 'value', 'money', 'expense/income']);
   const accountCol = findColumn(headers, ['accounts', 'account', 'wallet', 'bank']);
   const noteCol = findColumn(headers, ['note', 'notes', 'memo']);
+  const currencyCol = findColumn(headers, [
+    'currency',
+    'cur.',
+    'curr',
+    'currency code',
+    'currency symbol',
+    'currency name'
+  ]);
   const descriptionCol = headers.find((h) => {
     const text = String(h ?? '').trim().toLowerCase();
     return (text.includes('description') || text.includes('payee') || text.includes('narrative') ||
@@ -82,6 +90,16 @@ export function normalizeRows(rows: unknown[][]): Transaction[] {
 
   if (!dateCol || !categoryCol || !amountCol) {
     throw new Error('Expected Period/Date, Category, and Amount or INR columns.');
+  }
+
+  // Fallback detection from amount column header if currency column is not present
+  let headerFallbackCurrency: string | undefined;
+  if (!currencyCol && amountCol) {
+    const match = amountCol.match(/\b(USD|EUR|GBP|INR|JPY|CAD|AUD|SGD|AED|CHF|CNY)\b/i) ||
+                  amountCol.match(/([$€£₹¥])/);
+    if (match) {
+      headerFallbackCurrency = match[1];
+    }
   }
 
   const col = (name?: string) => name ? headers.indexOf(name) : -1;
@@ -103,6 +121,9 @@ export function normalizeRows(rows: unknown[][]): Transaction[] {
     const finalNote = note || (description ? description : '—');
     const finalDesc = description && description !== finalNote ? description : '';
 
+    const rawCurrency = currencyCol ? cleanText(row[col(currencyCol)]) : (headerFallbackCurrency || '');
+    const resolvedCur = resolveCurrency(rawCurrency || 'INR');
+
     validTransactions.push({
       id: i,
       date,
@@ -111,9 +132,31 @@ export function normalizeRows(rows: unknown[][]): Transaction[] {
       amount,
       account: accountCol ? (cleanText(row[col(accountCol)]) || '—') : '—',
       note: finalNote,
-      description: finalDesc
+      description: finalDesc,
+      currency: resolvedCur.code,
+      currencySymbol: resolvedCur.symbol
     });
   });
 
   return validTransactions;
+}
+
+export function detectDatasetCurrency(transactions: Transaction[]): CurrencyInfo {
+  if (!transactions || transactions.length === 0) {
+    return { code: 'INR', symbol: '₹' };
+  }
+  const counts = new Map<string, number>();
+  for (const t of transactions) {
+    const code = t.currency || 'INR';
+    counts.set(code, (counts.get(code) || 0) + 1);
+  }
+  let maxCode = 'INR';
+  let maxCount = 0;
+  for (const [code, count] of counts.entries()) {
+    if (count > maxCount) {
+      maxCount = count;
+      maxCode = code;
+    }
+  }
+  return resolveCurrency(maxCode);
 }

@@ -5,3 +5,6 @@ dist/
 app.js
 node_modules/
 js/
+samples/
+*.xlsx
+*.xls

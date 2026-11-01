@@ -21,6 +21,11 @@ export interface ColumnDefinition {
   align: 'left' | 'right' | 'center';
 }
 
+export interface CurrencyInfo {
+  code: string;
+  symbol: string;
+}
+
 export interface Transaction {
   id: number;
   date: Date;
@@ -30,6 +35,8 @@ export interface Transaction {
   account: string;
   note: string;
   description: string;
+  currency?: string;
+  currencySymbol?: string;
 }
 
 export interface PeriodBounds {
@@ -70,6 +77,8 @@ export interface AppState {
   chartView: ChartViewMode;
   columnOrder: ColumnId[];
   hiddenColumns: Set<ColumnId>;
+  currency: string;
+  currencySymbol: string;
 }
 
 export interface MacroStream {

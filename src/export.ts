@@ -15,17 +15,27 @@ export function downloadCsv(all = false): void {
     toast('No transactions to export.');
     return;
   }
+  const hasCurrency = rows.some(r => r.currency);
+  const header = hasCurrency
+    ? 'Date,Category,Note,Description,Account,Type,Amount,Currency'
+    : 'Date,Category,Note,Description,Account,Type,Amount';
   const csv = [
-    'Date,Category,Note,Description,Account,Type,Amount',
-    ...rows.map(r => [
-      r.date.toISOString().slice(0, 10),
-      r.category,
-      r.note,
-      r.description || '',
-      r.account,
-      r.type,
-      r.amount
-    ].map(v => `"${String(v).replaceAll('"', '""')}"`).join(','))
+    header,
+    ...rows.map(r => {
+      const cols: unknown[] = [
+        r.date.toISOString().slice(0, 10),
+        r.category,
+        r.note,
+        r.description || '',
+        r.account,
+        r.type,
+        r.amount
+      ];
+      if (hasCurrency) {
+        cols.push(r.currency || state.currency || 'INR');
+      }
+      return cols.map(v => `"${String(v).replaceAll('"', '""')}"`).join(',');
+    })
   ].join('\n');
   const filename = all ? 'ledgerly-all-transactions.csv' : 'ledgerly-filtered-transactions.csv';
   const a = document.createElement('a');

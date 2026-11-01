@@ -10,7 +10,7 @@
 - 🔒 **100% Client-Side Privacy:** All Excel parsing and aggregations run entirely in your local browser using client-side Web APIs and SheetJS. Zero financial data is ever transmitted to a server or third party.
 - 📘 **Strict TypeScript Architecture:** Author with complete type safety in `src/*.ts`. Zero runtime dependencies in the browser — `tsc` compiles clean, unbundled ES2022 modules.
 - 📱 **Responsive & Mobile-Ready:** Clean Notion-inspired design system with dedicated mobile card views, touch-friendly slide-up bottom sheets, and full-width search.
-- 🇮🇳 **Indian Financial Standard & INR Native:** Built-in Indian Rupee (`₹`) currency formatting with Lakhs/Crores grouping and Indian Financial Year (`FY`: April 1 – March 31) navigation.
+- 💱 **Dynamic Currency Detection:** Automatically detects currency symbols (`$`, `€`, `£`, `₹`, `¥`, etc.) based on the `Currency` column from your Excel export.
 - 🎛️ **Notion-Style Property Customization:** Reorder and toggle table columns (Shown vs. Hidden) with search, drag-and-drop, and clean SVG controls.
 - 📊 **Interactive SVG Visualizations:** Pure SVG donut charts for macro cashflow streams and category breakdowns with dynamic palettes and hover drill-downs.
 
@@ -109,7 +109,11 @@ Ledgerly is built to ingest standard personal finance exports, notably from the 
 | **Amount** | `Amount`, `Total`, `Value`, `INR`, `Debit`, `Credit` |
 | **Type** | `Income/Expense`, `Type`, `Transaction Type`, `Flow` |
 | **Account** | `Account`, `Payment Method`, `Source`, `Wallet` |
+| **Currency** | `Currency`, `Cur.`, `Currency Code`, `Currency Symbol`, `Curr` |
 | **Note / Description** | `Note`, `Description`, `Memo`, `Remarks` |
+
+> [!NOTE]
+> **Single Currency Standard:** Multiple/mixed currency support is not available. The dashboard automatically picks up the currency symbol (e.g. `$`, `€`, `£`, `₹`) from your Excel sheet's `Currency` column (defaulting to `INR` / `₹` if omitted). All transactions in an imported workbook should be in the same currency, as automatic exchange rate conversion between mixed currencies is not supported.
 
 ---
 

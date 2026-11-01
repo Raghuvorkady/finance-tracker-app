@@ -1046,4 +1046,150 @@ if (document.getElementById('chart-operator-text').textContent !== 'is') {
   throw new Error('Expected chart-operator-text to be "is"');
 }
 
+// ── 16. Dynamic Currency Detection & Multi-Currency Tests ──
+console.log('\n--- Currency Detection Tests ---');
+const { resolveCurrency, setActiveCurrency, getActiveCurrency } = await import('../js/utils.js');
+const { detectDatasetCurrency } = await import('../js/parser.js');
+
+// Test resolveCurrency mappings
+const usdInfo = resolveCurrency('USD');
+if (usdInfo.code !== 'USD' || usdInfo.symbol !== '$') throw new Error('Expected USD to resolve to code USD and symbol $');
+console.log('✓ resolveCurrency("USD"):', usdInfo);
+
+const dollarInfo = resolveCurrency('$');
+if (dollarInfo.code !== 'USD' || dollarInfo.symbol !== '$') throw new Error('Expected $ to resolve to code USD and symbol $');
+console.log('✓ resolveCurrency("$"):', dollarInfo);
+
+const eurInfo = resolveCurrency('EUR');
+if (eurInfo.code !== 'EUR' || eurInfo.symbol !== '€') throw new Error('Expected EUR to resolve to code EUR and symbol €');
+console.log('✓ resolveCurrency("EUR"):', eurInfo);
+
+const euroSymInfo = resolveCurrency('€');
+if (euroSymInfo.code !== 'EUR' || euroSymInfo.symbol !== '€') throw new Error('Expected € to resolve to code EUR and symbol €');
+console.log('✓ resolveCurrency("€"):', euroSymInfo);
+
+const gbpInfo = resolveCurrency('GBP');
+if (gbpInfo.code !== 'GBP' || gbpInfo.symbol !== '£') throw new Error('Expected GBP to resolve to code GBP and symbol £');
+console.log('✓ resolveCurrency("GBP"):', gbpInfo);
+
+const poundSymInfo = resolveCurrency('£');
+if (poundSymInfo.code !== 'GBP' || poundSymInfo.symbol !== '£') throw new Error('Expected £ to resolve to code GBP and symbol £');
+console.log('✓ resolveCurrency("£"):', poundSymInfo);
+
+const inrInfo = resolveCurrency('INR');
+if (inrInfo.code !== 'INR' || inrInfo.symbol !== '₹') throw new Error('Expected INR to resolve to code INR and symbol ₹');
+console.log('✓ resolveCurrency("INR"):', inrInfo);
+
+const rsInfo = resolveCurrency('Rs.');
+if (rsInfo.code !== 'INR' || rsInfo.symbol !== '₹') throw new Error('Expected Rs. to resolve to code INR and symbol ₹');
+console.log('✓ resolveCurrency("Rs."):', rsInfo);
+
+const aedInfo = resolveCurrency('AED');
+if (aedInfo.code !== 'AED' || aedInfo.symbol !== 'AED') throw new Error('Expected AED to resolve to AED');
+console.log('✓ resolveCurrency("AED"):', aedInfo);
+
+const emptyCurInfo = resolveCurrency('');
+if (emptyCurInfo.code !== 'INR' || emptyCurInfo.symbol !== '₹') throw new Error('Expected empty currency to default to INR');
+console.log('✓ resolveCurrency("") defaults to INR/₹:', emptyCurInfo);
+
+// Test setActiveCurrency and money() dynamic formatting
+setActiveCurrency('USD');
+const mUsd = money(1250.75);
+console.log('✓ money(1250.75) with USD active:', JSON.stringify(mUsd));
+if (!mUsd.startsWith('$\u00A01,250.75')) throw new Error('Expected $ 1,250.75');
+
+const mUsdCompact = money(95000, true);
+console.log('✓ money(95000, true) with USD active:', JSON.stringify(mUsdCompact));
+if (!mUsdCompact.startsWith('$\u00A0')) throw new Error('Expected $ compact notation');
+
+setActiveCurrency('EUR');
+const mEur = money(3400);
+console.log('✓ money(3400) with EUR active:', JSON.stringify(mEur));
+if (!mEur.startsWith('€\u00A03,400.00')) throw new Error('Expected € 3,400.00');
+
+// Test per-call currency override
+const mOverride = money(500, false, 'GBP');
+console.log('✓ money(500, false, "GBP") override:', JSON.stringify(mOverride));
+if (!mOverride.startsWith('£\u00A0500.00')) throw new Error('Expected £ 500.00');
+
+// Reset to INR
+setActiveCurrency('INR');
+if (getActiveCurrency().code !== 'INR') throw new Error('Expected active currency to reset to INR');
+console.log('✓ Active currency reset to INR successfully');
+
+// Test normalizeRows with Currency column
+const usdExcelRows = [
+  ['Date', 'Category', 'Currency', 'Amount', 'Type', 'Account', 'Note'],
+  ['15/10/2026', 'Hosting', 'USD', '150', 'Expense', 'Chase', 'AWS Server'],
+  ['16/10/2026', 'Salary', 'USD', '8000', 'Income', 'Chase', 'Monthly Salary'],
+  ['17/10/2026', 'Domains', 'USD', '25', 'Expense', 'Chase', 'Namecheap']
+];
+const parsedUsd = normalizeRows(usdExcelRows);
+if (parsedUsd.length !== 3) throw new Error('Expected 3 parsed USD transactions');
+if (parsedUsd[0].currency !== 'USD' || parsedUsd[0].currencySymbol !== '$') {
+  throw new Error('Expected first transaction to have currency USD and symbol $');
+}
+console.log('✓ normalizeRows parsed Currency column (USD):', parsedUsd[0].currency, parsedUsd[0].currencySymbol);
+
+// Test detectDatasetCurrency
+const detectedUsd = detectDatasetCurrency(parsedUsd);
+if (detectedUsd.code !== 'USD' || detectedUsd.symbol !== '$') throw new Error('Expected detectDatasetCurrency to return USD / $');
+console.log('✓ detectDatasetCurrency returned USD / $:', detectedUsd);
+
+// Test normalizeRows with Cur. symbol column
+const symExcelRows = [
+  ['Date', 'Category', 'Cur.', 'Amount', 'Type', 'Account', 'Note'],
+  ['15/10/2026', 'Software', '€', '89', 'Expense', 'Revolut', 'Figma']
+];
+const parsedSym = normalizeRows(symExcelRows);
+if (parsedSym[0].currency !== 'EUR' || parsedSym[0].symbol !== '€' && parsedSym[0].currencySymbol !== '€') {
+  throw new Error('Expected transaction to resolve € to EUR/€');
+}
+console.log('✓ normalizeRows parsed Cur. symbol (€):', parsedSym[0].currency, parsedSym[0].currencySymbol);
+
+// Test Amount header fallback (e.g. Amount (GBP))
+const fallbackExcelRows = [
+  ['Date', 'Category', 'Amount (GBP)', 'Type', 'Account', 'Note'],
+  ['15/10/2026', 'Consulting', '500', 'Income', 'Barclays', 'Invoice']
+];
+const parsedFallback = normalizeRows(fallbackExcelRows);
+if (parsedFallback[0].currency !== 'GBP' || parsedFallback[0].currencySymbol !== '£') {
+  throw new Error('Expected Amount (GBP) fallback to resolve to GBP/£');
+}
+console.log('✓ normalizeRows fallback to Amount (GBP) header:', parsedFallback[0].currency, parsedFallback[0].currencySymbol);
+
+// Test End-to-end Dashboard render() with USD data
+state.data = parsedUsd;
+state.currency = detectedUsd.code;
+state.currencySymbol = detectedUsd.symbol;
+state.period = 'monthly';
+state.type = 'all';
+render();
+
+const spentEl = document.getElementById('spent-value');
+console.log('✓ Dashboard KPI spent value formatted with USD ($):', JSON.stringify(spentEl.textContent));
+if (!spentEl.textContent.includes('$')) {
+  throw new Error(`Expected KPI spent value to include $, got: ${spentEl.textContent}`);
+}
+
+const incomeEl = document.getElementById('income-value');
+console.log('✓ Dashboard KPI income value formatted with USD ($):', JSON.stringify(incomeEl.textContent));
+if (!incomeEl.textContent.includes('$')) {
+  throw new Error(`Expected KPI income value to include $, got: ${incomeEl.textContent}`);
+}
+
+const donutCenter = document.getElementById('donut').innerHTML;
+console.log('✓ Donut chart center contains $: ', donutCenter.includes('$'));
+if (!donutCenter.includes('$')) {
+  throw new Error('Expected Donut chart to display $');
+}
+
+// Restore state back to original test dataset and INR
+state.data = normalizeRows(rawExcelRows);
+state.currency = 'INR';
+state.currencySymbol = '₹';
+setActiveCurrency('INR');
+render();
+console.log('✓ Restored state back to INR cleanly');
+
 console.log('\nAll refactored module tests PASSED successfully!');

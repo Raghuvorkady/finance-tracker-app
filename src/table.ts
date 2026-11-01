@@ -326,7 +326,7 @@ export function renderTable(rows: Transaction[]): void {
             : `<td>${escapeHtml(r.account)}</td>`;
         }
         if (colId === 'amount') {
-          return `<td class="align-right ${amountClass}">${money(r.amount)}</td>`;
+          return `<td class="align-right ${amountClass}">${money(r.amount, false, r.currency)}</td>`;
         }
         return `<td></td>`;
       }).join('');
@@ -405,7 +405,7 @@ export function renderTable(rows: Transaction[]): void {
             </div>
           </div>
           <div class="tx-right">
-            <div class="tx-amount ${amountClass}">${money(r.amount)}</div>
+            <div class="tx-amount ${amountClass}">${money(r.amount, false, r.currency)}</div>
           </div>
         </div>`;
     }).join('');

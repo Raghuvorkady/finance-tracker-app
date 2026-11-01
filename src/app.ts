@@ -3,8 +3,8 @@
  */
 
 import { state } from './state.js';
-import { $, money, periodDays, toast, showLoading, hideLoading } from './utils.js';
-import { normalizeRows } from './parser.js';
+import { $, money, periodDays, toast, showLoading, hideLoading, setActiveCurrency } from './utils.js';
+import { normalizeRows, detectDatasetCurrency } from './parser.js';
 import {
   bounds,
   movePeriod,
@@ -41,6 +41,9 @@ import {
 import { PeriodType } from './types.js';
 
 export function render(): void {
+  if (state.currency) {
+    setActiveCurrency(state.currency);
+  }
   populateCategories();
   populateAccounts();
   syncSortPill();
@@ -209,6 +212,11 @@ function initEventListeners(): void {
         const rows = window.XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
         state.data = normalizeRows(rows);
         if (!state.data.length) throw new Error('No usable transactions were found.');
+
+        const detectedCur = detectDatasetCurrency(state.data);
+        state.currency = detectedCur.code;
+        state.currencySymbol = detectedCur.symbol;
+        setActiveCurrency(detectedCur.code);
 
         state.anchor = new Date(Math.max(...state.data.map(r => +r.date)));
         state.customStart = state.data.reduce((a, r) => a < r.date ? a : r.date, state.data[0].date).toISOString().slice(0, 10);
