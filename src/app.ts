@@ -5,6 +5,7 @@
 import { state } from './state.js';
 import { $, money, periodDays, toast, showLoading, hideLoading, setActiveCurrency } from './utils.js';
 import { normalizeRows, detectDatasetCurrency } from './parser.js';
+import { saveTransactions, loadTransactions, clearTransactions } from './cache.js';
 import {
   bounds,
   movePeriod,
@@ -224,6 +225,15 @@ function initEventListeners(): void {
         state.currencySymbol = detectedCur.symbol;
         setActiveCurrency(detectedCur.code);
 
+        // Persist to IndexedDB (fire-and-forget — never blocks the UI)
+        saveTransactions(state.data, {
+          fileName: file.name,
+          rowCount: state.data.length,
+          currency: detectedCur.code,
+          currencySymbol: detectedCur.symbol,
+          savedAt: Date.now()
+        }).catch(() => {});
+
         state.anchor = new Date(Math.max(...state.data.map(r => +r.date)));
         state.customStart = state.data.reduce((a, r) => a < r.date ? a : r.date, state.data[0].date).toISOString().slice(0, 10);
         state.customEnd = state.anchor.toISOString().slice(0, 10);
@@ -346,6 +356,8 @@ function initEventListeners(): void {
       state.category = 'all';
       state.account = 'all';
 
+      clearTransactions().catch(() => {}); // wipe IndexedDB cache
+
       $('dashboard')?.classList.add('hidden');
       $('app-topbar')?.classList.add('hidden');
       $('bottom-nav')?.classList.add('hidden');
@@ -419,4 +431,62 @@ function initEventListeners(): void {
   initExportListeners();
   initChartViewToggle(render);
   initEventListeners();
+
+  // ── Restore cached transaction dataset from IndexedDB ──
+  // Show the loading indicator immediately so the empty-state never flashes
+  // before the async IDB read completes.
+  showLoading('Restoring session...');
+
+  loadTransactions().then(cached => {
+    if (!cached || !cached.transactions.length) {
+      // No cache — reveal the upload prompt cleanly
+      hideLoading();
+      return;
+    }
+
+    state.data = cached.transactions;
+    state.currency = cached.meta.currency;
+    state.currencySymbol = cached.meta.currencySymbol;
+    setActiveCurrency(cached.meta.currency);
+
+    state.anchor = new Date(Math.max(...state.data.map(r => +r.date)));
+    state.customStart = state.data
+      .reduce((a, r) => a < r.date ? a : r.date, state.data[0].date)
+      .toISOString().slice(0, 10);
+    state.customEnd = state.anchor.toISOString().slice(0, 10);
+
+    const customStartEl = $<HTMLInputElement>('custom-start');
+    if (customStartEl) customStartEl.value = state.customStart;
+    const customEndEl = $<HTMLInputElement>('custom-end');
+    if (customEndEl) customEndEl.value = state.customEnd;
+
+    populateCategories();
+    populateAccounts();
+
+    $('empty-state')?.classList.add('hidden');
+    $('dashboard')?.classList.remove('hidden');
+    $('app-topbar')?.classList.remove('hidden');
+    $('bottom-nav')?.classList.remove('hidden');
+
+    render();
+    hideLoading();
+
+    const ago = formatCacheAge(cached.meta.savedAt);
+    toast(`Restored ${state.data.length.toLocaleString('en-IN')} transactions · cached ${ago}`);
+  }).catch(() => {
+    // Cache restore is best-effort — reveal the upload prompt on any error
+    hideLoading();
+  });
 })();
+
+/** Returns a human-readable "time since cached" string for the restore toast. */
+function formatCacheAge(savedAt: number): string {
+  const diff = Date.now() - savedAt;
+  const mins = Math.round(diff / 60_000);
+  if (mins < 2)  return 'just now';
+  if (mins < 60) return `${mins} min ago`;
+  const hrs = Math.round(mins / 60);
+  if (hrs < 24)  return `${hrs}h ago`;
+  const days = Math.round(hrs / 24);
+  return `${days}d ago`;
+}

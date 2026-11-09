@@ -15,6 +15,7 @@ const moduleOrder = [
   'state.js',
   'utils.js',
   'parser.js',
+  'cache.js',
   'dates.js',
   'categories.js',
   'table.js',

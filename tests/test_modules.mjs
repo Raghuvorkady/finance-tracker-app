@@ -111,9 +111,38 @@ global.window = {
 
 global.requestAnimationFrame = (fn) => fn();
 
+// ── IndexedDB mock (cache operations are no-ops in test environment) ──
+// cache.ts requires indexedDB; we provide a stub so the import never throws.
+{
+  const makeRequest = (result) => {
+    const req = { result, error: null };
+    Promise.resolve().then(() => { if (typeof req.onsuccess === 'function') req.onsuccess(); });
+    return req;
+  };
+  const store = {};
+  const makeStore = () => ({
+    put(val, key) { store[key] = val; return makeRequest(undefined); },
+    get(key)       { return makeRequest(store[key] ?? undefined); },
+    delete(key)    { delete store[key]; return makeRequest(undefined); }
+  });
+  const makeTx = () => {
+    const tx = { error: null, objectStore: () => makeStore() };
+    Promise.resolve().then(() => { if (typeof tx.oncomplete === 'function') tx.oncomplete(); });
+    return tx;
+  };
+  global.indexedDB = {
+    open() {
+      const req = { result: { transaction: () => makeTx(), createObjectStore() {} }, error: null };
+      Promise.resolve().then(() => { if (typeof req.onsuccess === 'function') req.onsuccess(); });
+      return req;
+    }
+  };
+}
+
 // Dynamic imports of refactored modules
 const { state } = await import('../js/state.js');
 const { normalizeRows } = await import('../js/parser.js');
+const { loadTransactions, saveTransactions, clearTransactions } = await import('../js/cache.js');
 const { bounds } = await import('../js/dates.js');
 const { filtered, setTypeFilter, setSort, syncFilterPills } = await import('../js/filters.js');
 const { render } = await import('../js/app.js');
@@ -1285,5 +1314,44 @@ if (!customSingleDayBounds.label.includes('2026') || customSingleDayBounds.label
 state.period = 'monthly';
 state.anchor = new Date(2026, 9, 15);
 render();
+
+// ── IndexedDB Cache Module Tests ──
+console.log('\n--- IndexedDB Cache Module Tests ---');
+
+// 1. loadTransactions returns null when cache is empty
+const emptyCache = await loadTransactions();
+console.log('✓ loadTransactions() returns null on empty cache:', emptyCache === null);
+if (emptyCache !== null) throw new Error(`Expected null from empty cache, got: ${JSON.stringify(emptyCache)}`);
+
+// 2. saveTransactions + loadTransactions round-trip
+const sampleTx = state.data.slice(0, 2);
+const sampleMeta = {
+  fileName: 'test.xlsx',
+  rowCount: sampleTx.length,
+  currency: 'INR',
+  currencySymbol: '₹',
+  savedAt: Date.now()
+};
+await saveTransactions(sampleTx, sampleMeta);
+const restored = await loadTransactions();
+console.log('✓ loadTransactions() after save returns payload:', restored !== null);
+if (!restored) throw new Error('Expected non-null payload after saveTransactions');
+console.log('✓ Restored transaction count matches:', restored.transactions.length === sampleTx.length);
+if (restored.transactions.length !== sampleTx.length) {
+  throw new Error(`Expected ${sampleTx.length} transactions, got ${restored.transactions.length}`);
+}
+console.log('✓ Restored meta.fileName matches:', restored.meta.fileName === 'test.xlsx');
+if (restored.meta.fileName !== 'test.xlsx') throw new Error(`Expected filename 'test.xlsx', got '${restored.meta.fileName}'`);
+
+// 3. Dates are properly re-hydrated as Date objects
+const firstDate = restored.transactions[0].date;
+console.log('✓ Restored date is a Date instance:', firstDate instanceof Date);
+if (!(firstDate instanceof Date)) throw new Error('Expected Date instance after cache round-trip');
+
+// 4. clearTransactions removes the cache entry
+await clearTransactions();
+const afterClear = await loadTransactions();
+console.log('✓ loadTransactions() returns null after clearTransactions():', afterClear === null);
+if (afterClear !== null) throw new Error(`Expected null after clear, got: ${JSON.stringify(afterClear)}`);
 
 console.log('\nAll refactored module tests PASSED successfully!');
