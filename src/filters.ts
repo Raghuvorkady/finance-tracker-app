@@ -25,6 +25,13 @@ import {
 } from './types.js';
 
 let onRender: () => void = () => {};
+
+/** Returns true on touch-primary devices (iOS Safari, Android Chrome) where
+ *  calling input.focus() immediately shows the software keyboard and pushes
+ *  the layout, making popovers unusable. */
+function isTouchDevice(): boolean {
+  return typeof window !== 'undefined' && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+}
 export function registerRenderCallback(fn: () => void): void {
   onRender = fn;
 }
@@ -85,10 +92,38 @@ export function closeAllPopovers(): void {
   document.querySelectorAll('.notion-popover, .export-menu, .display-menu, .notion-operator-menu').forEach(p => {
     p.classList.add('hidden');
     p.classList.remove('open');
+    // Restore teleported popovers back to their original parent on close
+    const anchor = p.getAttribute('data-anchor-id');
+    if (anchor) {
+      const originalParent = document.getElementById(anchor);
+      if (originalParent && p.parentElement === document.body) {
+        originalParent.appendChild(p);
+      }
+      p.removeAttribute('data-anchor-id');
+    }
   });
   document.querySelectorAll('[aria-expanded]').forEach(btn => btn.setAttribute('aria-expanded', 'false'));
   const backdrop = $('mobile-popover-backdrop');
   if (backdrop) backdrop.classList.add('hidden');
+}
+
+/**
+ * On iOS, a parent with overflow-x:auto creates a stacking context that traps
+ * position:fixed children, clipping them and swallowing their touch events.
+ * Teleporting the popover to <body> before opening escapes this trap.
+ */
+function teleportPopoverToBody(popEl: HTMLElement): void {
+  if (!isTouchDevice() || typeof document === 'undefined') return;
+  if (popEl.parentElement === document.body) return; // already teleported
+  const originalParent = popEl.parentElement;
+  if (!originalParent) return;
+  // Record the original parent so closeAllPopovers can restore it
+  popEl.setAttribute('data-anchor-id', originalParent.id || (() => {
+    const id = 'popover-anchor-' + Math.random().toString(36).slice(2);
+    originalParent.id = id;
+    return id;
+  })());
+  document.body.appendChild(popEl);
 }
 
 export function syncSortPill(): void {
@@ -165,7 +200,7 @@ export function renderCategoryChips(): void {
       syncFilterPills();
       populateCategories();
       onRender();
-      if (searchInput) searchInput.focus();
+      if (searchInput && !isTouchDevice()) searchInput.focus();
     };
     chip.appendChild(removeBtn);
 
@@ -225,7 +260,7 @@ export function renderAccountChips(): void {
       syncFilterPills();
       populateAccounts();
       onRender();
-      if (searchInput) searchInput.focus();
+      if (searchInput && !isTouchDevice()) searchInput.focus();
     };
     chip.appendChild(removeBtn);
 
@@ -550,6 +585,8 @@ export function populateCategories(): void {
       }).join('');
 
       listEl.querySelectorAll<HTMLElement>('.notion-filter-option').forEach(row => {
+        // iOS Safari only fires 'click' on <div> elements that have a touch listener registered.
+        row.ontouchstart = () => {}; // empty handler — unlocks click propagation on iOS
         row.onclick = (e) => {
           e.stopPropagation();
           const catVal = row.dataset.cat;
@@ -645,6 +682,8 @@ export function populateAccounts(): void {
       }).join('');
 
       listEl.querySelectorAll<HTMLElement>('.notion-filter-option').forEach(row => {
+        // iOS Safari only fires 'click' on <div> elements that have a touch listener registered.
+        row.ontouchstart = () => {}; // empty handler — unlocks click propagation on iOS
         row.onclick = (e) => {
           e.stopPropagation();
           const acctVal = row.dataset.acct;
@@ -945,6 +984,7 @@ export function initFilterListeners(): void {
       const opening = pop.classList.contains('hidden');
       closeAllPopovers();
       if (opening) {
+        teleportPopoverToBody(pop);
         pop.classList.remove('hidden');
         sortPill.setAttribute('aria-expanded', 'true');
         $('mobile-popover-backdrop')?.classList.remove('hidden');
@@ -1056,6 +1096,7 @@ export function initFilterListeners(): void {
       const opening = pop.classList.contains('hidden');
       closeAllPopovers();
       if (opening) {
+        teleportPopoverToBody(pop);
         pop.classList.remove('hidden');
         catPill.setAttribute('aria-expanded', 'true');
         $('mobile-popover-backdrop')?.classList.remove('hidden');
@@ -1063,7 +1104,7 @@ export function initFilterListeners(): void {
         const searchInput = $<HTMLInputElement>('cat-search-input');
         if (searchInput) {
           searchInput.value = '';
-          searchInput.focus();
+          if (!isTouchDevice()) searchInput.focus();
           if (typeof document !== 'undefined') {
             document.querySelectorAll<HTMLElement>('#cat-options-list .notion-filter-option').forEach(i => i.style.display = 'flex');
           }
@@ -1116,7 +1157,7 @@ export function initFilterListeners(): void {
       syncFilterPills();
       populateCategories();
       onRender();
-      $('cat-search-input')?.focus();
+      if (!isTouchDevice()) $('cat-search-input')?.focus();
     };
   }
   const catClearBtn = $('cat-clear-btn');
@@ -1183,6 +1224,7 @@ export function initFilterListeners(): void {
       const opening = pop.classList.contains('hidden');
       closeAllPopovers();
       if (opening) {
+        teleportPopoverToBody(pop);
         pop.classList.remove('hidden');
         acctPill.setAttribute('aria-expanded', 'true');
         $('mobile-popover-backdrop')?.classList.remove('hidden');
@@ -1190,7 +1232,7 @@ export function initFilterListeners(): void {
         const searchInput = $<HTMLInputElement>('acct-search-input');
         if (searchInput) {
           searchInput.value = '';
-          searchInput.focus();
+          if (!isTouchDevice()) searchInput.focus();
           if (typeof document !== 'undefined') {
             document.querySelectorAll<HTMLElement>('#acct-options-list .notion-filter-option').forEach(i => i.style.display = 'flex');
           }
@@ -1243,7 +1285,7 @@ export function initFilterListeners(): void {
       syncFilterPills();
       populateAccounts();
       onRender();
-      $('acct-search-input')?.focus();
+      if (!isTouchDevice()) $('acct-search-input')?.focus();
     };
   }
   const acctClearBtn = $('acct-clear-btn');
@@ -1273,6 +1315,7 @@ export function initFilterListeners(): void {
       const opening = pop.classList.contains('hidden');
       closeAllPopovers();
       if (opening) {
+        teleportPopoverToBody(pop);
         pop.classList.remove('hidden');
         colsPill.setAttribute('aria-expanded', 'true');
         $('mobile-popover-backdrop')?.classList.remove('hidden');
@@ -1281,7 +1324,7 @@ export function initFilterListeners(): void {
         populateColsList();
         requestAnimationFrame(() => {
           const input = $<HTMLInputElement>('cols-search-input');
-          if (input) input.focus();
+          if (input && !isTouchDevice()) input.focus();
         });
       }
     };

@@ -2440,6 +2440,7 @@ select{
 .notion-popover-options{
   max-height:220px;
   overflow-y:auto;
+  -webkit-overflow-scrolling:touch; /* iOS: enables momentum scroll AND fixes click propagation inside scroll containers */
   padding:4px 6px;
   display:flex;
   flex-direction:column;
@@ -2453,6 +2454,8 @@ select{
   border-radius:4px;
   cursor:pointer;
   user-select:none;
+  touch-action:manipulation; /* iOS: prevents 300ms click delay and enables reliable tap */
+  -webkit-tap-highlight-color:rgba(55,53,47,0.08); /* iOS: shows tap feedback */
   transition:background 0.1s ease;
   min-height:28px;
 }
@@ -4411,13 +4414,22 @@ td.account-cell{color:var(--muted);font-size:calc(12px * var(--font-scale, 1))}
     font-size:14px;
     height:30px;
   }
+  /* iOS Safari: inputs with font-size < 16px trigger an unwanted auto-zoom
+     and keyboard pop-up that covers the entire filter popover sheet.
+     Force 16px on all popover search inputs to prevent this. */
+  .notion-popover-search input,
+  .notion-chip-box input{
+    font-size:16px !important;
+  }
   .notion-popover-options{
     max-height:45vh;
+    -webkit-overflow-scrolling:touch;
   }
   .notion-filter-option{
     padding:10px 10px;
     font-size:14px;
     border-radius:8px;
+    min-height:44px; /* Apple HIG minimum tap target size */
   }
   .notion-custom-check{
     width:20px;
@@ -4483,6 +4495,27 @@ td.account-cell{color:var(--muted);font-size:calc(12px * var(--font-scale, 1))}
 }
 .bottom-sheet-backdrop.hidden {
   display: none !important;
+}
+/* ── iOS Safari fix ────────────────────────────────────────────────────────
+   backdrop-filter:blur() on a fixed overlay causes iOS Safari to freeze /
+   permanently blur the entire viewport when filter popovers open.
+   Android Chrome handles it correctly, so we only suppress it for iOS
+   (detected via the .ios class stamped on <html> by the inline head script). */
+.ios .mobile-popover-backdrop,
+.ios .bottom-sheet-backdrop {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+/* On non-iOS mobile, restore the blurs that look great on Android. */
+@media (max-width: 768px) {
+  :not(.ios) .mobile-popover-backdrop {
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+  }
+  :not(.ios) .bottom-sheet-backdrop {
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
 }
 .bottom-sheet {
   background: var(--card, #ffffff);

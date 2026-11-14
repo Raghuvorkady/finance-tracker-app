@@ -3,6 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Detect iOS Safari early so CSS can opt-out of backdrop-filter:blur which
+         freezes/blurs the screen on iOS when filter popovers open. -->
+    <script>
+      (function(){
+        var ua = navigator.userAgent || '';
+        var isIOS = /iPad|iPhone|iPod/.test(ua) ||
+          (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        if (isIOS) document.documentElement.classList.add('ios');
+      })();
+    </script>
     <title>Ledgerly — Finance analyst</title>
     <meta name="description" content="Ledgerly — Fast, private personal finance analyst for Money Manager Excel exports." />
     <meta name="theme-color" content="#191919" />
